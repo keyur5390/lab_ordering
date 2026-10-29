@@ -10,7 +10,8 @@ const variants = {
 } as const;
 
 const sizes = {
-    sm: 'h-9 px-3 text-sm',
+    // 44px touch target on mobile (DESIGN.md §5); compact height from the sm breakpoint up.
+    sm: 'h-11 px-3 text-sm sm:h-9',
     md: 'h-11 px-4 text-sm',
     lg: 'h-12 px-6 text-base',
 } as const;
