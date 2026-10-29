@@ -86,6 +86,9 @@ Build these once and reuse them everywhere.
 - **Loading:** skeletons for content, spinner in buttons. No layout jump.
 - **Empty:** icon, one line of text, and a primary action (e.g. "Browse tests").
 - **Error:** a plain-language message and a retry action. Never show stack traces.
+- **Error pages** (403, 404, 419, 429, 500, 503): `pages/error.tsx`, rendered by the exception handler
+  in `bootstrap/app.php`. 500/503 show Laravel's debug page while `APP_DEBUG=true`. Copy lives in the
+  page's `copy` map; to cover a new status, add it there and to the handler's list.
 - **Validation:** inline per field, plus a summary at the top for long forms.
 
 ## 8. Icons & imagery

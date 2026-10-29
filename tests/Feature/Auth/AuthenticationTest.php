@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Support\Facades\RateLimiter;
 use Inertia\Testing\AssertableInertia as Assert;
 
 it('renders the login page', function () {
@@ -43,10 +42,10 @@ it('throttles repeated failed logins', function () {
     }
 
     $this->post(route('login.store'), ['email' => $user->email, 'password' => 'password'])
-        ->assertTooManyRequests();
+        ->assertTooManyRequests()
+        ->assertInertia(fn (Assert $page) => $page->component('error')->where('status', 429));
 
     $this->assertGuest();
-    RateLimiter::clear('login');
 });
 
 it('logs a user out', function () {
