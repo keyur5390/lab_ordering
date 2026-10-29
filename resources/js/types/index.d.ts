@@ -134,3 +134,50 @@ export interface Option<T extends string = string> {
     value: T;
     label: string;
 }
+
+/** [latitude, longitude] */
+export type LatLng = [number, number];
+
+/** Mirrors App\Support\MapConfig. */
+export interface MapConfig {
+    tile_url: string;
+    attribution: string;
+    center: LatLng;
+    zoom: number;
+}
+
+/** Mirrors App\Http\Resources\AddressResource. */
+export interface Address {
+    id: number;
+    label: string | null;
+    line1: string;
+    line2: string | null;
+    city: string;
+    region: string | null;
+    postcode: string;
+    /** ISO 3166-1 alpha-2 */
+    country: string;
+    country_name: string;
+    latitude: number | null;
+    longitude: number | null;
+    /** Home collection is available here. */
+    serviceable: boolean;
+}
+
+export type ServiceAreaType = 'postcodes' | 'radius' | 'polygon';
+
+/** Mirrors App\Http\Resources\ServiceAreaResource. */
+export interface ServiceArea {
+    id: number;
+    name: string;
+    type: ServiceAreaType;
+    type_label: string;
+    country: string | null;
+    country_name: string | null;
+    postcodes_count?: number;
+    postcodes?: string[];
+    center: LatLng | null;
+    radius_km: number | null;
+    polygon: LatLng[] | null;
+    is_active: boolean;
+}

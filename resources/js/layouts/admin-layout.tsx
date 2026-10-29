@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { FlaskConical, LayoutDashboard, Menu, Package, Settings, X, type LucideIcon } from 'lucide-react';
+import { FlaskConical, LayoutDashboard, MapPinned, Menu, Package, Settings, X, type LucideIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
 interface NavItem {
@@ -19,6 +19,12 @@ const navItems: NavItem[] = [
     { label: 'Dashboard', routeName: 'admin.dashboard', activePattern: 'admin.dashboard', icon: LayoutDashboard },
     { label: 'Tests', routeName: 'admin.tests.index', activePattern: 'admin.tests.*', icon: FlaskConical },
     { label: 'Packages', routeName: 'admin.packages.index', activePattern: 'admin.packages.*', icon: Package },
+    {
+        label: 'Service areas',
+        routeName: 'admin.service-areas.index',
+        activePattern: 'admin.service-areas.*',
+        icon: MapPinned,
+    },
     { label: 'Settings', routeName: 'admin.settings.edit', activePattern: 'admin.settings.*', icon: Settings },
 ];
 

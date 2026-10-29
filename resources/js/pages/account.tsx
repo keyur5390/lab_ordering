@@ -1,10 +1,25 @@
 import AppLayout from '@/layouts/app-layout';
 import type { SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ChevronRight, Users } from 'lucide-react';
+import { ChevronRight, MapPin, Users, type LucideIcon } from 'lucide-react';
 
 export default function Account() {
     const { auth } = usePage<SharedData>().props;
+
+    const links: { href: string; label: string; description: string; icon: LucideIcon }[] = [
+        {
+            href: route('patients.index'),
+            label: 'Patients',
+            description: 'You and the family members you book tests for',
+            icon: Users,
+        },
+        {
+            href: route('addresses.index'),
+            label: 'Addresses',
+            description: 'Where we collect samples from you',
+            icon: MapPin,
+        },
+    ];
 
     return (
         <AppLayout>
@@ -19,17 +34,23 @@ export default function Account() {
                     <p className="text-sm text-muted">{auth.user?.email}</p>
                 </div>
 
-                <Link
-                    href={route('patients.index')}
-                    className="mt-4 flex items-center gap-3 rounded-card border border-border bg-surface p-4 hover:bg-canvas md:p-6"
-                >
-                    <Users className="size-5 text-muted" strokeWidth={1.75} aria-hidden="true" />
-                    <span className="flex-1">
-                        <span className="block font-medium">Patients</span>
-                        <span className="block text-sm text-muted">You and the family members you book tests for</span>
-                    </span>
-                    <ChevronRight className="size-5 text-muted" aria-hidden="true" />
-                </Link>
+                <ul className="mt-4 space-y-3">
+                    {links.map(({ href, label, description, icon: Icon }) => (
+                        <li key={href}>
+                            <Link
+                                href={href}
+                                className="flex items-center gap-3 rounded-card border border-border bg-surface p-4 hover:bg-canvas md:p-6"
+                            >
+                                <Icon className="size-5 text-muted" strokeWidth={1.75} aria-hidden="true" />
+                                <span className="flex-1">
+                                    <span className="block font-medium">{label}</span>
+                                    <span className="block text-sm text-muted">{description}</span>
+                                </span>
+                                <ChevronRight className="size-5 text-muted" aria-hidden="true" />
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
             </section>
         </AppLayout>
     );

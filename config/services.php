@@ -35,4 +35,17 @@ return [
         ],
     ],
 
+    /*
+    | Maps for addresses and service areas (Leaflet). Defaults to OpenStreetMap's free tiles, which are
+    | meant for light use: point MAP_TILE_URL at a tile provider for production traffic.
+    */
+    'maps' => [
+        'tile_url' => env('MAP_TILE_URL', 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'),
+        'attribution' => env('MAP_ATTRIBUTION', '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'),
+        // TODO(client): centre the maps on the launch city once PROJECT.md §1 names it.
+        'default_latitude' => (float) env('MAP_DEFAULT_LATITUDE', 20),
+        'default_longitude' => (float) env('MAP_DEFAULT_LONGITUDE', 0),
+        'default_zoom' => (int) env('MAP_DEFAULT_ZOOM', 2),
+    ],
+
 ];

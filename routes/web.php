@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\LabPackageController;
 use App\Http\Controllers\Admin\LabTestController;
+use App\Http\Controllers\Admin\ServiceAreaController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogueController;
@@ -26,6 +28,7 @@ Route::controller(CartController::class)->prefix('cart')->name('cart.')->group(f
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('/account', 'account')->name('account');
     Route::resource('account/patients', PatientController::class)->except('show')->names('patients');
+    Route::resource('account/addresses', AddressController::class)->except('show')->names('addresses');
 });
 
 Route::middleware(['auth', 'verified', 'can:access-admin'])
@@ -36,6 +39,7 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
 
         Route::resource('tests', LabTestController::class)->except('show');
         Route::resource('packages', LabPackageController::class)->except('show');
+        Route::resource('service-areas', ServiceAreaController::class)->except('show');
 
         Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');

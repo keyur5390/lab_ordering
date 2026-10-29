@@ -46,6 +46,6 @@ class DatabaseSeeder extends Seeder
         // Demo only: on a real install the admin chooses the currency in Admin → Settings.
         app(Settings::class)->setCurrency(Currency::INR);
 
-        $this->call(CatalogueSeeder::class);
+        $this->call([CatalogueSeeder::class, ServiceAreaSeeder::class]);
     }
 }

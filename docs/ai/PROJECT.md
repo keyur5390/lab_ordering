@@ -96,7 +96,18 @@ All amounts come from the database or settings. Never from code.
 
 ## 6. Collection scheduling ⚙️
 
-- **OPEN:** Serviceable areas (pincode/postcode list, radius, or zones)?
+- **Serviceable areas (client, 2026-10-29):** admins define areas in all three ways; an address is
+  serviceable if any published area covers it. *Built in B-09.*
+  - **Postcode list** (per country). Matching ignores case, spaces and dashes; [exact match only, no
+    prefixes or wildcards.] `TODO(client)`
+  - **Radius:** a centre on the map plus km. **Drawn zone:** a polygon on the map. Both apply only to
+    addresses with a map pin, which is optional for customers.
+- **Addresses (client, 2026-10-29):** generic international format: label (optional), line 1, line 2
+  (optional), city, region (optional), postcode, country (ISO code), optional map pin.
+- **Maps (client, 2026-10-29):** free option: Leaflet with OpenStreetMap tiles, no geocoding. The tile server
+  is set in `.env` (`MAP_TILE_URL`); OpenStreetMap's own servers are for light use only, so use a tile
+  provider in production. [Default map centre is world view.] `TODO(client)`: centre on the launch city.
+- Lab branches (for lab visits) are a separate task.
 - **OPEN:** Slot length, daily hours, capacity per slot, days of operation ⚙️.
 - **OPEN:** Earliest bookable slot (lead time) and furthest bookable date ⚙️.
 - **OPEN:** Holidays/blackout dates ⚙️.
@@ -150,6 +161,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-29 | Addresses & areas (B-09): generic international address; postcode, radius and zone areas; free OSM maps | Client |
 | 2026-10-29 | Patients (B-08): profiles with DOB, sex, relationship, phone, email; "Self" profile created on sign-up | Client |
 | 2026-10-29 | Cart (B-07): guests may build a cart; login required only at checkout | Client |
 | 2026-10-29 | Catalogue (B-06): one admin-chosen currency; packages priced fixed or as tests' total minus a discount, per package | Client |

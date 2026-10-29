@@ -76,6 +76,16 @@ class User extends Authenticatable implements MustVerifyEmail
             ->orderBy('name');
     }
 
+    /**
+     * Addresses for home collection.
+     *
+     * @return HasMany<Address, $this>
+     */
+    public function addresses(): HasMany
+    {
+        return $this->hasMany(Address::class)->orderBy('id');
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;

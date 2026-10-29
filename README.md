@@ -20,6 +20,7 @@ composer run dev              # server, queue, logs and Vite at http://localhost
 ```
 
 Seeded logins (password `password`): `test@example.com` (customer) and `admin@example.com` (admin).
+Maps use free OpenStreetMap tiles by default; set `MAP_TILE_URL` (see `.env.example`) to a tile provider for production.
 To make an existing user an admin: `php artisan user:role someone@example.com admin`.
 
 ## Checks
