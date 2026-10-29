@@ -31,10 +31,13 @@ export function formatSlot(startsAt: string, endsAt: string, timeZone: string): 
         month: 'short',
         timeZone,
     }).format(new Date(startsAt));
-    const time = (iso: string) =>
-        new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: false, timeZone }).format(
-            new Date(iso),
-        );
 
-    return `${date}, ${time(startsAt)}–${time(endsAt)}`;
+    return `${date}, ${formatTime(startsAt, timeZone)}–${formatTime(endsAt, timeZone)}`;
+}
+
+/** A time of day in the given timezone, e.g. "07:30". */
+export function formatTime(iso: string, timeZone: string): string {
+    return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: false, timeZone }).format(
+        new Date(iso),
+    );
 }

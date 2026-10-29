@@ -1,8 +1,11 @@
 import { DetailRow } from '@/components/catalogue/detail-row';
 import { Price } from '@/components/catalogue/price';
+import { Badge } from '@/components/ui/badge';
 import { formatDate, formatSlot } from '@/lib/format';
 import type { Order } from '@/types';
 import { FileText } from 'lucide-react';
+
+const refundTones = { pending: 'warning', succeeded: 'success', failed: 'danger' } as const;
 
 function addressText(address: Order['address']): string {
     return [
@@ -33,7 +36,21 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                     {order.address.label && <span className="font-medium">{order.address.label}: </span>}
                     {addressText(order.address)}
                 </DetailRow>
-                <DetailRow label="Payment">{order.payment_method_label}</DetailRow>
+                <DetailRow label="Payment">
+                    {order.payment_method_label}
+                    {order.payment && order.payment.paid > 0 && (
+                        <>
+                            {' · paid '}
+                            <Price amount={order.payment.paid} currencyCode={order.currency} />
+                        </>
+                    )}
+                    {order.payment && order.payment.refunded > 0 && (
+                        <>
+                            {' · refunded '}
+                            <Price amount={order.payment.refunded} currencyCode={order.currency} />
+                        </>
+                    )}
+                </DetailRow>
                 {order.has_prescription && (
                     <DetailRow label="Prescription">
                         {prescriptionUrl ? (
@@ -99,6 +116,44 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                     <Price amount={order.total_amount} currencyCode={order.currency} className="text-lg" />
                 </div>
             </section>
+
+            {order.payment && order.payment.refunds.length > 0 && (
+                <section aria-labelledby="refunds-heading">
+                    <h2 id="refunds-heading" className="text-lg font-semibold">
+                        Refunds
+                    </h2>
+                    <ul className="mt-3 divide-y divide-border rounded-card border border-border bg-surface">
+                        {order.payment.refunds.map((refund) => (
+                            <li key={refund.id} className="flex items-start justify-between gap-4 px-4 py-3">
+                                <div className="min-w-0 text-sm">
+                                    <p className="flex flex-wrap items-center gap-2">
+                                        <span>
+                                            {formatDate(refund.created_at.slice(0, 10), {
+                                                day: 'numeric',
+                                                month: 'short',
+                                                year: 'numeric',
+                                            })}
+                                        </span>
+                                        <Badge tone={refundTones[refund.status]}>{refund.status_label}</Badge>
+                                    </p>
+                                    {(refund.reason || refund.by) && (
+                                        <p className="text-muted">
+                                            {[refund.reason, refund.by && `by ${refund.by}`]
+                                                .filter(Boolean)
+                                                .join(' · ')}
+                                        </p>
+                                    )}
+                                </div>
+                                <Price
+                                    amount={refund.amount}
+                                    currencyCode={order.currency}
+                                    className="shrink-0 text-sm"
+                                />
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
         </div>
     );
 }

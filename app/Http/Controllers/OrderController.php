@@ -35,7 +35,7 @@ class OrderController extends Controller
         Gate::authorize('view', $order);
 
         return Inertia::render('orders/show', [
-            'order' => OrderResource::make($order->load('items')),
+            'order' => OrderResource::make($order->load(['items', 'payments.refunds'])),
             'cutoffHours' => $settings->cancellationCutoffHours(),
         ]);
     }
@@ -44,9 +44,13 @@ class OrderController extends Controller
     {
         Gate::authorize('cancel', $order);
 
-        $this->orders->cancel($order);
+        $message = match ($this->orders->cancel($order)) {
+            null => 'Your order has been cancelled.',
+            true => 'Your order has been cancelled. A full refund is on its way to your original payment method.',
+            false => 'Your order has been cancelled. We couldn\'t send your refund automatically; our team will process it.',
+        };
 
-        return to_route('orders.show', $order)->with('status', 'Your order has been cancelled.');
+        return to_route('orders.show', $order)->with('status', $message);
     }
 
     public function editSlot(Order $order, SlotService $slots): Response

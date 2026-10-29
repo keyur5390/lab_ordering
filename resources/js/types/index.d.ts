@@ -225,7 +225,10 @@ export interface Order {
     number: string;
     status: OrderStatus;
     status_label: string;
+    payment_method: PaymentMethod;
     payment_method_label: string;
+    /** While pending payment: when the slot hold ends (site timezone). */
+    payment_expires_at: string | null;
     slot_starts_at: string;
     slot_ends_at: string;
     placed_at: string;
@@ -253,6 +256,28 @@ export interface Order {
     }[];
     has_prescription: boolean;
     prescription_name: string | null;
+    /** Online payment totals and refunds, on detail pages. */
+    payment?: OrderPayment;
+    can_pay: boolean;
+    can_refund: boolean;
     can_cancel: boolean;
     can_reschedule: boolean;
+}
+
+export type PaymentMethod = 'pay_at_collection' | 'online';
+
+export interface OrderPayment {
+    paid: number;
+    refunded: number;
+    refundable: number;
+    refunds: {
+        id: number;
+        amount: number;
+        status: 'pending' | 'succeeded' | 'failed';
+        status_label: string;
+        reason: string | null;
+        /** Admin who issued it; null for automatic refunds. */
+        by: string | null;
+        created_at: string;
+    }[];
 }

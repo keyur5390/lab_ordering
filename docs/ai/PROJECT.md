@@ -130,10 +130,26 @@ All amounts come from the database or settings. Never from code.
 
 ## 7. Payments
 
-- **OPEN:** Payment gateway (Stripe, Razorpay, other)?
-- **Pay at collection (client, 2026-10-29):** orders are confirmed at once and paid to the collector
-  until online payments are added (B-12).
-- **OPEN:** Refund rules on cancellation.
+*Built in B-12.*
+
+- **Gateways (client, 2026-10-29):** Stripe and Razorpay are both built; the admin picks the active one in
+  Admin → Settings ⚙️, or turns online payment off. API keys live in `.env` (server config, not settings);
+  a gateway can be chosen only once its keys are set. Both use the gateway's hosted payment page (Stripe
+  Checkout, Razorpay Payment Links); payments are confirmed on return and by signed webhooks
+  (`/webhooks/payments/{stripe|razorpay}`).
+- **Payment method (client, 2026-10-29):** while a gateway is set, customers always choose between
+  paying online and paying at collection. Pay-at-collection orders are confirmed at once.
+- **Unpaid online orders (client, 2026-10-29):** start as `pending_payment` and hold their slot for
+  `payment_hold_minutes` ⚙️ [default 15] `TODO(client)`. The customer can retry payment from the order
+  page during the hold. When the hold passes, the slot is released and the order is cancelled.
+  - A payment that arrives late still confirms the order if the slot is free; otherwise it is refunded in full.
+  - A second payment for an already-confirmed order is also refunded in full.
+- **Refunds (client, 2026-10-29):** cancelling a paid order refunds what is left in full, automatically.
+  Admins can also refund any amount up to what is left, with an optional reason. A cancelled order with
+  nothing left to refund becomes `refunded`. [Admin cancellations also refund in full.] `TODO(client)`
+  A refund the gateway rejects is recorded as failed, and an admin can retry it.
+- **OPEN:** Tracking refund outcomes after the gateway accepts them (refund webhooks). Refunds still
+  processing are shown as such.
 
 ## 8. Order lifecycle
 
@@ -141,8 +157,8 @@ All amounts come from the database or settings. Never from code.
 `pending_payment → confirmed → collector_assigned → sample_collected → received_at_lab → report_ready → completed`
 plus `cancelled` and `refunded`.
 
-- New orders start as `confirmed` (pay at collection). Moving orders through collection and lab
-  statuses waits on the collector and lab staff roles (§2).
+- Pay-at-collection orders start as `confirmed`; online orders start as `pending_payment` (§7). Moving
+  orders through collection and lab statuses waits on the collector and lab staff roles (§2).
 - **Cancel and reschedule (client, 2026-10-29):** customers can, before collection, until a cutoff of
   N hours before the slot, set in Admin → Settings ⚙️. Until it is set, only admins can. Admins can
   always, before collection.
@@ -169,6 +185,8 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | `currency` | Site currency (ISO code); prices are shown and charged in it | none; must be set by an admin |
 | `timezone` | Site timezone for collection hours, slots and closures | `config('app.timezone')` until set |
 | `cancellation_cutoff_hours` | Customers can cancel/reschedule until this many hours before the slot | none; only admins can until set |
+| `payment_gateway` | Online payment gateway (`stripe`, `razorpay`), or off; keys come from `.env` | off |
+| `payment_hold_minutes` | How long an unpaid online order holds its slot | [15] `TODO(client)` |
 | Per test (DB) | Requires a prescription | off |
 | Per service area (DB) | Slot length, capacity per slot, lead time, booking window, weekly hours | none; no slots until set |
 
@@ -187,6 +205,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-29 | Payments (B-12): Stripe and Razorpay, admin picks; customer chooses online or at collection; slot held for an admin-set time; automatic full refund on cancel plus admin partial refunds | Client |
 | 2026-10-29 | Checkout (B-11): patients per item; prescriptions for flagged tests; confirm + pay at collection; customer cancel/reschedule until an admin-set cutoff | Client |
 | 2026-10-29 | Slots (B-10): schedule per service area; whole or part-day closures; site timezone setting | Client |
 | 2026-10-29 | Addresses & areas (B-09): generic international address; postcode, radius and zone areas; free OSM maps | Client |

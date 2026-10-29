@@ -1,3 +1,4 @@
+import { Price } from '@/components/catalogue/price';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import type { Order } from '@/types';
@@ -56,6 +57,13 @@ export function OrderActions({ order, cancelUrl, rescheduleUrl }: OrderActionsPr
                         }
                     >
                         The collection slot will be released. This can't be undone.
+                        {order.payment && order.payment.refundable > 0 && (
+                            <>
+                                {' '}
+                                <Price amount={order.payment.refundable} currencyCode={order.currency} /> will be
+                                refunded in full to the original payment method.
+                            </>
+                        )}
                     </ConfirmDialog>
                 </>
             )}

@@ -21,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        // Payment gateways sign their webhooks instead.
+        $middleware->validateCsrfTokens(except: ['webhooks/*']);
+
         $middleware->redirectUsersTo(fn () => route('account'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {

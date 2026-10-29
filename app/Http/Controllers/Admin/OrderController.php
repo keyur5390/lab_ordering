@@ -44,17 +44,20 @@ class OrderController extends Controller
     public function show(Order $order): Response
     {
         return Inertia::render('admin/orders/show', [
-            'order' => OrderResource::make($order->load(['items', 'user'])),
+            'order' => OrderResource::make($order->load(['items', 'user', 'payments.refunds.user'])),
         ]);
     }
 
-    public function cancel(Order $order): RedirectResponse
+    public function cancel(Request $request, Order $order): RedirectResponse
     {
         Gate::authorize('cancel', $order);
 
-        $this->orders->cancel($order);
+        $refunded = $this->orders->cancel($order, $request->user());
+        $redirect = to_route('admin.orders.show', $order);
 
-        return to_route('admin.orders.show', $order)->with('status', 'Order cancelled.');
+        return $refunded === false
+            ? $redirect->withErrors(['amount' => 'Order cancelled, but the payment gateway did not accept the refund. Try the refund again below.'])
+            : $redirect->with('status', $refunded ? 'Order cancelled and refunded in full.' : 'Order cancelled.');
     }
 
     public function editSlot(Order $order, SlotService $slots): Response

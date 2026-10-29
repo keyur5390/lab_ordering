@@ -59,6 +59,7 @@ function checkout(array $overrides = [])
         ],
         'address_id' => test()->address->id,
         'slot_starts_at' => test()->slot,
+        'payment_method' => 'pay_at_collection',
         ...$overrides,
     ]);
 }
@@ -164,6 +165,7 @@ it('does not overbook a slot', function () {
         'items' => [$item->id => [$patient->id]],
         'address_id' => $address->id,
         'slot_starts_at' => $this->slot,
+        'payment_method' => 'pay_at_collection',
     ])->assertSessionHasErrors('slot_starts_at');
 
     expect(Order::count())->toBe(1);

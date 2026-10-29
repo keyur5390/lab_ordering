@@ -4,6 +4,9 @@ namespace App\Http\Resources;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
+use App\Models\Refund;
+use App\Services\PaymentService;
 use App\Settings\Settings;
 use App\Support\Countries;
 use Illuminate\Http\Request;
@@ -30,7 +33,9 @@ class OrderResource extends JsonResource
             'number' => $this->number,
             'status' => $this->status->value,
             'status_label' => $this->status->label(),
+            'payment_method' => $this->payment_method->value,
             'payment_method_label' => $this->payment_method->label(),
+            'payment_expires_at' => $this->payment_expires_at?->setTimezone($timezone)->toIso8601String(),
             'slot_starts_at' => $this->slot_starts_at->setTimezone($timezone)->toIso8601String(),
             'slot_ends_at' => $this->slot_ends_at->setTimezone($timezone)->toIso8601String(),
             'placed_at' => $this->created_at->setTimezone($timezone)->toIso8601String(),
@@ -58,6 +63,20 @@ class OrderResource extends JsonResource
             ])->values()),
             'has_prescription' => $this->prescription_path !== null,
             'prescription_name' => $this->prescription_name,
+            'payment' => $this->whenLoaded('payments', fn () => [
+                ...app(PaymentService::class)->amounts($this->resource),
+                'refunds' => $this->payments->flatMap(fn (Payment $payment) => $payment->refunds->map(fn (Refund $refund) => [
+                    'id' => $refund->id,
+                    'amount' => $refund->amount,
+                    'status' => $refund->status->value,
+                    'status_label' => $refund->status->label(),
+                    'reason' => $refund->reason,
+                    'by' => $refund->relationLoaded('user') ? $refund->user?->name : null,
+                    'created_at' => $refund->created_at->setTimezone($timezone)->toIso8601String(),
+                ]))->values(),
+            ]),
+            'can_pay' => (bool) $user?->can('pay', $this->resource),
+            'can_refund' => $this->whenLoaded('payments', fn () => (bool) $user?->can('refund', $this->resource), false),
             'can_cancel' => (bool) $user?->can('cancel', $this->resource),
             'can_reschedule' => (bool) $user?->can('reschedule', $this->resource),
         ];

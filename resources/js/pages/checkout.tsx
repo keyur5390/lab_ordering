@@ -9,7 +9,7 @@ import { InputError } from '@/components/ui/input-error';
 import { TextLink } from '@/components/ui/text-link';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
-import type { Address, CartLine, Patient, SlotDay } from '@/types';
+import type { Address, CartLine, Patient, PaymentMethod, SlotDay } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { FileUp } from 'lucide-react';
 import type { FormEvent, ReactNode } from 'react';
@@ -22,7 +22,20 @@ interface CheckoutProps {
     addressId: number | null;
     slots: SlotDay[];
     prescriptionRequired: boolean;
+    /** Whether customers can pay online (a gateway is set up). */
+    onlinePayment: boolean;
+    paymentHoldMinutes: number;
 }
+
+const paymentOptions: { value: PaymentMethod; title: string; hint: (holdMinutes: number) => string }[] = [
+    {
+        value: 'online',
+        title: 'Pay online now',
+        hint: (holdMinutes) =>
+            `You'll pay on our payment partner's secure page. We hold your slot for ${holdMinutes} minutes while you pay.`,
+    },
+    { value: 'pay_at_collection', title: 'Pay at collection', hint: () => 'Pay the collector when they arrive.' },
+];
 
 function Step({ number, title, children }: { number: number; title: string; children: ReactNode }) {
     return (
@@ -48,6 +61,8 @@ export default function Checkout({
     addressId,
     slots,
     prescriptionRequired,
+    onlinePayment,
+    paymentHoldMinutes,
 }: CheckoutProps) {
     const selfPatient = patients.find((patient) => patient.is_self && patient.is_complete);
     const { data, setData, post, processing, errors, transform } = useForm({
@@ -59,9 +74,12 @@ export default function Checkout({
         address_id: addressId,
         slot_starts_at: null as string | null,
         prescription: null as File | null,
+        payment_method: (onlinePayment ? 'online' : 'pay_at_collection') as PaymentMethod,
     });
     const allErrors = errors as Record<string, string>;
-    const step = prescriptionRequired ? 4 : 3;
+    const prescriptionStep = 4;
+    const paymentStep = prescriptionRequired ? 5 : 4;
+    const payOnline = data.payment_method === 'online';
 
     // Price is per patient; the server works out the final total.
     const total = lines.reduce((sum, line) => sum + line.price_amount * (data.items[line.id]?.length ?? 0), 0);
@@ -229,7 +247,7 @@ export default function Checkout({
                         </Step>
 
                         {prescriptionRequired && (
-                            <Step number={step} title="Upload your prescription">
+                            <Step number={prescriptionStep} title="Upload your prescription">
                                 <p className="text-sm text-muted">
                                     One or more tests in your order need a doctor's prescription. PDF, JPG or PNG, up to
                                     10 MB.
@@ -248,6 +266,34 @@ export default function Checkout({
                                     />
                                 </label>
                                 <InputError id="prescription-error" message={errors.prescription} className="mt-2" />
+                            </Step>
+                        )}
+
+                        {onlinePayment && (
+                            <Step number={paymentStep} title="How would you like to pay?">
+                                <div role="radiogroup" aria-label="Payment" className="space-y-2">
+                                    {paymentOptions.map((option) => (
+                                        <label
+                                            key={option.value}
+                                            className="flex cursor-pointer gap-3 rounded-control border border-border p-3 has-[:checked]:border-primary-600 has-[:checked]:bg-primary-50"
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="payment_method"
+                                                className="mt-0.5 size-4 accent-primary-600"
+                                                checked={data.payment_method === option.value}
+                                                onChange={() => setData('payment_method', option.value)}
+                                            />
+                                            <span className="min-w-0 text-sm">
+                                                <span className="block font-medium">{option.title}</span>
+                                                <span className="block text-muted">
+                                                    {option.hint(paymentHoldMinutes)}
+                                                </span>
+                                            </span>
+                                        </label>
+                                    ))}
+                                </div>
+                                <InputError message={errors.payment_method} className="mt-2" />
                             </Step>
                         )}
                     </div>
@@ -276,9 +322,12 @@ export default function Checkout({
                             <span className="font-semibold">Total</span>
                             <Price amount={total} className="text-lg" />
                         </div>
-                        <p className="text-sm text-muted">Payment: pay at collection.</p>
+                        <p className="text-sm text-muted">
+                            Payment: {payOnline ? 'online, on the next page' : 'pay at collection'}.
+                        </p>
+                        {!onlinePayment && <InputError message={errors.payment_method} />}
                         <Button type="submit" className="w-full" processing={processing}>
-                            Place order
+                            {payOnline ? 'Continue to payment' : 'Place order'}
                         </Button>
                     </aside>
                 </div>

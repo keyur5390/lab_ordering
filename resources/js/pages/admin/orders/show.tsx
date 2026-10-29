@@ -1,11 +1,16 @@
 import { OrderActions } from '@/components/order-actions';
 import { OrderDetails } from '@/components/order-details';
 import { OrderStatusBadge } from '@/components/order-status-badge';
+import { RefundForm } from '@/components/refund-form';
+import { Alert } from '@/components/ui/alert';
 import { TextLink } from '@/components/ui/text-link';
 import AdminLayout from '@/layouts/admin-layout';
-import type { Order } from '@/types';
+import type { Order, SharedData } from '@/types';
+import { usePage } from '@inertiajs/react';
 
 export default function AdminOrderShow({ order }: { order: Order }) {
+    const { errors } = usePage<SharedData & { errors: Record<string, string> }>().props;
+
     return (
         <AdminLayout
             title={`Order ${order.number}`}
@@ -26,7 +31,15 @@ export default function AdminOrderShow({ order }: { order: Order }) {
                     {order.customer?.name} · {order.customer?.email}
                 </span>
             </div>
-            <div className="mt-6 max-w-3xl">
+            {/* Refund errors are shown in the form; this covers a refund that failed while cancelling. */}
+            {errors.amount && !order.can_refund && (
+                <Alert tone="danger" className="mt-4">
+                    {errors.amount}
+                </Alert>
+            )}
+            <div className="mt-6 max-w-3xl space-y-6">
+                {/* Keyed so the amount resets to what is left after each refund. */}
+                {order.can_refund && <RefundForm key={order.payment?.refundable} order={order} />}
                 <OrderDetails order={order} prescriptionUrl={route('orders.prescription', order.number)} />
             </div>
         </AdminLayout>

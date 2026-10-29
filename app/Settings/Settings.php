@@ -3,6 +3,7 @@
 namespace App\Settings;
 
 use App\Enums\Currency;
+use App\Enums\PaymentGatewayName;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -19,6 +20,13 @@ class Settings
     public const TIMEZONE = 'timezone';
 
     public const CANCELLATION_CUTOFF_HOURS = 'cancellation_cutoff_hours';
+
+    public const PAYMENT_GATEWAY = 'payment_gateway';
+
+    public const PAYMENT_HOLD_MINUTES = 'payment_hold_minutes';
+
+    // TODO(client): confirm the default hold for unpaid online orders.
+    public const DEFAULT_PAYMENT_HOLD_MINUTES = 15;
 
     /** Site currency, or null until an admin has chosen one. */
     public function currency(): ?Currency
@@ -61,6 +69,35 @@ class Settings
     public function setCancellationCutoffHours(?int $hours): void
     {
         $this->set(self::CANCELLATION_CUTOFF_HOURS, $hours);
+    }
+
+    /**
+     * Gateway for online payments, or null when online payment is off (client, 2026-10-29).
+     * A chosen gateway whose keys have since been removed from .env counts as off.
+     */
+    public function paymentGateway(): ?PaymentGatewayName
+    {
+        $gateway = PaymentGatewayName::tryFrom((string) $this->get(self::PAYMENT_GATEWAY));
+
+        return $gateway?->isConfigured() ? $gateway : null;
+    }
+
+    public function setPaymentGateway(?PaymentGatewayName $gateway): void
+    {
+        $this->set(self::PAYMENT_GATEWAY, $gateway?->value);
+    }
+
+    /** How long an unpaid online order holds its slot before it is cancelled (client, 2026-10-29). */
+    public function paymentHoldMinutes(): int
+    {
+        $minutes = $this->get(self::PAYMENT_HOLD_MINUTES);
+
+        return is_numeric($minutes) ? (int) $minutes : self::DEFAULT_PAYMENT_HOLD_MINUTES;
+    }
+
+    public function setPaymentHoldMinutes(?int $minutes): void
+    {
+        $this->set(self::PAYMENT_HOLD_MINUTES, $minutes);
     }
 
     public function get(string $key, mixed $default = null): mixed

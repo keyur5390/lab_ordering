@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\ClosureController;
 use App\Http\Controllers\Admin\LabPackageController;
 use App\Http\Controllers\Admin\LabTestController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\ServiceAreaController;
 use App\Http\Controllers\Admin\SettingsController;
@@ -13,6 +14,8 @@ use App\Http\Controllers\CatalogueController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PaymentWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'home')->name('home');
@@ -46,6 +49,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/{order}/reschedule', 'reschedule')->name('reschedule');
         Route::get('/{order}/prescription', 'prescription')->name('prescription');
     });
+
+    Route::controller(PaymentController::class)->prefix('account/orders/{order}/payments')->name('orders.payments.')->group(function () {
+        Route::post('/', 'store')->name('store');
+        Route::get('/{payment}/return', 'return')->scopeBindings()->name('return');
+    });
 });
 
 Route::middleware(['auth', 'verified', 'can:access-admin'])
@@ -68,7 +76,11 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
             Route::get('/{order}/reschedule', 'editSlot')->name('reschedule.edit');
             Route::put('/{order}/reschedule', 'reschedule')->name('reschedule');
         });
+        Route::post('/orders/{order}/refunds', [RefundController::class, 'store'])->name('orders.refunds.store');
 
         Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
     });
+
+// Signed by the gateway and exempt from CSRF (bootstrap/app.php).
+Route::post('/webhooks/payments/{gateway}', PaymentWebhookController::class)->name('webhooks.payments');

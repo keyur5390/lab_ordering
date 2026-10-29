@@ -54,6 +54,11 @@ app/
   itself. Paginated collections still arrive as `{data, links, meta}` (TS `Paginated<T>`).
 - Wrap multi-write operations in `DB::transaction()`.
 - Queue notifications, emails and slow work.
+- **External APIs** (e.g. payment gateways in `app/Services/Payments`): one driver per provider behind an
+  interface, using Laravel's `Http` client (no SDK unless needed). Credentials and base URLs come from
+  `config/services.php` / `.env`; they are server config, not ⚙️ settings. Tests use `Http::fake`.
+- **Webhooks** live under `/webhooks/*`, are exempt from CSRF (`bootstrap/app.php`), verify the
+  provider's signature, and must be idempotent.
 - Files with health data (reports) go on a private disk. Serve them via authorised controller or temporary signed URL.
 
 ## 4. Database

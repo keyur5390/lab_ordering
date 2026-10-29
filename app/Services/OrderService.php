@@ -33,22 +33,28 @@ class OrderService
         private PackagePricingService $pricing,
         private ServiceAreaService $areas,
         private SlotService $slots,
+        private PaymentService $payments,
         private Settings $settings,
     ) {}
 
     /**
      * Places an order from the customer's cart. Each available cart item is booked for the
-     * chosen patients; price is per patient. The order is confirmed at once and paid at collection
-     * (client, 2026-10-29). The cart is emptied afterwards.
+     * chosen patients; price is per patient. The cart is emptied afterwards. Pay-at-collection
+     * orders are confirmed at once; online orders wait for payment, holding their slot for the
+     * admin-set hold time (client, 2026-10-29).
      *
      * @param  array<int, list<int>>  $patientIdsByCartItem  cart item id => patient ids
      *
      * @throws ValidationException
      */
-    public function place(User $user, Cart $cart, array $patientIdsByCartItem, Address $address, CarbonImmutable $slotStartsAt, ?UploadedFile $prescription): Order
+    public function place(User $user, Cart $cart, array $patientIdsByCartItem, Address $address, CarbonImmutable $slotStartsAt, ?UploadedFile $prescription, PaymentMethod $paymentMethod = PaymentMethod::PayAtCollection): Order
     {
         $currency = $this->settings->currency()
             ?? throw ValidationException::withMessages(['order' => 'Ordering is not open yet. Please try again later.']);
+        $online = $paymentMethod === PaymentMethod::Online;
+        if ($online && ! $this->payments->onlineAvailable()) {
+            throw ValidationException::withMessages(['payment_method' => 'Online payment is not available. Please choose pay at collection.']);
+        }
 
         $cartItems = $cart->items()->with(['test', 'package.tests'])->get()
             ->filter(fn (CartItem $item) => ($item->test ?? $item->package)?->is_active);
@@ -79,7 +85,7 @@ class OrderService
             throw ValidationException::withMessages(['prescription' => 'A prescription is needed for one or more tests.']);
         }
 
-        return DB::transaction(function () use ($user, $cart, $cartItems, $patientIdsByCartItem, $patients, $address, $area, $slotStartsAt, $prescription, $currency) {
+        return DB::transaction(function () use ($user, $cart, $cartItems, $patientIdsByCartItem, $patients, $address, $area, $slotStartsAt, $prescription, $currency, $paymentMethod, $online) {
             $this->lockAndCheckSlot($area, $slotStartsAt);
 
             $lines = [];
@@ -91,8 +97,9 @@ class OrderService
             $subtotal = array_sum(array_column($lines, 'price_amount'));
 
             $order = $user->orders()->create([
-                'status' => OrderStatus::Confirmed,
-                'payment_method' => PaymentMethod::PayAtCollection,
+                'status' => $online ? OrderStatus::PendingPayment : OrderStatus::Confirmed,
+                'payment_method' => $paymentMethod,
+                'payment_expires_at' => $online ? now()->addMinutes($this->settings->paymentHoldMinutes()) : null,
                 'service_area_id' => $area->id,
                 'slot_starts_at' => $slotStartsAt->utc(),
                 'slot_ends_at' => $slotStartsAt->addMinutes($area->slot_minutes)->utc(),
@@ -129,9 +136,17 @@ class OrderService
             : (bool) $item->package?->tests->contains('requires_prescription', true));
     }
 
-    public function cancel(Order $order): void
+    /**
+     * Cancels the order and refunds online payments in full, at once (client, 2026-10-29).
+     * TODO(client): admin cancellations also refund in full; confirm.
+     *
+     * @return bool|null whether the refund went through; null when nothing was paid online
+     */
+    public function cancel(Order $order, ?User $by = null): ?bool
     {
         $order->update(['status' => OrderStatus::Cancelled, 'cancelled_at' => now()]);
+
+        return $this->payments->refundRemaining($order, $by, 'Order cancelled');
     }
 
     /**

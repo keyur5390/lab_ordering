@@ -2,14 +2,18 @@ import { OrderActions } from '@/components/order-actions';
 import { OrderDetails } from '@/components/order-details';
 import { OrderStatusBadge } from '@/components/order-status-badge';
 import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { TextLink } from '@/components/ui/text-link';
 import AppLayout from '@/layouts/app-layout';
-import { formatDate } from '@/lib/format';
+import { formatDate, formatTime } from '@/lib/format';
 import type { Order, SharedData } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 
 export default function OrderShow({ order, cutoffHours }: { order: Order; cutoffHours: number | null }) {
-    const { status } = usePage<SharedData>().props;
+    const { status, errors } = usePage<SharedData & { errors: Record<string, string> }>().props;
+    const [paying, setPaying] = useState(false);
+    const awaitingPayment = order.status === 'pending_payment';
     const beforeCollection = ['pending_payment', 'confirmed', 'collector_assigned'].includes(order.status);
 
     return (
@@ -34,6 +38,44 @@ export default function OrderShow({ order, cutoffHours }: { order: Order; cutoff
                     <Alert tone="success" className="mt-4">
                         {status}
                     </Alert>
+                )}
+                {errors.payment && (
+                    <Alert tone="danger" className="mt-4">
+                        {errors.payment}
+                    </Alert>
+                )}
+
+                {awaitingPayment && (
+                    <div className="mt-4 space-y-3 rounded-card border border-warning-600/30 bg-surface p-4">
+                        {order.can_pay && order.payment_expires_at ? (
+                            <>
+                                <p className="text-sm">
+                                    This order isn't paid yet. We're holding your collection slot until{' '}
+                                    <span className="font-semibold">
+                                        {formatTime(order.payment_expires_at, order.timezone)}
+                                    </span>
+                                    ; pay before then to confirm it.
+                                </p>
+                                <Button
+                                    processing={paying}
+                                    onClick={() =>
+                                        router.post(
+                                            route('orders.payments.store', order.number),
+                                            {},
+                                            { onStart: () => setPaying(true), onFinish: () => setPaying(false) },
+                                        )
+                                    }
+                                >
+                                    Pay now
+                                </Button>
+                            </>
+                        ) : (
+                            <p className="text-sm">
+                                The time to pay for this order has run out, so it will be cancelled. If you have already
+                                paid, it will be confirmed or refunded in full.
+                            </p>
+                        )}
+                    </div>
                 )}
 
                 <div className="mt-6">

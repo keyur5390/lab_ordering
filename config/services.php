@@ -36,6 +36,23 @@ return [
     ],
 
     /*
+    | Online payment gateways (PROJECT.md §7). The admin chooses the active one in Admin → Settings;
+    | a gateway can be chosen once its keys are set. Webhook URL: /webhooks/payments/{stripe|razorpay}.
+    */
+    'stripe' => [
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        'base_url' => env('STRIPE_BASE_URL', 'https://api.stripe.com'),
+    ],
+
+    'razorpay' => [
+        'key_id' => env('RAZORPAY_KEY_ID'),
+        'key_secret' => env('RAZORPAY_KEY_SECRET'),
+        'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET'),
+        'base_url' => env('RAZORPAY_BASE_URL', 'https://api.razorpay.com'),
+    ],
+
+    /*
     | Maps for addresses and service areas (Leaflet). Defaults to OpenStreetMap's free tiles, which are
     | meant for light use: point MAP_TILE_URL at a tile provider for production traffic.
     */

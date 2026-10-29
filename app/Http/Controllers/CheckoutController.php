@@ -8,15 +8,18 @@ use App\Http\Resources\PatientResource;
 use App\Models\Address;
 use App\Services\CartService;
 use App\Services\OrderService;
+use App\Services\Payments\PaymentGatewayException;
+use App\Services\PaymentService;
 use App\Services\ServiceAreaService;
 use App\Services\SlotService;
-use Illuminate\Http\RedirectResponse;
+use App\Settings\Settings;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Checkout (PROJECT.md §5): patients per item, address, slot, prescription when needed, then place.
+ * Checkout (PROJECT.md §5): patients per item, address, slot, prescription when needed, payment
+ * method, then place. Online orders go straight on to the gateway's checkout page.
  */
 class CheckoutController extends Controller
 {
@@ -25,9 +28,10 @@ class CheckoutController extends Controller
         private OrderService $orders,
         private ServiceAreaService $areas,
         private SlotService $slots,
+        private PaymentService $payments,
     ) {}
 
-    public function show(Request $request): Response
+    public function show(Request $request, Settings $settings): Response
     {
         $cart = $this->cart->current($request);
         $lines = collect($cart ? $this->cart->lines($cart) : [])->where('available', true)->values();
@@ -51,10 +55,12 @@ class CheckoutController extends Controller
             // Reloaded on its own when the address changes.
             'slots' => fn () => $area ? $this->slots->days($area) : [],
             'prescriptionRequired' => $lines->contains('requires_prescription', true),
+            'onlinePayment' => $this->payments->onlineAvailable(),
+            'paymentHoldMinutes' => $settings->paymentHoldMinutes(),
         ])->toResponse($request);
     }
 
-    public function store(PlaceOrderRequest $request): RedirectResponse
+    public function store(PlaceOrderRequest $request): Response
     {
         $cart = $this->cart->currentOrCreate($request);
         $address = $request->user()->addresses()->findOrFail($request->validated('address_id'));
@@ -66,8 +72,18 @@ class CheckoutController extends Controller
             $address,
             $request->slotStartsAt(),
             $request->file('prescription'),
+            $request->paymentMethod(),
         );
 
-        return to_route('orders.show', $order)->with('status', 'Thank you! Your order is confirmed.');
+        if (! $request->paymentMethod()->isOnline()) {
+            return to_route('orders.show', $order)->with('status', 'Thank you! Your order is confirmed.');
+        }
+
+        try {
+            return Inertia::location($this->payments->start($order));
+        } catch (PaymentGatewayException) {
+            return to_route('orders.show', $order)
+                ->withErrors(['payment' => 'We couldn\'t open the payment page. Please try again.']);
+        }
     }
 }

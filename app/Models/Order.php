@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property int $user_id
  * @property OrderStatus $status
  * @property PaymentMethod $payment_method
+ * @property Carbon|null $payment_expires_at UTC; while pending payment, the slot is held until then
  * @property int|null $service_area_id
  * @property Carbon $slot_starts_at UTC
  * @property Carbon $slot_ends_at UTC
@@ -51,6 +52,7 @@ class Order extends Model
         return [
             'status' => OrderStatus::class,
             'payment_method' => PaymentMethod::class,
+            'payment_expires_at' => 'datetime',
             'slot_starts_at' => 'datetime',
             'slot_ends_at' => 'datetime',
             'address' => 'array',
@@ -87,5 +89,13 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class)->orderBy('id');
+    }
+
+    /**
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class)->orderBy('id');
     }
 }

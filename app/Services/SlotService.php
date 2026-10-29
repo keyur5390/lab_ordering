@@ -49,7 +49,7 @@ class SlotService
 
         $hoursByWeekday = $area->hours()->get()->groupBy('weekday');
         $closures = $this->closures($area, $firstDay, $lastDay);
-        $booked = $this->bookedCounts($area, $firstDay, $lastDay->endOfDay());
+        $booked = $this->bookedCounts($area, $firstDay, $lastDay->endOfDay(), $now);
 
         $days = [];
         for ($day = $firstDay; $day->lte($lastDay); $day = $day->addDay()) {
@@ -159,15 +159,19 @@ class SlotService
 
     /**
      * Orders holding a place, per slot start (ISO-8601 in the site timezone). Each order is one
-     * home visit, so it uses one place whatever the number of patients.
+     * home visit, so it uses one place whatever the number of patients. Unpaid online orders stop
+     * holding their place when their payment hold passes, even before they are cancelled.
      *
      * @return array<string, int>
      */
-    private function bookedCounts(ServiceArea $area, CarbonImmutable $from, CarbonImmutable $to): array
+    private function bookedCounts(ServiceArea $area, CarbonImmutable $from, CarbonImmutable $to, CarbonImmutable $now): array
     {
         return Order::query()
             ->where('service_area_id', $area->id)
             ->whereIn('status', OrderStatus::holdingSlot())
+            ->where(fn ($query) => $query
+                ->where('status', '!=', OrderStatus::PendingPayment)
+                ->orWhere('payment_expires_at', '>', $now->utc()))
             ->whereBetween('slot_starts_at', [$from->utc(), $to->utc()])
             ->toBase()
             ->selectRaw('slot_starts_at, count(*) as booked')

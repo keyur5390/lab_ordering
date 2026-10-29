@@ -12,6 +12,9 @@ interface SettingsProps {
     timezone: string;
     timezones: string[];
     cancellationCutoffHours: number | null;
+    paymentGateway: string | null;
+    gateways: { value: string; label: string; configured: boolean; env_keys: string }[];
+    paymentHoldMinutes: number;
 }
 
 export default function Settings({
@@ -20,12 +23,18 @@ export default function Settings({
     timezone,
     timezones,
     cancellationCutoffHours,
+    paymentGateway,
+    gateways,
+    paymentHoldMinutes,
 }: SettingsProps) {
     const { data, setData, put, processing, errors, isDirty } = useForm({
         currency: currency ?? '',
         timezone,
         cancellation_cutoff_hours: cancellationCutoffHours?.toString() ?? '',
+        payment_gateway: paymentGateway ?? '',
+        payment_hold_minutes: paymentHoldMinutes.toString(),
     });
+    const unconfigured = gateways.filter((gateway) => !gateway.configured);
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
@@ -109,6 +118,52 @@ export default function Settings({
                         value={data.cancellation_cutoff_hours}
                         onChange={(e) => setData('cancellation_cutoff_hours', e.target.value)}
                         error={errors.cancellation_cutoff_hours}
+                    />
+                </section>
+
+                <section className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6">
+                    <h2 className="text-base font-semibold">Payments</h2>
+                    <Field
+                        id="payment_gateway"
+                        label="Online payment gateway"
+                        hint="Customers can always pay at collection. Choose a gateway to let them pay online too."
+                        error={errors.payment_gateway}
+                    >
+                        {(control) => (
+                            <Select
+                                {...control}
+                                value={data.payment_gateway}
+                                onChange={(e) => setData('payment_gateway', e.target.value)}
+                            >
+                                <option value="">Off (pay at collection only)</option>
+                                {gateways.map((gateway) => (
+                                    <option key={gateway.value} value={gateway.value} disabled={!gateway.configured}>
+                                        {gateway.label}
+                                        {!gateway.configured && ' (keys not set)'}
+                                    </option>
+                                ))}
+                            </Select>
+                        )}
+                    </Field>
+                    {unconfigured.length > 0 && (
+                        <ul className="space-y-1 text-sm text-muted">
+                            {unconfigured.map((gateway) => (
+                                <li key={gateway.value}>
+                                    To use {gateway.label}, add {gateway.env_keys} to the server's .env file.
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                    <FormField
+                        id="payment_hold_minutes"
+                        label="Hold the slot for unpaid online orders for (minutes)"
+                        hint="Unpaid orders are cancelled after this, and their slot is released."
+                        type="number"
+                        inputMode="numeric"
+                        min={5}
+                        value={data.payment_hold_minutes}
+                        onChange={(e) => setData('payment_hold_minutes', e.target.value)}
+                        error={errors.payment_hold_minutes}
                     />
                 </section>
 
