@@ -6,6 +6,8 @@
 - **Frontend:** React 19 + TypeScript (strict), Inertia.js 2, Vite
 - **Styling:** Tailwind CSS 4 (CSS-first config via `@theme`, see DESIGN.md)
 - **Database:** MySQL 8 in all environments, kept **PostgreSQL-compatible**
+- **Auth:** Laravel Fortify (headless). Its screens are Inertia pages registered in
+  `FortifyServiceProvider`; customisation goes in `app/Actions/Fortify`.
 - **Tests:** Pest (PHP); Vitest + React Testing Library (TS) when component logic warrants it
 
 ## 2. Working agreement

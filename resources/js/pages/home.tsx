@@ -1,9 +1,9 @@
-import GuestLayout from '@/layouts/guest-layout';
+import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 
 export default function Home() {
     return (
-        <GuestLayout>
+        <AppLayout>
             <Head title="Home" />
 
             <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-20 lg:px-8">
@@ -13,6 +13,6 @@ export default function Home() {
                     Browse tests, choose home collection or a lab visit, and get your reports online.
                 </p>
             </section>
-        </GuestLayout>
+        </AppLayout>
     );
 }
