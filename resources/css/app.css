@@ -1,0 +1,41 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../js/**/*.{ts,tsx}';
+
+/* Design tokens — see docs/ai/DESIGN.md. Use only these in components. */
+@theme {
+    /* Brand (placeholder) — TODO(client): replace with brand kit */
+    --color-primary-50: #eff8ff;
+    --color-primary-100: #dbeefe;
+    --color-primary-500: #2e90fa;
+    --color-primary-600: #1570ef;
+    --color-primary-700: #175cd3;
+
+    /* Neutrals */
+    --color-surface: #ffffff;
+    --color-canvas: #f8fafc;
+    --color-border: #e2e8f0;
+    --color-muted: #64748b;
+    --color-text: #0f172a;
+
+    /* Status */
+    --color-success-600: #079455;
+    --color-warning-600: #dc6803;
+    --color-danger-600: #d92d20;
+    --color-info-600: #1570ef;
+
+    /* TODO(client): confirm typeface */
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+    --radius-card: 0.75rem;
+    --radius-control: 0.5rem;
+}
+
+@layer base {
+    body {
+        @apply bg-canvas text-text;
+    }
+}
