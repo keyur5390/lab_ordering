@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Http\Resources\UserResource;
+use App\Settings\Settings;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -39,6 +40,12 @@ class HandleInertiaRequests extends Middleware
                     : null,
             ],
             'status' => fn () => $request->session()->get('status'),
+            // Site currency for formatting prices; null until an admin chooses one.
+            'currency' => function () {
+                $currency = app(Settings::class)->currency();
+
+                return $currency ? ['code' => $currency->value, 'decimals' => $currency->decimals()] : null;
+            },
         ];
     }
 }

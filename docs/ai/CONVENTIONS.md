@@ -32,6 +32,7 @@ app/
   Enums/                   backed enums for statuses/types (OrderStatus, CollectionType…)
   Policies/                all authorisation
   Settings/                typed access to ⚙️ settings (single source; cached)
+  Support/                 small helpers (Money, Slug)
 ```
 
 - Controllers stay thin. Business logic lives in Services or Actions.
@@ -44,6 +45,13 @@ app/
 - **Money:** integer minor units (`unsigned bigInteger`), named `*_amount` (e.g. `price_amount`).
   One `Money` helper formats it. Never use floats.
 - **Settings:** read through the Settings layer only. Never call `config()` or `env()` for business values.
+  `App\Settings\Settings` (singleton) reads the `settings` table through one cached map. Add a
+  typed method per setting and list it in PROJECT.md §11.
+- **Money input/output:** admins type decimals ("499.50"). Convert with `App\Support\Money` and
+  validate with `Money::decimalPattern()`. The frontend formats with `formatMoney()` and the shared
+  `currency` prop, usually via the `<Price>` component.
+- **Resources:** `JsonResource::withoutWrapping()` is on, so a single resource prop arrives as the object
+  itself. Paginated collections still arrive as `{data, links, meta}` (TS `Paginated<T>`).
 - Wrap multi-write operations in `DB::transaction()`.
 - Queue notifications, emails and slow work.
 - Files with health data (reports) go on a private disk. Serve them via authorised controller or temporary signed URL.

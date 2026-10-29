@@ -39,8 +39,16 @@ the catalogue, orders, collection schedule and reports from an admin area.
 
 ## 3. Catalogue
 
-- Items are **tests** (single) and **packages** (bundles of tests). [assumed]
+- Items are **tests** (single) and **packages** (bundles of tests). [assumed] *Built in B-06.*
 - Each test: name, code, description, sample type, preparation instructions (e.g. fasting), turnaround time ⚙️, price ⚙️. [assumed fields] `TODO(client)`
+  Turnaround is stored in hours and price in minor units, both per test in the DB. Admins can publish/hide tests and packages.
+- **Package pricing (client, 2026-10-29):** each package has a pricing mode chosen by the admin:
+  - **Fixed:** the package has its own price.
+  - **Discounted:** the sum of its tests' current prices minus a discount, either a whole percent (1–100) or a fixed amount (less than the tests' total).
+- [A percent discount is rounded half-up to the minor unit.] `TODO(client)`
+- [A package must contain at least 2 tests.] `TODO(client)`
+- [A package's turnaround is its slowest test's.] `TODO(client)`
+- [A test that belongs to a package can't be deleted; remove it from the package or unpublish it.] `TODO(client)`
 - **OPEN:** Categories/organ groupings? Search? Filters?
 - **OPEN:** Is a package price independent, or derived from its tests minus a discount?
 - **OPEN:** Is a catalogue item ever unavailable by city/area?
@@ -49,7 +57,10 @@ the catalogue, orders, collection schedule and reports from an admin area.
 
 All amounts come from the database or settings. Never from code.
 
-- **OPEN:** Currency, and whether prices include tax. Tax rate(s) ⚙️.
+- **Currency (client, 2026-10-29):** one active currency for the whole site, chosen by the admin in
+  Admin → Settings ⚙️. Changing it does not convert existing prices. [Offered: AED, AUD, CAD, EUR, GBP,
+  INR, SGD, USD; all 2-decimal.] `TODO(client)`
+- **OPEN:** Whether prices include tax. Tax rate(s) ⚙️.
 - **OPEN:** Home collection fee? Flat, by area, or waived above an order value ⚙️?
 - **OPEN:** Minimum order value ⚙️?
 - **OPEN:** Coupons/promo codes in v1? Rules (percentage/flat, expiry, usage limits)?
@@ -107,7 +118,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 
 | Key | Meaning | Default |
 |-----|---------|---------|
-| _(none yet)_ | | |
+| `currency` | Site currency (ISO code); prices are shown and charged in it | none; must be set by an admin |
 
 ## 12. Compliance & data
 
@@ -124,5 +135,6 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-29 | Catalogue (B-06): one admin-chosen currency; packages priced fixed or as tests' total minus a discount, per package | Client |
 | 2026-10-29 | Roles (B-04): customer + admin only; collector/lab staff wait on client; admins promoted via CLI | Dev |
 | 2026-10-29 | Auth (B-03): email + password with email verification, built on the [default] pending client confirmation | Dev |

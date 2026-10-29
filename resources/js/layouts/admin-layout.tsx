@@ -1,33 +1,43 @@
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { LayoutDashboard, Menu, X, type LucideIcon } from 'lucide-react';
+import { FlaskConical, LayoutDashboard, Menu, Package, Settings, X, type LucideIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
 interface NavItem {
     label: string;
     routeName: string;
+    /** Route pattern that marks this item active, e.g. "admin.tests.*". */
+    activePattern: string;
     icon: LucideIcon;
 }
 
 // Admin sections are added here as they are built.
-const navItems: NavItem[] = [{ label: 'Dashboard', routeName: 'admin.dashboard', icon: LayoutDashboard }];
+const navItems: NavItem[] = [
+    { label: 'Dashboard', routeName: 'admin.dashboard', activePattern: 'admin.dashboard', icon: LayoutDashboard },
+    { label: 'Tests', routeName: 'admin.tests.index', activePattern: 'admin.tests.*', icon: FlaskConical },
+    { label: 'Packages', routeName: 'admin.packages.index', activePattern: 'admin.packages.*', icon: Package },
+    { label: 'Settings', routeName: 'admin.settings.edit', activePattern: 'admin.settings.*', icon: Settings },
+];
 
 interface AdminLayoutProps {
     title: string;
+    /** Rendered next to the page title, e.g. a "New test" button. */
+    actions?: ReactNode;
     children: ReactNode;
 }
 
 /** Admin shell: left sidebar on desktop, toggled menu on mobile (DESIGN.md §4). */
-export default function AdminLayout({ title, children }: AdminLayoutProps) {
-    const { name, auth } = usePage<SharedData>().props;
+export default function AdminLayout({ title, actions, children }: AdminLayoutProps) {
+    const { name, auth, status, errors } = usePage<SharedData & { errors: Record<string, string> }>().props;
     const [menuOpen, setMenuOpen] = useState(false);
 
     const nav = (
         <nav aria-label="Admin" className="space-y-1 p-3">
-            {navItems.map(({ label, routeName, icon: Icon }) => {
-                const active = route().current(routeName);
+            {navItems.map(({ label, routeName, activePattern, icon: Icon }) => {
+                const active = route().current(activePattern);
 
                 return (
                     <Link
@@ -97,7 +107,22 @@ export default function AdminLayout({ title, children }: AdminLayoutProps) {
                 )}
 
                 <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
-                    <h1 className="text-2xl font-semibold md:text-3xl">{title}</h1>
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                        <h1 className="text-2xl font-semibold md:text-3xl">{title}</h1>
+                        {actions}
+                    </div>
+
+                    {status && (
+                        <Alert tone="success" className="mt-4">
+                            {status}
+                        </Alert>
+                    )}
+                    {errors.delete && (
+                        <Alert tone="danger" className="mt-4">
+                            {errors.delete}
+                        </Alert>
+                    )}
+
                     <div className="mt-6">{children}</div>
                 </main>
             </div>

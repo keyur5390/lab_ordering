@@ -18,7 +18,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                         {name}
                     </Link>
 
-                    <nav className="flex items-center sm:gap-2" aria-label="Account">
+                    <nav className="flex items-center sm:gap-2" aria-label="Main">
+                        <Link href={route('catalogue.index')} className={headerLinkClass}>
+                            Tests
+                        </Link>
                         {auth.user ? (
                             <>
                                 {auth.user.can_access_admin && (

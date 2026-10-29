@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Currency;
 use App\Models\User;
+use App\Settings\Settings;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -26,5 +28,10 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin User',
             'email' => 'admin@example.com',
         ]);
+
+        // Demo only: on a real install the admin chooses the currency in Admin → Settings.
+        app(Settings::class)->setCurrency(Currency::INR);
+
+        $this->call(CatalogueSeeder::class);
     }
 }
