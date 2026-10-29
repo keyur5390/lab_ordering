@@ -1,0 +1,109 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+jobs:
+    frontend:
+        name: Frontend (types, lint, format, build)
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: npm
+
+            - run: npm ci
+            - run: npm run types
+            - run: npm run lint
+            - run: npm run format:check
+            - run: npm run build
+
+    backend:
+        name: Backend (${{ matrix.database }})
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - database: mysql
+                      port: 3306
+                    - database: pgsql
+                      port: 5432
+
+        services:
+            mysql:
+                image: ${{ matrix.database == 'mysql' && 'mysql:8.0' || '' }}
+                env:
+                    MYSQL_DATABASE: lab_ordering
+                    MYSQL_USER: lab
+                    MYSQL_PASSWORD: secret
+                    MYSQL_ROOT_PASSWORD: secret
+                ports: ['3306:3306']
+                options: >-
+                    --health-cmd="mysqladmin ping -h 127.0.0.1"
+                    --health-interval=10s --health-timeout=5s --health-retries=5
+            postgres:
+                image: ${{ matrix.database == 'pgsql' && 'postgres:16' || '' }}
+                env:
+                    POSTGRES_DB: lab_ordering
+                    POSTGRES_USER: lab
+                    POSTGRES_PASSWORD: secret
+                ports: ['5432:5432']
+                options: >-
+                    --health-cmd="pg_isready -U lab"
+                    --health-interval=10s --health-timeout=5s --health-retries=5
+
+        env:
+            DB_CONNECTION: ${{ matrix.database }}
+            DB_HOST: 127.0.0.1
+            DB_PORT: ${{ matrix.port }}
+            DB_DATABASE: lab_ordering
+            DB_USERNAME: lab
+            DB_PASSWORD: secret
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.3'
+                  extensions: mbstring, pdo_mysql, pdo_pgsql, pdo_sqlite, intl
+                  coverage: none
+
+            - name: Get Composer cache directory
+              id: composer-cache
+              run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+            - uses: actions/cache@v4
+              with:
+                  path: ${{ steps.composer-cache.outputs.dir }}
+                  key: composer-${{ hashFiles('composer.lock') }}
+                  restore-keys: composer-
+
+            - run: composer install --no-interaction --no-progress --prefer-dist
+
+            - name: Prepare environment
+              run: |
+                  cp .env.example .env
+                  php artisan key:generate
+
+            - name: Code style (Pint)
+              run: vendor/bin/pint --test
+
+            - name: Migrate and seed from scratch
+              run: php artisan migrate:fresh --seed --force
+
+            - name: Tests
+              run: php artisan test

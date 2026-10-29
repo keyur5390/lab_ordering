@@ -27,3 +27,5 @@ php artisan test
 npm run types && npm run lint && npm run format:check
 npm run build
 ```
+
+CI (`.github/workflows/ci.yml`) runs these on every PR and on pushes to `main`, with the backend tested against both MySQL 8 and PostgreSQL 16.

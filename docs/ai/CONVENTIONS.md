@@ -108,8 +108,10 @@ A task is done only when **all** of these hold:
 5. Checks pass:
    - `./vendor/bin/pint --test`
    - `php artisan test`
-   - `npm run types` (`tsc --noEmit`) and `npm run lint`
+   - `npm run types` (`tsc --noEmit`), `npm run lint` and `npm run format:check`
    - `npm run build`
+   - CI (`.github/workflows/ci.yml`) is green on the PR. It runs all of the above, with the
+     backend on both MySQL 8 and PostgreSQL 16.
 6. Authorisation is covered by Policies and tested.
 7. UI follows DESIGN.md: responsive at 360px and desktop, keyboard-usable, with empty/loading/error states.
 8. PROJECT.md and these docs are updated if the task changed or clarified something.
