@@ -46,16 +46,31 @@ it('shows the settings page to admins', function () {
 
 it('lets admins change the currency', function () {
     $this->actingAs(User::factory()->admin()->create())
-        ->put(route('admin.settings.update'), ['currency' => 'AED'])
+        ->put(route('admin.settings.update'), ['currency' => 'AED', 'timezone' => 'Asia/Dubai'])
         ->assertRedirect(route('admin.settings.edit'))
         ->assertSessionHas('status');
 
-    expect(app(Settings::class)->currency())->toBe(Currency::AED);
+    expect(app(Settings::class)->currency())->toBe(Currency::AED)
+        ->and(app(Settings::class)->timezone())->toBe('Asia/Dubai');
+});
+
+it('falls back to the app timezone until one is chosen', function () {
+    expect(app(Settings::class)->timezone())->toBe(config('app.timezone'));
+
+    $this->actingAs(User::factory()->admin()->create())
+        ->get(route('admin.settings.edit'))
+        ->assertInertia(fn (Assert $page) => $page->where('timezone', config('app.timezone'))->has('timezones'));
+});
+
+it('rejects unknown timezones', function () {
+    $this->actingAs(User::factory()->admin()->create())
+        ->put(route('admin.settings.update'), ['currency' => 'USD', 'timezone' => 'Mars/Olympus'])
+        ->assertSessionHasErrors('timezone');
 });
 
 it('rejects unsupported currencies', function () {
     $this->actingAs(User::factory()->admin()->create())
-        ->put(route('admin.settings.update'), ['currency' => 'XYZ'])
+        ->put(route('admin.settings.update'), ['currency' => 'XYZ', 'timezone' => 'UTC'])
         ->assertSessionHasErrors('currency');
 
     expect(app(Settings::class)->currency())->toBeNull();
@@ -63,7 +78,7 @@ it('rejects unsupported currencies', function () {
 
 it('forbids customers from changing settings', function () {
     $this->actingAs(User::factory()->create())
-        ->put(route('admin.settings.update'), ['currency' => 'USD'])
+        ->put(route('admin.settings.update'), ['currency' => 'USD', 'timezone' => 'UTC'])
         ->assertForbidden();
 
     expect(app(Settings::class)->currency())->toBeNull();

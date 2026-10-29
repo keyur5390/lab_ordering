@@ -21,6 +21,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $radius_meters
  * @property list<array{0: float, 1: float}>|null $polygon
  * @property bool $is_active
+ * @property int|null $slot_minutes
+ * @property int|null $capacity_per_slot
+ * @property int|null $lead_time_minutes
+ * @property int|null $booking_window_days
  */
 class ServiceArea extends Model
 {
@@ -32,6 +36,7 @@ class ServiceArea extends Model
      */
     protected $fillable = [
         'name', 'type', 'country', 'center_latitude', 'center_longitude', 'radius_meters', 'polygon', 'is_active',
+        'slot_minutes', 'capacity_per_slot', 'lead_time_minutes', 'booking_window_days',
     ];
 
     /**
@@ -46,6 +51,10 @@ class ServiceArea extends Model
             'radius_meters' => 'integer',
             'polygon' => 'array',
             'is_active' => 'boolean',
+            'slot_minutes' => 'integer',
+            'capacity_per_slot' => 'integer',
+            'lead_time_minutes' => 'integer',
+            'booking_window_days' => 'integer',
         ];
     }
 
@@ -57,6 +66,35 @@ class ServiceArea extends Model
     public function postcodes(): HasMany
     {
         return $this->hasMany(ServiceAreaPostcode::class)->orderBy('postcode');
+    }
+
+    /**
+     * Weekly opening hours.
+     *
+     * @return HasMany<ServiceAreaHour, $this>
+     */
+    public function hours(): HasMany
+    {
+        return $this->hasMany(ServiceAreaHour::class)->orderBy('weekday')->orderBy('opens_at');
+    }
+
+    /**
+     * Closures for this area only (closures for all areas have no area).
+     *
+     * @return HasMany<CollectionClosure, $this>
+     */
+    public function closures(): HasMany
+    {
+        return $this->hasMany(CollectionClosure::class);
+    }
+
+    /** Has everything needed to offer slots. */
+    public function hasSchedule(): bool
+    {
+        return $this->slot_minutes !== null
+            && $this->capacity_per_slot !== null
+            && $this->lead_time_minutes !== null
+            && $this->booking_window_days !== null;
     }
 
     /**

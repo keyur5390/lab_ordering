@@ -32,6 +32,7 @@ class ServiceAreaResource extends JsonResource
             'radius_km' => $this->radius_meters !== null ? $this->radius_meters / 1000 : null,
             'polygon' => $this->polygon,
             'is_active' => $this->is_active,
+            'has_schedule' => $this->hasSchedule(),
         ];
     }
 }

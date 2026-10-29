@@ -43,8 +43,9 @@ class DatabaseSeeder extends Seeder
             'sex' => Sex::Male,
         ]);
 
-        // Demo only: on a real install the admin chooses the currency in Admin → Settings.
+        // Demo only: on a real install the admin chooses the currency and timezone in Admin → Settings.
         app(Settings::class)->setCurrency(Currency::INR);
+        app(Settings::class)->setTimezone('Asia/Kolkata');
 
         $this->call([CatalogueSeeder::class, ServiceAreaSeeder::class]);
     }

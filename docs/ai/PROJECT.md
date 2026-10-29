@@ -108,9 +108,16 @@ All amounts come from the database or settings. Never from code.
   is set in `.env` (`MAP_TILE_URL`); OpenStreetMap's own servers are for light use only, so use a tile
   provider in production. [Default map centre is world view.] `TODO(client)`: centre on the launch city.
 - Lab branches (for lab visits) are a separate task.
-- **OPEN:** Slot length, daily hours, capacity per slot, days of operation ⚙️.
-- **OPEN:** Earliest bookable slot (lead time) and furthest bookable date ⚙️.
-- **OPEN:** Holidays/blackout dates ⚙️.
+- **Collection schedule (client, 2026-10-29): per service area** ⚙️. *Built in B-10.* Each area has:
+  - slot length (minutes), collections per slot (capacity), lead time (earliest bookable slot, counted
+    from now) and booking window (days, starting today);
+  - weekly opening hours, with one or more time ranges per weekday. Days without a range are closed.
+  All values are entered by admins (Admin → Service areas → Schedule); an area without them offers no slots.
+- **Closures (client, 2026-10-29):** whole days (one date or a range) or part of one day (from–to), for
+  one area or for all areas, with an optional reason shown to customers. Admin → Closures.
+- Slots use the site timezone (Admin → Settings ⚙️). Slots that can't be booked (full, closed, too
+  soon) are shown disabled, not hidden.
+- Capacity counts confirmed bookings once orders exist (B-11).
 
 ## 7. Payments
 
@@ -145,6 +152,8 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Key | Meaning | Default |
 |-----|---------|---------|
 | `currency` | Site currency (ISO code); prices are shown and charged in it | none; must be set by an admin |
+| `timezone` | Site timezone for collection hours, slots and closures | `config('app.timezone')` until set |
+| Per service area (DB) | Slot length, capacity per slot, lead time, booking window, weekly hours | none; no slots until set |
 
 ## 12. Compliance & data
 
@@ -161,6 +170,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-29 | Slots (B-10): schedule per service area; whole or part-day closures; site timezone setting | Client |
 | 2026-10-29 | Addresses & areas (B-09): generic international address; postcode, radius and zone areas; free OSM maps | Client |
 | 2026-10-29 | Patients (B-08): profiles with DOB, sex, relationship, phone, email; "Self" profile created on sign-up | Client |
 | 2026-10-29 | Cart (B-07): guests may build a cart; login required only at checkout | Client |

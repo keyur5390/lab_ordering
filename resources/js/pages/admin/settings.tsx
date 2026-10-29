@@ -8,10 +8,12 @@ import type { FormEvent } from 'react';
 interface SettingsProps {
     currency: string | null;
     currencies: { value: string; label: string }[];
+    timezone: string;
+    timezones: string[];
 }
 
-export default function Settings({ currency, currencies }: SettingsProps) {
-    const { data, setData, put, processing, errors, isDirty } = useForm({ currency: currency ?? '' });
+export default function Settings({ currency, currencies, timezone, timezones }: SettingsProps) {
+    const { data, setData, put, processing, errors, isDirty } = useForm({ currency: currency ?? '', timezone });
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
@@ -57,6 +59,30 @@ export default function Settings({ currency, currencies }: SettingsProps) {
                             currency, so review your tests and packages afterwards.
                         </p>
                     )}
+                </section>
+
+                <section className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6">
+                    <h2 className="text-base font-semibold">Timezone</h2>
+                    <Field
+                        id="timezone"
+                        label="Site timezone"
+                        hint="Collection hours, slots and closures use this timezone."
+                        error={errors.timezone}
+                    >
+                        {(control) => (
+                            <Select
+                                {...control}
+                                value={data.timezone}
+                                onChange={(e) => setData('timezone', e.target.value)}
+                            >
+                                {timezones.map((zone) => (
+                                    <option key={zone} value={zone}>
+                                        {zone.replaceAll('_', ' ')}
+                                    </option>
+                                ))}
+                            </Select>
+                        )}
+                    </Field>
                 </section>
 
                 <Button type="submit" processing={processing} disabled={!isDirty}>

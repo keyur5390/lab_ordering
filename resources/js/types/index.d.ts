@@ -180,4 +180,28 @@ export interface ServiceArea {
     radius_km: number | null;
     polygon: LatLng[] | null;
     is_active: boolean;
+    /** Has slot settings, so it offers collection slots. */
+    has_schedule: boolean;
+}
+
+export type SlotStatus = 'available' | 'full' | 'closed' | 'too_soon';
+
+/** Mirrors one slot from App\Services\SlotService::days(). */
+export interface Slot {
+    /** ISO-8601 with the site timezone's offset. */
+    starts_at: string;
+    ends_at: string;
+    /** Local start time, HH:MM. */
+    time: string;
+    remaining: number;
+    status: SlotStatus;
+}
+
+/** Mirrors one day from App\Services\SlotService::days(). */
+export interface SlotDay {
+    /** YYYY-MM-DD in the site timezone. */
+    date: string;
+    /** Set when a whole-day closure applies. */
+    closed_reason: string | null;
+    slots: Slot[];
 }

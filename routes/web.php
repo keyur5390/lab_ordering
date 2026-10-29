@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\Admin\ClosureController;
 use App\Http\Controllers\Admin\LabPackageController;
 use App\Http\Controllers\Admin\LabTestController;
+use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\ServiceAreaController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\CartController;
@@ -40,6 +42,9 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
         Route::resource('tests', LabTestController::class)->except('show');
         Route::resource('packages', LabPackageController::class)->except('show');
         Route::resource('service-areas', ServiceAreaController::class)->except('show');
+        Route::get('/service-areas/{service_area}/schedule', [ScheduleController::class, 'edit'])->name('service-areas.schedule.edit');
+        Route::put('/service-areas/{service_area}/schedule', [ScheduleController::class, 'update'])->name('service-areas.schedule.update');
+        Route::resource('closures', ClosureController::class)->only(['index', 'store', 'destroy']);
 
         Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');

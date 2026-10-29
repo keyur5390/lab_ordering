@@ -16,6 +16,8 @@ class Settings
 
     public const CURRENCY = 'currency';
 
+    public const TIMEZONE = 'timezone';
+
     /** Site currency, or null until an admin has chosen one. */
     public function currency(): ?Currency
     {
@@ -25,6 +27,22 @@ class Settings
     public function setCurrency(Currency $currency): void
     {
         $this->set(self::CURRENCY, $currency->value);
+    }
+
+    /**
+     * Timezone for collection slots and other local times (PROJECT.md §12).
+     * Falls back to config('app.timezone') until an admin chooses one.
+     */
+    public function timezone(): string
+    {
+        $timezone = (string) $this->get(self::TIMEZONE);
+
+        return in_array($timezone, timezone_identifiers_list(), true) ? $timezone : config('app.timezone');
+    }
+
+    public function setTimezone(string $timezone): void
+    {
+        $this->set(self::TIMEZONE, $timezone);
     }
 
     public function get(string $key, mixed $default = null): mixed

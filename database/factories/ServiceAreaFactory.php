@@ -49,6 +49,23 @@ class ServiceAreaFactory extends Factory
         ]);
     }
 
+    /**
+     * Slot settings plus the same opening range every day of the week.
+     */
+    public function scheduled(int $slotMinutes = 60, int $capacity = 2, int $leadMinutes = 0, int $windowDays = 7, string $opens = '08:00', string $closes = '12:00'): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'slot_minutes' => $slotMinutes,
+            'capacity_per_slot' => $capacity,
+            'lead_time_minutes' => $leadMinutes,
+            'booking_window_days' => $windowDays,
+        ])->afterCreating(function (ServiceArea $area) use ($opens, $closes) {
+            foreach (range(1, 7) as $weekday) {
+                $area->hours()->create(['weekday' => $weekday, 'opens_at' => $opens, 'closes_at' => $closes]);
+            }
+        });
+    }
+
     public function inactive(): static
     {
         return $this->state(fn (array $attributes) => ['is_active' => false]);

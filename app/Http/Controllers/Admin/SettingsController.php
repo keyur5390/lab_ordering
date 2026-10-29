@@ -20,12 +20,15 @@ class SettingsController extends Controller
                 fn (Currency $currency) => ['value' => $currency->value, 'label' => "{$currency->value} · {$currency->label()}"],
                 Currency::cases(),
             ),
+            'timezone' => $settings->timezone(),
+            'timezones' => timezone_identifiers_list(),
         ]);
     }
 
     public function update(UpdateSettingsRequest $request, Settings $settings): RedirectResponse
     {
         $settings->setCurrency(Currency::from($request->validated('currency')));
+        $settings->setTimezone($request->validated('timezone'));
 
         return to_route('admin.settings.edit')->with('status', 'Settings saved.');
     }

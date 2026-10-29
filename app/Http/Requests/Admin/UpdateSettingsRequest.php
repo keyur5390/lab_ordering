@@ -21,6 +21,7 @@ class UpdateSettingsRequest extends FormRequest
     {
         return [
             'currency' => ['required', Rule::enum(Currency::class)],
+            'timezone' => ['required', 'timezone:all'],
         ];
     }
 }

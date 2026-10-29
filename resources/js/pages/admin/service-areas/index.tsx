@@ -52,17 +52,27 @@ export default function ServiceAreasIndex({ areas }: { areas: ServiceArea[] }) {
                                 <div className="flex flex-wrap items-center gap-2">
                                     <TextLink href={route('admin.service-areas.edit', area.id)}>{area.name}</TextLink>
                                     {area.is_active ? <Badge tone="success">Published</Badge> : <Badge>Hidden</Badge>}
+                                    {!area.has_schedule && <Badge tone="warning">No schedule</Badge>}
                                 </div>
                                 <p className="text-sm text-muted">
                                     {area.type_label} · {summary(area)}
                                 </p>
                             </div>
-                            <DeleteButton
-                                href={route('admin.service-areas.destroy', area.id)}
-                                itemName={area.name}
-                                itemType="area"
-                                description="Addresses inside it will no longer be eligible for home collection unless another area covers them."
-                            />
+                            <div className="flex shrink-0 items-center gap-1">
+                                <Link
+                                    href={route('admin.service-areas.schedule.edit', area.id)}
+                                    className="inline-flex h-11 items-center rounded-control px-3 text-sm font-medium text-primary-700 hover:bg-canvas sm:h-9"
+                                    aria-label={`Schedule for ${area.name}`}
+                                >
+                                    Schedule
+                                </Link>
+                                <DeleteButton
+                                    href={route('admin.service-areas.destroy', area.id)}
+                                    itemName={area.name}
+                                    itemType="area"
+                                    description="Addresses inside it will no longer be eligible for home collection unless another area covers them."
+                                />
+                            </div>
                         </li>
                     ))}
                 </ul>
