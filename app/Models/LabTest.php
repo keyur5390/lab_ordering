@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string|null $description
  * @property string $sample_type
  * @property string|null $preparation
+ * @property bool $requires_prescription
  * @property int $turnaround_hours
  * @property int $price_amount
  * @property bool $is_active
@@ -37,6 +38,7 @@ class LabTest extends Model
         'description',
         'sample_type',
         'preparation',
+        'requires_prescription',
         'turnaround_hours',
         'price_amount',
         'is_active',
@@ -51,6 +53,7 @@ class LabTest extends Model
             'turnaround_hours' => 'integer',
             'price_amount' => 'integer',
             'is_active' => 'boolean',
+            'requires_prescription' => 'boolean',
         ];
     }
 

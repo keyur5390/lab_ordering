@@ -22,6 +22,7 @@ class SettingsController extends Controller
             ),
             'timezone' => $settings->timezone(),
             'timezones' => timezone_identifiers_list(),
+            'cancellationCutoffHours' => $settings->cancellationCutoffHours(),
         ]);
     }
 
@@ -29,6 +30,7 @@ class SettingsController extends Controller
     {
         $settings->setCurrency(Currency::from($request->validated('currency')));
         $settings->setTimezone($request->validated('timezone'));
+        $settings->setCancellationCutoffHours($request->filled('cancellation_cutoff_hours') ? (int) $request->validated('cancellation_cutoff_hours') : null);
 
         return to_route('admin.settings.edit')->with('status', 'Settings saved.');
     }

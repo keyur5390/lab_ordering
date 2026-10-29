@@ -9,11 +9,15 @@ interface PriceProps {
     /** Price before discount, in minor units; struck through when higher than `amount` (DESIGN.md §6). */
     originalAmount?: number;
     className?: string;
+    /** Currency the amount is in, e.g. an order's; defaults to the site currency. */
+    currencyCode?: string;
 }
 
 /** Formatted price in the site currency. Renders nothing until an admin sets the currency. */
-export function Price({ amount, originalAmount, className }: PriceProps) {
-    const { currency } = usePage<SharedData>().props;
+export function Price({ amount, originalAmount, className, currencyCode }: PriceProps) {
+    const { currency: siteCurrency } = usePage<SharedData>().props;
+    // All supported currencies have 2 decimals (App\Enums\Currency).
+    const currency = currencyCode ? { code: currencyCode, decimals: siteCurrency?.decimals ?? 2 } : siteCurrency;
 
     if (!currency) {
         return null;

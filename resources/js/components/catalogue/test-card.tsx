@@ -26,6 +26,7 @@ export function TestCard({ test }: { test: LabTest }) {
                     <Clock className="size-3.5" aria-hidden="true" />
                     Reports in {formatTurnaround(test.turnaround_hours)}
                 </Badge>
+                {test.requires_prescription && <Badge tone="warning">Prescription needed</Badge>}
                 {test.preparation && (
                     <Badge tone="warning">
                         <Info className="size-3.5" aria-hidden="true" />

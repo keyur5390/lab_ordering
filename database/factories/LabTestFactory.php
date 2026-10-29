@@ -27,10 +27,16 @@ class LabTestFactory extends Factory
             'description' => fake()->sentence(12),
             'sample_type' => fake()->randomElement(['Blood', 'Urine', 'Saliva']),
             'preparation' => null,
+            'requires_prescription' => false,
             'turnaround_hours' => fake()->randomElement([6, 12, 24, 48]),
             'price_amount' => fake()->numberBetween(20, 300) * 100,
             'is_active' => true,
         ];
+    }
+
+    public function prescriptionRequired(): static
+    {
+        return $this->state(fn (array $attributes) => ['requires_prescription' => true]);
     }
 
     public function inactive(): static

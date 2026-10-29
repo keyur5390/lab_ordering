@@ -1,4 +1,5 @@
 import { Field } from '@/components/field';
+import { FormField } from '@/components/form-field';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import AdminLayout from '@/layouts/admin-layout';
@@ -10,10 +11,21 @@ interface SettingsProps {
     currencies: { value: string; label: string }[];
     timezone: string;
     timezones: string[];
+    cancellationCutoffHours: number | null;
 }
 
-export default function Settings({ currency, currencies, timezone, timezones }: SettingsProps) {
-    const { data, setData, put, processing, errors, isDirty } = useForm({ currency: currency ?? '', timezone });
+export default function Settings({
+    currency,
+    currencies,
+    timezone,
+    timezones,
+    cancellationCutoffHours,
+}: SettingsProps) {
+    const { data, setData, put, processing, errors, isDirty } = useForm({
+        currency: currency ?? '',
+        timezone,
+        cancellation_cutoff_hours: cancellationCutoffHours?.toString() ?? '',
+    });
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
@@ -83,6 +95,21 @@ export default function Settings({ currency, currencies, timezone, timezones }: 
                             </Select>
                         )}
                     </Field>
+                </section>
+
+                <section className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6">
+                    <h2 className="text-base font-semibold">Orders</h2>
+                    <FormField
+                        id="cancellation_cutoff_hours"
+                        label="Customers can cancel or reschedule up to (hours before the slot)"
+                        hint="Leave empty to let only admins cancel or reschedule."
+                        type="number"
+                        inputMode="numeric"
+                        min={0}
+                        value={data.cancellation_cutoff_hours}
+                        onChange={(e) => setData('cancellation_cutoff_hours', e.target.value)}
+                        error={errors.cancellation_cutoff_hours}
+                    />
                 </section>
 
                 <Button type="submit" processing={processing} disabled={!isDirty}>

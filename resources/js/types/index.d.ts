@@ -54,6 +54,8 @@ export interface CartLine {
     tests_count: number;
     /** Tests: names of packages in the cart that already include this test. */
     included_in: string[];
+    /** The test, or a test in the package, needs a prescription. */
+    requires_prescription: boolean;
 }
 
 /** Mirrors the `currency` shared prop. */
@@ -72,6 +74,7 @@ export interface LabTest {
     description: string | null;
     sample_type: string;
     preparation: string | null;
+    requires_prescription: boolean;
     turnaround_hours: number;
     price_amount: number;
     is_active: boolean;
@@ -204,4 +207,52 @@ export interface SlotDay {
     /** Set when a whole-day closure applies. */
     closed_reason: string | null;
     slots: Slot[];
+}
+
+export type OrderStatus =
+    | 'pending_payment'
+    | 'confirmed'
+    | 'collector_assigned'
+    | 'sample_collected'
+    | 'received_at_lab'
+    | 'report_ready'
+    | 'completed'
+    | 'cancelled'
+    | 'refunded';
+
+/** Mirrors App\Http\Resources\OrderResource. Money in minor units of `currency`; times in the site timezone. */
+export interface Order {
+    number: string;
+    status: OrderStatus;
+    status_label: string;
+    payment_method_label: string;
+    slot_starts_at: string;
+    slot_ends_at: string;
+    placed_at: string;
+    timezone: string;
+    address: {
+        label: string | null;
+        line1: string;
+        line2: string | null;
+        city: string;
+        region: string | null;
+        postcode: string;
+        country: string;
+        country_name: string;
+    };
+    currency: string;
+    subtotal_amount: number;
+    total_amount: number;
+    items_count?: number;
+    customer?: { name: string; email: string };
+    patients?: {
+        name: string;
+        date_of_birth: string;
+        sex: string;
+        items: { type: CartItemType; name: string; code: string; test_names: string[] | null; price_amount: number }[];
+    }[];
+    has_prescription: boolean;
+    prescription_name: string | null;
+    can_cancel: boolean;
+    can_reschedule: boolean;
 }

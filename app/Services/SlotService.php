@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\OrderStatus;
 use App\Models\CollectionClosure;
+use App\Models\Order;
 use App\Models\ServiceArea;
 use App\Models\ServiceAreaHour;
 use App\Settings\Settings;
@@ -156,14 +158,25 @@ class SlotService
     }
 
     /**
-     * Bookings per slot start (ISO-8601). Orders arrive in B-11.
+     * Orders holding a place, per slot start (ISO-8601 in the site timezone). Each order is one
+     * home visit, so it uses one place whatever the number of patients.
      *
      * @return array<string, int>
      */
-    protected function bookedCounts(ServiceArea $area, CarbonImmutable $from, CarbonImmutable $to): array
+    private function bookedCounts(ServiceArea $area, CarbonImmutable $from, CarbonImmutable $to): array
     {
-        // TODO(B-11): count confirmed orders for this area per slot start.
-        return [];
+        return Order::query()
+            ->where('service_area_id', $area->id)
+            ->whereIn('status', OrderStatus::holdingSlot())
+            ->whereBetween('slot_starts_at', [$from->utc(), $to->utc()])
+            ->toBase()
+            ->selectRaw('slot_starts_at, count(*) as booked')
+            ->groupBy('slot_starts_at')
+            ->get()
+            ->mapWithKeys(fn (object $row) => [
+                CarbonImmutable::parse($row->slot_starts_at, 'UTC')->setTimezone($from->getTimezone())->toIso8601String() => (int) $row->booked,
+            ])
+            ->all();
     }
 
     /** The given local wall-clock time on the same day as $day. */

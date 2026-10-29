@@ -5,6 +5,7 @@ import type { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     CalendarOff,
+    ClipboardList,
     FlaskConical,
     LayoutDashboard,
     MapPinned,
@@ -27,6 +28,7 @@ interface NavItem {
 // Admin sections are added here as they are built.
 const navItems: NavItem[] = [
     { label: 'Dashboard', routeName: 'admin.dashboard', activePattern: 'admin.dashboard', icon: LayoutDashboard },
+    { label: 'Orders', routeName: 'admin.orders.index', activePattern: 'admin.orders.*', icon: ClipboardList },
     { label: 'Tests', routeName: 'admin.tests.index', activePattern: 'admin.tests.*', icon: FlaskConical },
     { label: 'Packages', routeName: 'admin.packages.index', activePattern: 'admin.packages.*', icon: Package },
     {

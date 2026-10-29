@@ -18,6 +18,8 @@ class Settings
 
     public const TIMEZONE = 'timezone';
 
+    public const CANCELLATION_CUTOFF_HOURS = 'cancellation_cutoff_hours';
+
     /** Site currency, or null until an admin has chosen one. */
     public function currency(): ?Currency
     {
@@ -43,6 +45,22 @@ class Settings
     public function setTimezone(string $timezone): void
     {
         $this->set(self::TIMEZONE, $timezone);
+    }
+
+    /**
+     * Customers may cancel or reschedule until this many hours before their slot
+     * (client, 2026-10-29). Null until an admin sets it; until then only admins can.
+     */
+    public function cancellationCutoffHours(): ?int
+    {
+        $hours = $this->get(self::CANCELLATION_CUTOFF_HOURS);
+
+        return is_numeric($hours) ? (int) $hours : null;
+    }
+
+    public function setCancellationCutoffHours(?int $hours): void
+    {
+        $this->set(self::CANCELLATION_CUTOFF_HOURS, $hours);
     }
 
     public function get(string $key, mixed $default = null): mixed

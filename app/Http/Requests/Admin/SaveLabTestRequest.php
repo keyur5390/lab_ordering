@@ -28,6 +28,7 @@ class SaveLabTestRequest extends FormRequest
         $this->merge([
             'code' => strtoupper(trim((string) $this->input('code'))),
             'is_active' => $this->boolean('is_active'),
+            'requires_prescription' => $this->boolean('requires_prescription'),
         ]);
     }
 
@@ -48,6 +49,7 @@ class SaveLabTestRequest extends FormRequest
             'turnaround_hours' => ['required', 'integer', 'min:1', 'max:8760'],
             'price' => ['required', 'string', 'regex:'.Money::decimalPattern(app(Settings::class)->currency())],
             'is_active' => ['boolean'],
+            'requires_prescription' => ['boolean'],
         ];
     }
 

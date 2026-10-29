@@ -132,6 +132,7 @@ class CartService
                     'original_amount' => $this->pricing->testsTotal($item->package),
                     'tests_count' => $item->package->tests->count(),
                     'included_in' => [],
+                    'requires_prescription' => $item->package->tests->contains('requires_prescription', true),
                 ]);
             }
 
@@ -143,6 +144,7 @@ class CartService
                 'original_amount' => null,
                 'tests_count' => 1,
                 'included_in' => $packagesByTest[$test->id] ?? [],
+                'requires_prescription' => $test->requires_prescription,
             ]);
         })->values()->all();
     }

@@ -34,6 +34,9 @@ export default function TestDetail({ test }: { test: LabTest }) {
                             'No special preparation'
                         )}
                     </DetailRow>
+                    {test.requires_prescription && (
+                        <DetailRow label="Prescription">Required: upload it at checkout</DetailRow>
+                    )}
                     <DetailRow label="Test code">{test.code}</DetailRow>
                 </dl>
             </div>

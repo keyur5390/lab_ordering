@@ -1,12 +1,18 @@
 import AppLayout from '@/layouts/app-layout';
 import type { SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import { ChevronRight, MapPin, Users, type LucideIcon } from 'lucide-react';
+import { ChevronRight, ClipboardList, MapPin, Users, type LucideIcon } from 'lucide-react';
 
 export default function Account() {
     const { auth } = usePage<SharedData>().props;
 
     const links: { href: string; label: string; description: string; icon: LucideIcon }[] = [
+        {
+            href: route('orders.index'),
+            label: 'Orders',
+            description: 'Your bookings, collection times and changes',
+            icon: ClipboardList,
+        },
         {
             href: route('patients.index'),
             label: 'Patients',

@@ -28,6 +28,7 @@ export default function TestForm({ test, price }: TestFormProps) {
         description: test?.description ?? '',
         preparation: test?.preparation ?? '',
         is_active: test?.is_active ?? true,
+        requires_prescription: test?.requires_prescription ?? false,
     });
 
     const submit = (e: FormEvent) => {
@@ -123,6 +124,17 @@ export default function TestForm({ test, price }: TestFormProps) {
                             />
                         )}
                     </Field>
+
+                    <div className="flex items-center gap-2">
+                        <Checkbox
+                            id="requires_prescription"
+                            checked={data.requires_prescription}
+                            onChange={(e) => setData('requires_prescription', e.target.checked)}
+                        />
+                        <Label htmlFor="requires_prescription" className="font-normal">
+                            Requires a prescription (customers must upload one at checkout)
+                        </Label>
+                    </div>
 
                     <div className="flex items-center gap-2">
                         <Checkbox

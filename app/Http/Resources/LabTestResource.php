@@ -26,6 +26,7 @@ class LabTestResource extends JsonResource
             'description' => $this->description,
             'sample_type' => $this->sample_type,
             'preparation' => $this->preparation,
+            'requires_prescription' => $this->requires_prescription,
             'turnaround_hours' => $this->turnaround_hours,
             'price_amount' => $this->price_amount,
             'is_active' => $this->is_active,

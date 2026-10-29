@@ -38,6 +38,9 @@ class CatalogueSeeder extends Seeder
             'is_active' => true,
         ])]);
 
+        // Demo: one test needs a prescription.
+        $tests['VITD']->update(['requires_prescription' => true]);
+
         LabPackage::create([
             'name' => 'Basic Health Check',
             'code' => 'BASIC',

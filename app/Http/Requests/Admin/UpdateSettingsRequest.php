@@ -22,6 +22,8 @@ class UpdateSettingsRequest extends FormRequest
         return [
             'currency' => ['required', Rule::enum(Currency::class)],
             'timezone' => ['required', 'timezone:all'],
+            // Empty means customers can't cancel or reschedule online; only admins can.
+            'cancellation_cutoff_hours' => ['nullable', 'integer', 'min:0', 'max:720'],
         ];
     }
 }

@@ -119,10 +119,9 @@ export default function Cart({ lines, totalAmount }: CartProps) {
                             <p className="text-sm text-muted">Collection details and payment come next.</p>
 
                             {auth.user ? (
-                                // TODO: checkout arrives with B-11.
-                                <Button className="w-full" disabled>
-                                    Checkout coming soon
-                                </Button>
+                                <Link href={route('checkout.show')} className={primaryLinkClass}>
+                                    Continue to checkout
+                                </Link>
                             ) : (
                                 <a href={route('cart.login')} className={primaryLinkClass}>
                                     Log in to check out

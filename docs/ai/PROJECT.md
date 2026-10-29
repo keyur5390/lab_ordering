@@ -91,8 +91,17 @@ All amounts come from the database or settings. Never from code.
   cart is flagged, not blocked. [Each item appears once; quantities per patient come with patient
   profiles.] `TODO(client)`
 - **OPEN:** How long guest carts are kept before being cleaned up.
-- **OPEN:** Can one order have multiple patients?
-- **OPEN:** Is a prescription upload required or optional for any tests?
+- **Checkout (client, 2026-10-29):** *Built in B-11.*
+  - One order can cover several patients: each cart item is booked for one or more of the customer's
+    complete patient profiles, and the price is per patient. One address and one slot per order (one
+    home visit).
+  - Only home collection for now; lab visits wait on lab branches.
+  - **Prescriptions:** admins flag tests that need one; checkout requires an upload when the order
+    contains such a test (or a package that includes one). Stored privately; only the customer and
+    admins can download it. [PDF, JPG or PNG up to 10 MB.] `TODO(client)`
+  - [Total = sum of item prices × patients; no fee, tax or discount until §4 is settled.] `TODO(client)`
+  - The cart is emptied when the order is placed. Orders keep snapshots of what was booked (names,
+    prices, package contents, patient details, address).
 
 ## 6. Collection scheduling ⚙️
 
@@ -122,7 +131,8 @@ All amounts come from the database or settings. Never from code.
 ## 7. Payments
 
 - **OPEN:** Payment gateway (Stripe, Razorpay, other)?
-- **OPEN:** Pay-at-collection / cash allowed?
+- **Pay at collection (client, 2026-10-29):** orders are confirmed at once and paid to the collector
+  until online payments are added (B-12).
 - **OPEN:** Refund rules on cancellation.
 
 ## 8. Order lifecycle
@@ -131,7 +141,12 @@ All amounts come from the database or settings. Never from code.
 `pending_payment → confirmed → collector_assigned → sample_collected → received_at_lab → report_ready → completed`
 plus `cancelled` and `refunded`.
 
-- **OPEN:** Who can cancel or reschedule, and until when (cutoff) ⚙️?
+- New orders start as `confirmed` (pay at collection). Moving orders through collection and lab
+  statuses waits on the collector and lab staff roles (§2).
+- **Cancel and reschedule (client, 2026-10-29):** customers can, before collection, until a cutoff of
+  N hours before the slot, set in Admin → Settings ⚙️. Until it is set, only admins can. Admins can
+  always, before collection.
+- Each order uses one place in its slot's capacity (one home visit, whatever the number of patients).
 - **OPEN:** Is there a reschedule limit ⚙️?
 
 ## 9. Reports
@@ -153,6 +168,8 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 |-----|---------|---------|
 | `currency` | Site currency (ISO code); prices are shown and charged in it | none; must be set by an admin |
 | `timezone` | Site timezone for collection hours, slots and closures | `config('app.timezone')` until set |
+| `cancellation_cutoff_hours` | Customers can cancel/reschedule until this many hours before the slot | none; only admins can until set |
+| Per test (DB) | Requires a prescription | off |
 | Per service area (DB) | Slot length, capacity per slot, lead time, booking window, weekly hours | none; no slots until set |
 
 ## 12. Compliance & data
@@ -170,6 +187,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-29 | Checkout (B-11): patients per item; prescriptions for flagged tests; confirm + pay at collection; customer cancel/reschedule until an admin-set cutoff | Client |
 | 2026-10-29 | Slots (B-10): schedule per service area; whole or part-day closures; site timezone setting | Client |
 | 2026-10-29 | Addresses & areas (B-09): generic international address; postcode, radius and zone areas; free OSM maps | Client |
 | 2026-10-29 | Patients (B-08): profiles with DOB, sex, relationship, phone, email; "Self" profile created on sign-up | Client |
