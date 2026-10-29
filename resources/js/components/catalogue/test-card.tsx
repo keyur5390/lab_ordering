@@ -1,3 +1,4 @@
+import { AddToCartButton } from '@/components/catalogue/add-to-cart-button';
 import { Price } from '@/components/catalogue/price';
 import { Badge } from '@/components/ui/badge';
 import { formatTurnaround } from '@/lib/format';
@@ -5,7 +6,7 @@ import type { LabTest } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Clock, Droplet, Info } from 'lucide-react';
 
-/** Test card (DESIGN.md §6). TODO: "Add" button arrives with the cart. */
+/** Test card (DESIGN.md §6). */
 export function TestCard({ test }: { test: LabTest }) {
     return (
         <article className="flex h-full flex-col rounded-card border border-border bg-surface p-4 md:p-6">
@@ -33,8 +34,9 @@ export function TestCard({ test }: { test: LabTest }) {
                 )}
             </div>
 
-            <div className="mt-auto pt-4">
+            <div className="mt-auto flex items-center justify-between gap-3 pt-4">
                 <Price amount={test.price_amount} className="text-lg" />
+                <AddToCartButton type="test" id={test.id} />
             </div>
         </article>
     );

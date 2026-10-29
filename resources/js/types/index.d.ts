@@ -23,7 +23,37 @@ export interface SharedData {
     status: string | null;
     /** Site currency (Admin → Settings); null until an admin chooses one. */
     currency: Currency | null;
+    /** The visitor's cart (guest or customer). */
+    cart: CartSummary;
     [key: string]: unknown;
+}
+
+export type CartItemType = 'test' | 'package';
+
+/** Mirrors CartService::summary(). */
+export interface CartSummary {
+    count: number;
+    test_ids: number[];
+    package_ids: number[];
+}
+
+/** Mirrors CartService::lines(). Money is in minor units. */
+export interface CartLine {
+    /** Cart item id (used to remove it). */
+    id: number;
+    type: CartItemType;
+    /** Test or package id. */
+    item_id: number;
+    name: string;
+    slug: string;
+    /** False once an admin has unpublished the item; it's left out of the total. */
+    available: boolean;
+    price_amount: number;
+    /** Packages: the tests' total, struck through when higher than the price. */
+    original_amount: number | null;
+    tests_count: number;
+    /** Tests: names of packages in the cart that already include this test. */
+    included_in: string[];
 }
 
 /** Mirrors the `currency` shared prop. */

@@ -76,6 +76,13 @@ All amounts come from the database or settings. Never from code.
 5. Review, then pay.
 6. Order confirmed, then notifications are sent.
 
+- **Cart (client, 2026-10-29):** guests can build a cart; logging in or registering moves it to their
+  account, and an account is needed only to check out. *Built in B-07.* The cart reads prices live from
+  the catalogue (no price is stored until an order is placed). Items an admin unpublishes stay in the
+  cart, marked unavailable, and are left out of the total. A test that's also inside a package in the
+  cart is flagged, not blocked. [Each item appears once; quantities per patient come with patient
+  profiles.] `TODO(client)`
+- **OPEN:** How long guest carts are kept before being cleaned up.
 - **OPEN:** Can one order have multiple patients?
 - **OPEN:** Is a prescription upload required or optional for any tests?
 
@@ -135,6 +142,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-29 | Cart (B-07): guests may build a cart; login required only at checkout | Client |
 | 2026-10-29 | Catalogue (B-06): one admin-chosen currency; packages priced fixed or as tests' total minus a discount, per package | Client |
 | 2026-10-29 | Roles (B-04): customer + admin only; collector/lab staff wait on client; admins promoted via CLI | Dev |
 | 2026-10-29 | Auth (B-03): email + password with email verification, built on the [default] pending client confirmation | Dev |

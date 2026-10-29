@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Http\Resources\UserResource;
+use App\Services\CartService;
 use App\Settings\Settings;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -45,6 +46,12 @@ class HandleInertiaRequests extends Middleware
                 $currency = app(Settings::class)->currency();
 
                 return $currency ? ['code' => $currency->value, 'decimals' => $currency->decimals()] : null;
+            },
+            // Cart badge count and which items show as "In cart".
+            'cart' => function () use ($request) {
+                $cart = app(CartService::class);
+
+                return $cart->summary($cart->current($request));
             },
         ];
     }

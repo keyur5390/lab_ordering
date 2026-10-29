@@ -1,4 +1,5 @@
 import { DetailRow } from '@/components/catalogue/detail-row';
+import { AddToCartButton } from '@/components/catalogue/add-to-cart-button';
 import { Price } from '@/components/catalogue/price';
 import { Badge } from '@/components/ui/badge';
 import { TextLink } from '@/components/ui/text-link';
@@ -22,7 +23,10 @@ export default function PackageDetail({ package: pkg }: { package: LabPackage })
                 </TextLink>
 
                 <h1 className="mt-4 text-2xl font-semibold md:text-3xl">{pkg.name}</h1>
-                <Price amount={pkg.price_amount} originalAmount={pkg.tests_total_amount} className="mt-2 text-xl" />
+                <div className="mt-3 flex flex-wrap items-center gap-4">
+                    <Price amount={pkg.price_amount} originalAmount={pkg.tests_total_amount} className="text-xl" />
+                    <AddToCartButton type="package" id={pkg.id} className="min-w-32" />
+                </div>
                 {pkg.description && <p className="mt-4 text-base text-muted">{pkg.description}</p>}
 
                 <dl className="mt-6 divide-y divide-border rounded-card border border-border bg-surface px-4 md:px-6">
