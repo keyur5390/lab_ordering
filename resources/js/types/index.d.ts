@@ -107,3 +107,30 @@ export interface Paginated<T> {
     links: { first: string | null; last: string | null; prev: string | null; next: string | null };
     meta: { current_page: number; last_page: number; from: number | null; to: number | null; total: number };
 }
+
+export type PatientRelationship = 'self' | 'spouse' | 'child' | 'parent' | 'other';
+export type Sex = 'male' | 'female' | 'other';
+
+/** Mirrors App\Http\Resources\PatientResource. */
+export interface Patient {
+    id: number;
+    name: string;
+    relationship: PatientRelationship;
+    relationship_label: string;
+    /** YYYY-MM-DD */
+    date_of_birth: string | null;
+    age: number | null;
+    sex: Sex | null;
+    sex_label: string | null;
+    phone: string | null;
+    email: string | null;
+    is_self: boolean;
+    /** Has date of birth and sex, so it can be booked. */
+    is_complete: boolean;
+}
+
+/** A value/label pair for selects and radio groups. */
+export interface Option<T extends string = string> {
+    value: T;
+    label: string;
+}

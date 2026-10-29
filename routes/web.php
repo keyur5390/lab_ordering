@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\LabTestController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogueController;
+use App\Http\Controllers\PatientController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'home')->name('home');
@@ -24,6 +25,7 @@ Route::controller(CartController::class)->prefix('cart')->name('cart.')->group(f
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('/account', 'account')->name('account');
+    Route::resource('account/patients', PatientController::class)->except('show')->names('patients');
 });
 
 Route::middleware(['auth', 'verified', 'can:access-admin'])

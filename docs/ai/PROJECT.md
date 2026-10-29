@@ -33,7 +33,15 @@ the catalogue, orders, collection schedule and reports from an admin area.
 - Roles are built as `customer` and `admin` (B-04). Admins are not created via sign-up: an existing
   account is promoted with `php artisan user:role {email} admin`. [default] `TODO(client)`: who may
   create admins, and whether an admin user-management screen is needed.
-- **OPEN:** Can a customer order for family members (multiple patient profiles per account)? [Yes, patient profiles] `TODO(client)`
+- **Patient profiles (client, 2026-10-29):** customers book for themselves and family members through
+  patient profiles. *Built in B-08.*
+  - Each profile has full name, relationship, date of birth, sex (all required) and optional phone and email.
+  - Every account gets a "Self" profile at sign-up, named after the account holder. Date of birth and sex
+    are filled in later, and incomplete profiles are flagged until then.
+  - [Relationships: Self, Spouse, Child, Parent, Other. Sex: Male, Female, Other.] `TODO(client)`
+  - [One "Self" profile per account; it can be edited but not deleted, and its relationship is fixed.] `TODO(client)`
+  - [Phone accepts 7–20 digits with spaces, dashes and an optional leading +; tighten once the launch country is known.] `TODO(client)`
+  - [No limit on the number of profiles per account.] `TODO(client)`
 - **OPEN:** Login method: email + password, phone + OTP, or both? [Email + password, with email verification] `TODO(client)`. *Built with this default in B-03; no 2FA.*
 - **OPEN:** Can a guest check out without an account? [No] `TODO(client)`
 
@@ -142,6 +150,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-29 | Patients (B-08): profiles with DOB, sex, relationship, phone, email; "Self" profile created on sign-up | Client |
 | 2026-10-29 | Cart (B-07): guests may build a cart; login required only at checkout | Client |
 | 2026-10-29 | Catalogue (B-06): one admin-chosen currency; packages priced fixed or as tests' total minus a discount, per package | Client |
 | 2026-10-29 | Roles (B-04): customer + admin only; collector/lab staff wait on client; admins promoted via CLI | Dev |

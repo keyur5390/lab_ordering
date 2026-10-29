@@ -2,7 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Actions\CreateSelfPatient;
 use App\Enums\Currency;
+use App\Enums\PatientRelationship;
+use App\Enums\Sex;
 use App\Models\User;
 use App\Settings\Settings;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -19,14 +22,25 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
+        $customer = User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
 
-        User::factory()->admin()->create([
+        $admin = User::factory()->admin()->create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
+        ]);
+
+        // Model events are off while seeding, so create the "Self" profiles explicitly.
+        $createSelfPatient = app(CreateSelfPatient::class);
+        $createSelfPatient->handle($admin);
+        $createSelfPatient->handle($customer)->update(['date_of_birth' => '1988-04-12', 'sex' => Sex::Female]);
+        $customer->patients()->create([
+            'name' => 'Ravi User',
+            'relationship' => PatientRelationship::Parent,
+            'date_of_birth' => '1956-09-30',
+            'sex' => Sex::Male,
         ]);
 
         // Demo only: on a real install the admin chooses the currency in Admin → Settings.

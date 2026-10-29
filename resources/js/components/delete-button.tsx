@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { router } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 
 interface DeleteButtonProps {
     /** URL to send the DELETE request to. */
@@ -10,10 +10,14 @@ interface DeleteButtonProps {
     itemName: string;
     /** What is being deleted, e.g. "test". */
     itemType: string;
+    /** Extra explanation under the title, e.g. an alternative to deleting. */
+    description?: ReactNode;
+    /** Button and confirm wording; defaults to "Delete". */
+    verb?: string;
 }
 
 /** Delete action with a confirmation step (DESIGN.md §5). */
-export function DeleteButton({ href, itemName, itemType }: DeleteButtonProps) {
+export function DeleteButton({ href, itemName, itemType, description, verb = 'Delete' }: DeleteButtonProps) {
     const [open, setOpen] = useState(false);
     const [processing, setProcessing] = useState(false);
 
@@ -31,17 +35,17 @@ export function DeleteButton({ href, itemName, itemType }: DeleteButtonProps) {
     return (
         <>
             <Button variant="ghost" size="sm" className="text-danger-600" onClick={() => setOpen(true)}>
-                Delete
+                {verb}
             </Button>
             <ConfirmDialog
                 open={open}
-                title={`Delete this ${itemType}?`}
-                confirmLabel={`Delete ${itemType}`}
+                title={`${verb} this ${itemType}?`}
+                confirmLabel={`${verb} ${itemType}`}
                 processing={processing}
                 onConfirm={confirm}
                 onClose={() => setOpen(false)}
             >
-                “{itemName}” will be removed permanently. To hide it from customers instead, unpublish it.
+                “{itemName}” will be removed permanently.{description && <> {description}</>}
             </ConfirmDialog>
         </>
     );

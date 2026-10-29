@@ -1,4 +1,4 @@
-import { DeleteButton } from '@/components/admin/delete-button';
+import { DeleteButton } from '@/components/delete-button';
 import { Price } from '@/components/catalogue/price';
 import { Pagination } from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -70,6 +70,7 @@ export default function TestsIndex({ tests }: { tests: Paginated<LabTest> }) {
                                                 href={route('admin.tests.destroy', test.slug)}
                                                 itemName={test.name}
                                                 itemType="test"
+                                                description="To hide it from customers instead, unpublish it."
                                             />
                                         </td>
                                     </tr>
@@ -94,6 +95,7 @@ export default function TestsIndex({ tests }: { tests: Paginated<LabTest> }) {
                                         href={route('admin.tests.destroy', test.slug)}
                                         itemName={test.name}
                                         itemType="test"
+                                        description="To hide it from customers instead, unpublish it."
                                     />
                                 </div>
                             </li>

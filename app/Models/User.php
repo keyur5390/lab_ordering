@@ -2,13 +2,18 @@
 
 namespace App\Models;
 
+use App\Enums\PatientRelationship;
 use App\Enums\UserRole;
+use App\Observers\UserObserver;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+#[ObservedBy(UserObserver::class)]
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
@@ -57,6 +62,18 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'role' => UserRole::class,
         ];
+    }
+
+    /**
+     * People this customer books tests for, "Self" first.
+     *
+     * @return HasMany<Patient, $this>
+     */
+    public function patients(): HasMany
+    {
+        return $this->hasMany(Patient::class)
+            ->orderByRaw('CASE WHEN relationship = ? THEN 0 ELSE 1 END', [PatientRelationship::Self->value])
+            ->orderBy('name');
     }
 
     public function isAdmin(): bool

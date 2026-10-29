@@ -1,4 +1,4 @@
-import { DeleteButton } from '@/components/admin/delete-button';
+import { DeleteButton } from '@/components/delete-button';
 import { Price } from '@/components/catalogue/price';
 import { Pagination } from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -78,6 +78,7 @@ export default function PackagesIndex({ packages }: { packages: Paginated<LabPac
                                                 href={route('admin.packages.destroy', pkg.slug)}
                                                 itemName={pkg.name}
                                                 itemType="package"
+                                                description="To hide it from customers instead, unpublish it."
                                             />
                                         </td>
                                     </tr>
@@ -102,6 +103,7 @@ export default function PackagesIndex({ packages }: { packages: Paginated<LabPac
                                         href={route('admin.packages.destroy', pkg.slug)}
                                         itemName={pkg.name}
                                         itemType="package"
+                                        description="To hide it from customers instead, unpublish it."
                                     />
                                 </div>
                             </li>
