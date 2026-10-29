@@ -91,12 +91,21 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                                 </span>
                             </p>
                             <ul className="divide-y divide-border">
-                                {patient.items.map((item, index) => (
-                                    <li key={index} className="flex items-start justify-between gap-4 px-4 py-3">
+                                {patient.items.map((item) => (
+                                    <li key={item.id} className="flex items-start justify-between gap-4 px-4 py-3">
                                         <div className="min-w-0">
                                             <p className="text-sm font-medium">{item.name}</p>
                                             {item.test_names && (
                                                 <p className="text-sm text-muted">{item.test_names.join(', ')}</p>
+                                            )}
+                                            {item.report_url && (
+                                                <a
+                                                    href={item.report_url}
+                                                    className="mt-1 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-primary-700 hover:underline sm:min-h-0"
+                                                >
+                                                    <FileText className="size-4" aria-hidden="true" />
+                                                    Download report
+                                                </a>
                                             )}
                                         </div>
                                         <Price

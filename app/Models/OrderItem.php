@@ -23,6 +23,10 @@ use Illuminate\Support\Carbon;
  * @property string $code
  * @property list<string>|null $test_names
  * @property int $price_amount
+ * @property string|null $report_path private disk
+ * @property string|null $report_name
+ * @property Carbon|null $report_uploaded_at
+ * @property int|null $report_uploaded_by
  */
 class OrderItem extends Model
 {
@@ -41,6 +45,7 @@ class OrderItem extends Model
             'item_type' => CartItemType::class,
             'test_names' => 'array',
             'price_amount' => 'integer',
+            'report_uploaded_at' => 'datetime',
         ];
     }
 

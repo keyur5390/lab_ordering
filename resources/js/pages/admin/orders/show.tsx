@@ -8,6 +8,15 @@ import AdminLayout from '@/layouts/admin-layout';
 import type { Order, SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
 
+/** Orders the lab works on (Lab\\OrderController::STATUSES). */
+const labStatuses: Order['status'][] = [
+    'confirmed',
+    'collector_assigned',
+    'sample_collected',
+    'received_at_lab',
+    'report_ready',
+];
+
 export default function AdminOrderShow({ order }: { order: Order }) {
     const { errors } = usePage<SharedData & { errors: Record<string, string> }>().props;
 
@@ -30,6 +39,11 @@ export default function AdminOrderShow({ order }: { order: Order }) {
                 <span className="text-sm text-muted">
                     {order.customer?.name} · {order.customer?.email}
                 </span>
+                {labStatuses.includes(order.status) && (
+                    <TextLink href={route('admin.lab.show', order.number)} className="text-sm">
+                        Lab view
+                    </TextLink>
+                )}
             </div>
             {/* Refund errors are shown in the form; this covers a refund that failed while cancelling. */}
             {errors.amount && !order.can_refund && (

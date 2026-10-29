@@ -264,8 +264,8 @@ describe('admin wording', function () {
             ->assertInertia(fn (Assert $page) => $page->component('admin/notifications/index')
                 ->has('events', count(NotificationEvent::cases()))
                 ->has('events.0.templates', 2)
-                ->where('events.7.value', 'admin_new_order')
-                ->has('events.7.templates', 1));
+                ->where('events.8.value', 'admin_new_order')
+                ->has('events.8.templates', 1));
     });
 
     it('edits the wording, rejecting unknown placeholders', function () {

@@ -10,7 +10,7 @@ use App\Services\PaymentService;
 /**
  * Customers see and change their own orders, within the cancellation cutoff (client, 2026-10-29).
  * Admins can see every order and cancel or reschedule any order before collection, and refund
- * online payments.
+ * online payments. Lab staff can see every order (lab work is checked in LabService).
  */
 class OrderPolicy
 {
@@ -19,9 +19,10 @@ class OrderPolicy
         private PaymentService $payments,
     ) {}
 
+    /** Lab staff read every order (client, 2026-10-29). */
     public function view(User $user, Order $order): bool
     {
-        return $user->isAdmin() || $order->user_id === $user->id;
+        return $user->isLabStaff() || $order->user_id === $user->id;
     }
 
     public function cancel(User $user, Order $order): bool

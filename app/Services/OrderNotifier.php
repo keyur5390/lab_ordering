@@ -57,6 +57,11 @@ class OrderNotifier
         $this->send(NotificationEvent::OrderRescheduled, $order);
     }
 
+    public function reportReady(Order $order): void
+    {
+        $this->send(NotificationEvent::ReportReady, $order);
+    }
+
     /**
      * Sends the collection reminder for orders whose slot starts within the admin-set number of
      * hours. Orders booked after their reminder time has passed don't get one. Returns how many.

@@ -6,6 +6,7 @@ use App\Actions\CreateSelfPatient;
 use App\Enums\Currency;
 use App\Enums\PatientRelationship;
 use App\Enums\Sex;
+use App\Enums\UserRole;
 use App\Models\User;
 use App\Settings\Settings;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -30,6 +31,12 @@ class DatabaseSeeder extends Seeder
         $admin = User::factory()->admin()->create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
+        ]);
+
+        User::factory()->create([
+            'name' => 'Lab User',
+            'email' => 'lab@example.com',
+            'role' => UserRole::LabStaff,
         ]);
 
         // Model events are off while seeding, so create the "Self" profiles explicitly.

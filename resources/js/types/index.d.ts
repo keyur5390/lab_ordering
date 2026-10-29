@@ -9,6 +9,8 @@ export interface User {
     email_verified: boolean;
     role: UserRole;
     can_access_admin: boolean;
+    /** Lab area and read-only order pages (lab staff and admins). */
+    can_access_lab: boolean;
 }
 
 /**
@@ -252,7 +254,16 @@ export interface Order {
         name: string;
         date_of_birth: string;
         sex: string;
-        items: { type: CartItemType; name: string; code: string; test_names: string[] | null; price_amount: number }[];
+        items: {
+            id: number;
+            type: CartItemType;
+            name: string;
+            code: string;
+            test_names: string[] | null;
+            price_amount: number;
+            /** Download link once the lab has uploaded the report. */
+            report_url: string | null;
+        }[];
     }[];
     has_prescription: boolean;
     prescription_name: string | null;

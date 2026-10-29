@@ -41,3 +41,15 @@ export function formatTime(iso: string, timeZone: string): string {
         new Date(iso),
     );
 }
+
+/** A moment in the given timezone, e.g. "Fri 30 Oct, 07:30". */
+export function formatDateTime(iso: string, timeZone: string): string {
+    const date = new Intl.DateTimeFormat(undefined, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        timeZone,
+    }).format(new Date(iso));
+
+    return `${date}, ${formatTime(iso, timeZone)}`;
+}

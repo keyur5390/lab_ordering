@@ -37,7 +37,7 @@ app/
 
 - Controllers stay thin. Business logic lives in Services or Actions.
 - Authorisation goes through Policies and `authorize()`, never inline role checks in controllers.
-  Area-wide access uses gates (e.g. `access-admin` in `AppServiceProvider`) applied as `can:` route
+  Area-wide access uses gates (`access-admin`; `access-lab` for lab staff and admins, in `AppServiceProvider`) applied as `can:` route
   middleware. The frontend reads permission flags from `UserResource` (e.g. `can_access_admin`) and
   never decides access from the raw role.
 - Admin routes live under `/admin`, are named `admin.*`, and use `AdminLayout`.

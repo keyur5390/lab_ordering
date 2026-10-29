@@ -27,10 +27,10 @@ the catalogue, orders, collection schedule and reports from an admin area.
 | Guest | Browse catalogue, view test details, view prices | [assumed] |
 | Customer | Everything a guest can, plus order, pay, manage patients/addresses, download reports | [assumed] |
 | Phlebotomist / collector | See assigned collections, update collection status | **OPEN**: in v1? |
-| Lab staff | Mark samples received, upload reports | **OPEN** |
+| Lab staff | Mark samples collected and received, upload reports, read all orders | Client, 2026-10-29 (B-14) |
 | Admin | Manage catalogue, prices, settings, orders, users | [assumed] |
 
-- Roles are built as `customer` and `admin` (B-04). Admins are not created via sign-up: an existing
+- Roles are built as `customer`, `admin` (B-04) and `lab_staff` (B-14). Admins are not created via sign-up: an existing
   account is promoted with `php artisan user:role {email} admin`. [default] `TODO(client)`: who may
   create admins, and whether an admin user-management screen is needed.
 - **Patient profiles (client, 2026-10-29):** customers book for themselves and family members through
@@ -157,8 +157,10 @@ All amounts come from the database or settings. Never from code.
 `pending_payment → confirmed → collector_assigned → sample_collected → received_at_lab → report_ready → completed`
 plus `cancelled` and `refunded`.
 
-- Pay-at-collection orders start as `confirmed`; online orders start as `pending_payment` (§7). Moving
-  orders through collection and lab statuses waits on the collector and lab staff roles (§2).
+- Pay-at-collection orders start as `confirmed`; online orders start as `pending_payment` (§7).
+- Lab staff and admins move orders on to `sample_collected` → `received_at_lab`, and to `report_ready` once
+  all reports are uploaded (§9).
+- `collector_assigned` waits on the collector role (§2). `completed` is not used yet (OPEN).
 - **Cancel and reschedule (client, 2026-10-29):** customers can, before collection, until a cutoff of
   N hours before the slot, set in Admin → Settings ⚙️. Until it is set, only admins can. Admins can
   always, before collection.
@@ -167,8 +169,25 @@ plus `cancelled` and `refunded`.
 
 ## 9. Reports
 
-- [Lab staff upload a PDF per order item; the customer downloads it from their account.] `TODO(client)`
-- **OPEN:** Report retention period, and whether reports are emailed as attachments or links.
+*Built in B-14.*
+
+- **Lab staff (client, 2026-10-29):** a `lab_staff` role (granted with `php artisan user:role {email} lab_staff`).
+  - The lab area (Admin → Lab) shows orders from confirmed onwards, with patients and tests only: no address
+    or payment.
+  - Lab staff also have read-only access to the full admin order pages; cancel, reschedule and refund stay
+    admin-only. Admins can do all lab work too.
+- **Steps (client, 2026-10-29):** without a collector role, lab staff and admins mark "sample collected" and
+  then "received at lab", one step at a time. Each step records when it happened.
+- **Reports (client, 2026-10-29):** one PDF per booked item per patient, uploaded once the sample is at the
+  lab, and replaceable for corrections. [PDF up to 20 MB.] `TODO(client)`
+  - When every item has a report, the order becomes `report_ready` and the customer is told once.
+    [Corrections after that don't notify again.] `TODO(client)`
+  - [Customers can download each report as soon as it is uploaded.] `TODO(client)`
+- **Delivery (client, 2026-10-29):** both ways.
+  - The "Reports ready" email attaches the PDFs when they total no more than [10 MB] `TODO(client)`.
+    Otherwise it links to the order.
+  - The SMS links to the order. Downloads in the account need sign-in.
+- **OPEN:** Report retention period; when an order becomes `completed`.
 - Reports are sensitive health data. Access is limited to the owning customer and authorised staff, via signed or authorised URLs only. [non-negotiable default]
 
 ## 10. Notifications
@@ -191,13 +210,14 @@ plus `cancelled` and `refunded`.
   - Collection rescheduled.
   - Collection reminder: `reminder_hours_before` ⚙️ [24] `TODO(client)` hours before the slot. Sent once,
     and again after a reschedule. Orders booked inside that window get none.
+  - Reports ready (B-14): with the PDFs attached (§9).
 - **Admin alerts (client, 2026-10-29):** emailed to `admin_notification_email` ⚙️ for new confirmed orders,
   cancellations and refunds the gateway rejected.
 - **Wording (client, 2026-10-29):** edited by admins per event and channel in Admin → Notifications, with
   placeholders such as `{order_number}` and `{slot}`. Each message can be switched off. Default wording is
   added by the migration. [SMS up to 640 characters; over 160 is sent as several messages.] `TODO(client)`
 - Notifications are queued (`QUEUE_CONNECTION=database`; run a queue worker) and sent after the order is saved.
-- **OPEN:** Report-ready notifications (with §9); notification history in the admin.
+- **OPEN:** Notification history in the admin.
 
 ## 11. Admin settings (⚙️ index)
 
@@ -233,6 +253,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-29 | Lab & reports (B-14): lab staff role with lab area + read-only orders; lab staff/admins mark collected and received; one PDF per item per patient; report ready by email (attached) and link | Client |
 | 2026-10-29 | Notifications (B-13): email + SMS (WhatsApp later); SMS drivers, admin picks; admin-editable wording; customer SMS opt-out; admin alerts incl. refund failures | Client |
 | 2026-10-29 | Payments (B-12): Stripe and Razorpay, admin picks; customer chooses online or at collection; slot held for an admin-set time; automatic full refund on cancel plus admin partial refunds | Client |
 | 2026-10-29 | Checkout (B-11): patients per item; prescriptions for flagged tests; confirm + pay at collection; customer cancel/reschedule until an admin-set cutoff | Client |

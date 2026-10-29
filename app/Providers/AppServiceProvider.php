@@ -24,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::define('access-admin', fn (User $user): bool => $user->isAdmin());
+        // Lab area, and read-only access to every order (client, 2026-10-29).
+        Gate::define('access-lab', fn (User $user): bool => $user->isLabStaff());
 
         // Inertia props get the resource itself, not {data: ...}. Paginated collections keep data/links/meta.
         JsonResource::withoutWrapping();

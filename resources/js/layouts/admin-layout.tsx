@@ -5,6 +5,7 @@ import type { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Bell,
+    Microscope,
     CalendarOff,
     ClipboardList,
     FlaskConical,
@@ -24,12 +25,21 @@ interface NavItem {
     /** Route pattern that marks this item active, e.g. "admin.tests.*". */
     activePattern: string;
     icon: LucideIcon;
+    /** Also shown to lab staff (who can't use the rest of the admin area). */
+    lab?: boolean;
 }
 
 // Admin sections are added here as they are built.
 const navItems: NavItem[] = [
     { label: 'Dashboard', routeName: 'admin.dashboard', activePattern: 'admin.dashboard', icon: LayoutDashboard },
-    { label: 'Orders', routeName: 'admin.orders.index', activePattern: 'admin.orders.*', icon: ClipboardList },
+    {
+        label: 'Orders',
+        routeName: 'admin.orders.index',
+        activePattern: 'admin.orders.*',
+        icon: ClipboardList,
+        lab: true,
+    },
+    { label: 'Lab', routeName: 'admin.lab.index', activePattern: 'admin.lab.*', icon: Microscope, lab: true },
     { label: 'Tests', routeName: 'admin.tests.index', activePattern: 'admin.tests.*', icon: FlaskConical },
     { label: 'Packages', routeName: 'admin.packages.index', activePattern: 'admin.packages.*', icon: Package },
     {
@@ -59,27 +69,32 @@ interface AdminLayoutProps {
 export default function AdminLayout({ title, actions, children }: AdminLayoutProps) {
     const { name, auth, status, errors } = usePage<SharedData & { errors: Record<string, string> }>().props;
     const [menuOpen, setMenuOpen] = useState(false);
+    const isAdmin = auth.user?.can_access_admin ?? false;
+    // Lab staff have no dashboard; their home is the lab.
+    const home = route(isAdmin ? 'admin.dashboard' : 'admin.lab.index');
 
     const nav = (
         <nav aria-label="Admin" className="space-y-1 p-3">
-            {navItems.map(({ label, routeName, activePattern, icon: Icon }) => {
-                const active = route().current(activePattern);
+            {navItems
+                .filter((item) => isAdmin || item.lab)
+                .map(({ label, routeName, activePattern, icon: Icon }) => {
+                    const active = route().current(activePattern);
 
-                return (
-                    <Link
-                        key={routeName}
-                        href={route(routeName)}
-                        aria-current={active ? 'page' : undefined}
-                        className={cn(
-                            'flex h-11 items-center gap-3 rounded-control px-3 text-sm font-medium',
-                            active ? 'bg-primary-50 text-primary-700' : 'text-text hover:bg-canvas',
-                        )}
-                    >
-                        <Icon className="size-5" strokeWidth={1.75} aria-hidden="true" />
-                        {label}
-                    </Link>
-                );
-            })}
+                    return (
+                        <Link
+                            key={routeName}
+                            href={route(routeName)}
+                            aria-current={active ? 'page' : undefined}
+                            className={cn(
+                                'flex h-11 items-center gap-3 rounded-control px-3 text-sm font-medium',
+                                active ? 'bg-primary-50 text-primary-700' : 'text-text hover:bg-canvas',
+                            )}
+                        >
+                            <Icon className="size-5" strokeWidth={1.75} aria-hidden="true" />
+                            {label}
+                        </Link>
+                    );
+                })}
         </nav>
     );
 
@@ -89,7 +104,7 @@ export default function AdminLayout({ title, actions, children }: AdminLayoutPro
 
             <aside className="hidden w-64 shrink-0 border-r border-border bg-surface lg:block">
                 <div className="flex h-16 items-center border-b border-border px-6">
-                    <Link href={route('admin.dashboard')} className="font-semibold text-primary-700">
+                    <Link href={home} className="font-semibold text-primary-700">
                         {name} admin
                     </Link>
                 </div>

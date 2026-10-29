@@ -19,6 +19,8 @@ enum NotificationEvent: string
     case PaymentExpired = 'payment_expired';
     case OrderRescheduled = 'order_rescheduled';
     case CollectionReminder = 'collection_reminder';
+    /** All reports for the order are uploaded. */
+    case ReportReady = 'report_ready';
 
     case AdminNewOrder = 'admin_new_order';
     case AdminOrderCancelled = 'admin_order_cancelled';
@@ -34,6 +36,7 @@ enum NotificationEvent: string
             self::PaymentExpired => 'Payment time ran out',
             self::OrderRescheduled => 'Collection rescheduled',
             self::CollectionReminder => 'Collection reminder',
+            self::ReportReady => 'Reports ready',
             self::AdminNewOrder => 'New order',
             self::AdminOrderCancelled => 'Order cancelled',
             self::AdminRefundFailed => 'Refund failed',

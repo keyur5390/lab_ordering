@@ -54,11 +54,14 @@ class OrderResource extends JsonResource
                 'date_of_birth' => $items->first()->patient_date_of_birth->toDateString(),
                 'sex' => $items->first()->patient_sex,
                 'items' => $items->map(fn (OrderItem $item) => [
+                    'id' => $item->id,
                     'type' => $item->item_type->value,
                     'name' => $item->name,
                     'code' => $item->code,
                     'test_names' => $item->test_names,
                     'price_amount' => $item->price_amount,
+                    // Only served to people allowed to see the order; the download checks again.
+                    'report_url' => $item->report_path ? route('orders.reports.show', [$this->resource, $item]) : null,
                 ])->values(),
             ])->values()),
             'has_prescription' => $this->prescription_path !== null,

@@ -69,6 +69,7 @@ it('shares the signed-in user with every page', function () {
                 'email_verified' => true,
                 'role' => 'customer',
                 'can_access_admin' => false,
+                'can_access_lab' => false,
             ])
         );
 });

@@ -112,4 +112,10 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->role === UserRole::Admin;
     }
+
+    /** Lab staff and admins do the lab work (PROJECT.md §2). */
+    public function isLabStaff(): bool
+    {
+        return in_array($this->role, [UserRole::LabStaff, UserRole::Admin], true);
+    }
 }

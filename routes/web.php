@@ -14,10 +14,12 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogueController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\Lab\OrderController as LabOrderController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentWebhookController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'home')->name('home');
@@ -52,12 +54,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('/{order}/reschedule', 'reschedule')->name('reschedule');
         Route::get('/{order}/prescription', 'prescription')->name('prescription');
     });
+    Route::get('/account/orders/{order}/reports/{item}', [ReportController::class, 'show'])->scopeBindings()->name('orders.reports.show');
 
     Route::controller(PaymentController::class)->prefix('account/orders/{order}/payments')->name('orders.payments.')->group(function () {
         Route::post('/', 'store')->name('store');
         Route::get('/{payment}/return', 'return')->scopeBindings()->name('return');
     });
 });
+
+// Lab staff and admins: the lab area and read-only order pages (client, 2026-10-29).
+Route::middleware(['auth', 'verified', 'can:access-lab'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+
+        Route::controller(LabOrderController::class)->prefix('lab')->name('lab.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/{order}', 'show')->name('show');
+            Route::post('/{order}/collected', 'collect')->name('collect');
+            Route::post('/{order}/received', 'receive')->name('receive');
+            Route::post('/{order}/items/{item}/report', 'uploadReport')->scopeBindings()->name('reports.store');
+        });
+    });
 
 Route::middleware(['auth', 'verified', 'can:access-admin'])
     ->prefix('admin')
@@ -73,8 +93,6 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
         Route::resource('closures', ClosureController::class)->only(['index', 'store', 'destroy']);
 
         Route::controller(AdminOrderController::class)->prefix('orders')->name('orders.')->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::get('/{order}', 'show')->name('show');
             Route::post('/{order}/cancel', 'cancel')->name('cancel');
             Route::get('/{order}/reschedule', 'editSlot')->name('reschedule.edit');
             Route::put('/{order}/reschedule', 'reschedule')->name('reschedule');
