@@ -34,6 +34,7 @@ class OrderService
         private ServiceAreaService $areas,
         private SlotService $slots,
         private PaymentService $payments,
+        private OrderNotifier $notifier,
         private Settings $settings,
     ) {}
 
@@ -85,7 +86,7 @@ class OrderService
             throw ValidationException::withMessages(['prescription' => 'A prescription is needed for one or more tests.']);
         }
 
-        return DB::transaction(function () use ($user, $cart, $cartItems, $patientIdsByCartItem, $patients, $address, $area, $slotStartsAt, $prescription, $currency, $paymentMethod, $online) {
+        $order = DB::transaction(function () use ($user, $cart, $cartItems, $patientIdsByCartItem, $patients, $address, $area, $slotStartsAt, $prescription, $currency, $paymentMethod, $online) {
             $this->lockAndCheckSlot($area, $slotStartsAt);
 
             $lines = [];
@@ -124,6 +125,10 @@ class OrderService
 
             return $order;
         });
+
+        $this->notifier->placed($order);
+
+        return $order;
     }
 
     /**
@@ -145,6 +150,7 @@ class OrderService
     public function cancel(Order $order, ?User $by = null): ?bool
     {
         $order->update(['status' => OrderStatus::Cancelled, 'cancelled_at' => now()]);
+        $this->notifier->cancelled($order);
 
         return $this->payments->refundRemaining($order, $by, 'Order cancelled');
     }
@@ -168,8 +174,12 @@ class OrderService
             $order->update([
                 'slot_starts_at' => $slotStartsAt->utc(),
                 'slot_ends_at' => $slotStartsAt->addMinutes($area->slot_minutes)->utc(),
+                // The reminder is sent again for the new slot.
+                'reminder_sent_at' => null,
             ]);
         });
+
+        $this->notifier->rescheduled($order);
     }
 
     /**

@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\ClosureController;
 use App\Http\Controllers\Admin\LabPackageController;
 use App\Http\Controllers\Admin\LabTestController;
+use App\Http\Controllers\Admin\NotificationTemplateController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\ScheduleController;
@@ -34,7 +36,8 @@ Route::controller(CartController::class)->prefix('cart')->name('cart.')->group(f
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('/account', 'account')->name('account');
+    Route::get('/account', [AccountController::class, 'show'])->name('account');
+    Route::put('/account/notifications', [AccountController::class, 'updateNotifications'])->name('account.notifications.update');
     Route::resource('account/patients', PatientController::class)->except('show')->names('patients');
     Route::resource('account/addresses', AddressController::class)->except('show')->names('addresses');
 
@@ -77,6 +80,10 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
             Route::put('/{order}/reschedule', 'reschedule')->name('reschedule');
         });
         Route::post('/orders/{order}/refunds', [RefundController::class, 'store'])->name('orders.refunds.store');
+
+        Route::get('/notifications', [NotificationTemplateController::class, 'index'])->name('notifications.index');
+        Route::get('/notifications/{template}/edit', [NotificationTemplateController::class, 'edit'])->name('notifications.edit');
+        Route::put('/notifications/{template}', [NotificationTemplateController::class, 'update'])->name('notifications.update');
 
         Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');

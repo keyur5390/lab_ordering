@@ -173,8 +173,31 @@ plus `cancelled` and `refunded`.
 
 ## 10. Notifications
 
-- **OPEN:** Channels (email, SMS, WhatsApp) and which events trigger each.
-- All notification copy is editable ⚙️ or kept in translation files. **OPEN:** which one.
+*Built in B-13.*
+
+- **Channels (client, 2026-10-29):** email and SMS. WhatsApp is wanted but deferred, because business-initiated
+  WhatsApp messages need pre-approved templates.
+  - Admins switch customer emails on or off and pick the SMS driver in Admin → Settings ⚙️: off, "log" (testing)
+    or Twilio. Twilio's keys go in `.env`, and more SMS providers can be added as drivers.
+  - Customers can opt out of SMS on their account page.
+  - SMS go to the phone on the customer's "Self" profile, only when it includes the country code (+…).
+    [default] `TODO(client)`
+- **Customer events (client, 2026-10-29):**
+  - Order confirmed: pay-at-collection orders, when placed.
+  - Payment received: online orders, when paid. This confirms the order, so it is one message, not two.
+  - Refund issued: automatic or by an admin.
+  - Order cancelled: by the customer or an admin.
+  - Payment time ran out.
+  - Collection rescheduled.
+  - Collection reminder: `reminder_hours_before` ⚙️ [24] `TODO(client)` hours before the slot. Sent once,
+    and again after a reschedule. Orders booked inside that window get none.
+- **Admin alerts (client, 2026-10-29):** emailed to `admin_notification_email` ⚙️ for new confirmed orders,
+  cancellations and refunds the gateway rejected.
+- **Wording (client, 2026-10-29):** edited by admins per event and channel in Admin → Notifications, with
+  placeholders such as `{order_number}` and `{slot}`. Each message can be switched off. Default wording is
+  added by the migration. [SMS up to 640 characters; over 160 is sent as several messages.] `TODO(client)`
+- Notifications are queued (`QUEUE_CONNECTION=database`; run a queue worker) and sent after the order is saved.
+- **OPEN:** Report-ready notifications (with §9); notification history in the admin.
 
 ## 11. Admin settings (⚙️ index)
 
@@ -187,6 +210,11 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | `cancellation_cutoff_hours` | Customers can cancel/reschedule until this many hours before the slot | none; only admins can until set |
 | `payment_gateway` | Online payment gateway (`stripe`, `razorpay`), or off; keys come from `.env` | off |
 | `payment_hold_minutes` | How long an unpaid online order holds its slot | [15] `TODO(client)` |
+| `notify_by_email` | Email customers about their orders | on |
+| `sms_driver` | SMS driver (`log`, `twilio`), or off; Twilio keys come from `.env` | off |
+| `reminder_hours_before` | Hours before the slot to send the collection reminder; 0 = off | [24] `TODO(client)` |
+| `admin_notification_email` | Where admin alerts are emailed | none; alerts off |
+| `notification_templates` (DB) | Subject/body per event and channel, on/off | default wording from the migration |
 | Per test (DB) | Requires a prescription | off |
 | Per service area (DB) | Slot length, capacity per slot, lead time, booking window, weekly hours | none; no slots until set |
 
@@ -205,6 +233,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-29 | Notifications (B-13): email + SMS (WhatsApp later); SMS drivers, admin picks; admin-editable wording; customer SMS opt-out; admin alerts incl. refund failures | Client |
 | 2026-10-29 | Payments (B-12): Stripe and Razorpay, admin picks; customer chooses online or at collection; slot held for an admin-set time; automatic full refund on cancel plus admin partial refunds | Client |
 | 2026-10-29 | Checkout (B-11): patients per item; prescriptions for flagged tests; confirm + pay at collection; customer cancel/reschedule until an admin-set cutoff | Client |
 | 2026-10-29 | Slots (B-10): schedule per service area; whole or part-day closures; site timezone setting | Client |

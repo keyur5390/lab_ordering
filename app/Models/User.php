@@ -26,6 +26,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $attributes = [
         'role' => UserRole::Customer->value,
+        'sms_opt_out' => false,
     ];
 
     /**
@@ -61,7 +62,20 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
+            'sms_opt_out' => 'boolean',
         ];
+    }
+
+    /**
+     * Mobile number for SMS: the phone on the customer's "Self" profile, when it is in international
+     * format (+ and country code). TODO(client): confirm using the Self profile's phone.
+     */
+    public function routeNotificationForSms(): ?string
+    {
+        $phone = $this->patients()->where('relationship', PatientRelationship::Self)->value('phone');
+        $phone = preg_replace('/[\s\-]/', '', (string) $phone);
+
+        return preg_match('/^\+[1-9][0-9]{6,14}$/', $phone) ? $phone : null;
     }
 
     /**

@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import type { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
+    Bell,
     CalendarOff,
     ClipboardList,
     FlaskConical,
@@ -38,6 +39,12 @@ const navItems: NavItem[] = [
         icon: MapPinned,
     },
     { label: 'Closures', routeName: 'admin.closures.index', activePattern: 'admin.closures.*', icon: CalendarOff },
+    {
+        label: 'Notifications',
+        routeName: 'admin.notifications.index',
+        activePattern: 'admin.notifications.*',
+        icon: Bell,
+    },
     { label: 'Settings', routeName: 'admin.settings.edit', activePattern: 'admin.settings.*', icon: Settings },
 ];
 

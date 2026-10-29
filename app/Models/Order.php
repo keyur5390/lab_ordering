@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property OrderStatus $status
  * @property PaymentMethod $payment_method
  * @property Carbon|null $payment_expires_at UTC; while pending payment, the slot is held until then
+ * @property Carbon|null $reminder_sent_at
  * @property int|null $service_area_id
  * @property Carbon $slot_starts_at UTC
  * @property Carbon $slot_ends_at UTC
@@ -53,6 +54,7 @@ class Order extends Model
             'status' => OrderStatus::class,
             'payment_method' => PaymentMethod::class,
             'payment_expires_at' => 'datetime',
+            'reminder_sent_at' => 'datetime',
             'slot_starts_at' => 'datetime',
             'slot_ends_at' => 'datetime',
             'address' => 'array',

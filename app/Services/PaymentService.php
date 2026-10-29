@@ -32,6 +32,7 @@ class PaymentService
     public function __construct(
         private Settings $settings,
         private SlotService $slots,
+        private OrderNotifier $notifier,
     ) {}
 
     /** Whether customers can choose to pay online: a gateway is chosen and its keys are set. */
@@ -161,6 +162,8 @@ class PaymentService
 
             if ($order->payment_expires_at?->isFuture() || $this->slotStillFree($order)) {
                 $order->update(['status' => OrderStatus::Confirmed, 'payment_expires_at' => null]);
+                // Sent once the transaction commits.
+                $this->notifier->paymentReceived($order, $payment->amount);
 
                 return null;
             }
@@ -181,9 +184,23 @@ class PaymentService
      */
     public function expireUnpaid(?CarbonImmutable $now = null): int
     {
-        return Order::where('status', OrderStatus::PendingPayment)
+        $expired = Order::with('user')
+            ->where('status', OrderStatus::PendingPayment)
             ->where('payment_expires_at', '<=', ($now ?? CarbonImmutable::now())->utc())
-            ->update(['status' => OrderStatus::Cancelled, 'cancelled_at' => now(), 'updated_at' => now()]);
+            ->get();
+
+        $count = 0;
+        foreach ($expired as $order) {
+            // Only if a payment hasn't confirmed it in the meantime.
+            $updated = Order::whereKey($order->id)->where('status', OrderStatus::PendingPayment)
+                ->update(['status' => OrderStatus::Cancelled, 'cancelled_at' => now(), 'updated_at' => now()]);
+            if ($updated) {
+                $count++;
+                $this->notifier->paymentExpired($order->refresh());
+            }
+        }
+
+        return $count;
     }
 
     /**
@@ -244,13 +261,14 @@ class PaymentService
                     $refundId = null;
                 }
 
-                $payment->refunds()->create([
+                $refund = $payment->refunds()->create([
                     'user_id' => $by?->id,
                     'status' => $status,
                     'amount' => $part,
                     'reason' => $reason,
                     'gateway_refund_id' => $refundId,
                 ]);
+                $this->notifier->refunded($order, $refund);
 
                 $succeeded = $succeeded && $status->counts();
                 $amount -= $part;

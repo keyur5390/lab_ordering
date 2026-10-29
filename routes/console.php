@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 // Slot capacity already ignores lapsed holds; this tidies the orders themselves.
 Schedule::command('orders:expire-unpaid')->everyMinute()->withoutOverlapping();
+Schedule::command('orders:send-reminders')->everyFifteenMinutes()->withoutOverlapping();

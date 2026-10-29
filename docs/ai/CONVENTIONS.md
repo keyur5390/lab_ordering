@@ -53,7 +53,8 @@ app/
 - **Resources:** `JsonResource::withoutWrapping()` is on, so a single resource prop arrives as the object
   itself. Paginated collections still arrive as `{data, links, meta}` (TS `Paginated<T>`).
 - Wrap multi-write operations in `DB::transaction()`.
-- Queue notifications, emails and slow work.
+- Queue notifications, emails and slow work. Order notifications go through `App\Services\OrderNotifier`
+  (one `OrderNotification` per event, wording from `notification_templates`). Never hard-code message copy.
 - **External APIs** (e.g. payment gateways in `app/Services/Payments`): one driver per provider behind an
   interface, using Laravel's `Http` client (no SDK unless needed). Credentials and base URLs come from
   `config/services.php` / `.env`; they are server config, not ⚙️ settings. Tests use `Http::fake`.

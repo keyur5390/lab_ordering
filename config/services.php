@@ -53,6 +53,17 @@ return [
     ],
 
     /*
+    | SMS (PROJECT.md §10). The admin chooses the driver in Admin → Settings; Twilio can be chosen once
+    | its keys are set. TWILIO_FROM is a sender number or a Messaging Service SID (MG…).
+    */
+    'twilio' => [
+        'sid' => env('TWILIO_SID'),
+        'token' => env('TWILIO_TOKEN'),
+        'from' => env('TWILIO_FROM'),
+        'base_url' => env('TWILIO_BASE_URL', 'https://api.twilio.com'),
+    ],
+
+    /*
     | Maps for addresses and service areas (Leaflet). Defaults to OpenStreetMap's free tiles, which are
     | meant for light use: point MAP_TILE_URL at a tile provider for production traffic.
     */

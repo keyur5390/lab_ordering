@@ -137,6 +137,11 @@ export default function PatientForm({ patient, relationships, sexes }: PatientFo
                                 type="tel"
                                 inputMode="tel"
                                 autoComplete={isSelf ? 'tel' : 'off'}
+                                hint={
+                                    isSelf
+                                        ? 'Include the country code (e.g. +91…) to get order updates by text.'
+                                        : undefined
+                                }
                                 value={data.phone}
                                 onChange={(e) => setData('phone', e.target.value)}
                                 error={errors.phone}

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\Currency;
 use App\Enums\PaymentGatewayName;
+use App\Enums\SmsDriver;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -31,6 +32,15 @@ class UpdateSettingsRequest extends FormRequest
             )],
             // Empty uses the default.
             'payment_hold_minutes' => ['nullable', 'integer', 'min:5', 'max:1440'],
+            'notify_by_email' => ['nullable', 'boolean'],
+            // Empty turns SMS off. Only drivers whose keys are in .env can be chosen.
+            'sms_driver' => ['nullable', Rule::enum(SmsDriver::class)->only(
+                array_filter(SmsDriver::cases(), fn (SmsDriver $driver) => $driver->isConfigured()),
+            )],
+            // Empty uses the default; 0 turns reminders off.
+            'reminder_hours_before' => ['nullable', 'integer', 'min:0', 'max:168'],
+            // Empty turns admin alerts off.
+            'admin_notification_email' => ['nullable', 'email', 'max:255'],
         ];
     }
 
@@ -41,6 +51,7 @@ class UpdateSettingsRequest extends FormRequest
     {
         return [
             'payment_gateway.enum' => 'Add this gateway\'s keys to the server settings (.env) before choosing it.',
+            'sms_driver.enum' => 'Add this provider\'s keys to the server settings (.env) before choosing it.',
         ];
     }
 }

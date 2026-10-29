@@ -4,6 +4,7 @@ namespace App\Settings;
 
 use App\Enums\Currency;
 use App\Enums\PaymentGatewayName;
+use App\Enums\SmsDriver;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -24,6 +25,17 @@ class Settings
     public const PAYMENT_GATEWAY = 'payment_gateway';
 
     public const PAYMENT_HOLD_MINUTES = 'payment_hold_minutes';
+
+    public const NOTIFY_BY_EMAIL = 'notify_by_email';
+
+    public const SMS_DRIVER = 'sms_driver';
+
+    public const REMINDER_HOURS_BEFORE = 'reminder_hours_before';
+
+    public const ADMIN_NOTIFICATION_EMAIL = 'admin_notification_email';
+
+    // TODO(client): confirm the default reminder time.
+    public const DEFAULT_REMINDER_HOURS_BEFORE = 24;
 
     // TODO(client): confirm the default hold for unpaid online orders.
     public const DEFAULT_PAYMENT_HOLD_MINUTES = 15;
@@ -98,6 +110,54 @@ class Settings
     public function setPaymentHoldMinutes(?int $minutes): void
     {
         $this->set(self::PAYMENT_HOLD_MINUTES, $minutes);
+    }
+
+    /** Whether customers get order emails (client, 2026-10-29: admins switch channels site-wide). On until turned off. */
+    public function notifyByEmail(): bool
+    {
+        return (bool) $this->get(self::NOTIFY_BY_EMAIL, true);
+    }
+
+    public function setNotifyByEmail(bool $enabled): void
+    {
+        $this->set(self::NOTIFY_BY_EMAIL, $enabled);
+    }
+
+    /** SMS driver, or null when SMS is off. A driver whose keys have since been removed counts as off. */
+    public function smsDriver(): ?SmsDriver
+    {
+        $driver = SmsDriver::tryFrom((string) $this->get(self::SMS_DRIVER));
+
+        return $driver?->isConfigured() ? $driver : null;
+    }
+
+    public function setSmsDriver(?SmsDriver $driver): void
+    {
+        $this->set(self::SMS_DRIVER, $driver?->value);
+    }
+
+    /** Hours before the slot to send the collection reminder; 0 turns reminders off. */
+    public function reminderHoursBefore(): int
+    {
+        $hours = $this->get(self::REMINDER_HOURS_BEFORE);
+
+        return is_numeric($hours) ? (int) $hours : self::DEFAULT_REMINDER_HOURS_BEFORE;
+    }
+
+    public function setReminderHoursBefore(?int $hours): void
+    {
+        $this->set(self::REMINDER_HOURS_BEFORE, $hours);
+    }
+
+    /** Where admin alerts are emailed; null turns them off. */
+    public function adminNotificationEmail(): ?string
+    {
+        return $this->get(self::ADMIN_NOTIFICATION_EMAIL) ?: null;
+    }
+
+    public function setAdminNotificationEmail(?string $email): void
+    {
+        $this->set(self::ADMIN_NOTIFICATION_EMAIL, $email);
     }
 
     public function get(string $key, mixed $default = null): mixed

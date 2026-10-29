@@ -3,11 +3,12 @@
 namespace App\Support;
 
 use App\Enums\Currency;
+use Illuminate\Support\Number;
 use InvalidArgumentException;
 
 /**
  * Converts between admin-entered decimal strings ("499.50") and stored integer minor units (49950).
- * Display formatting happens on the frontend (resources/js/lib/money.ts).
+ * Pages format on the frontend (resources/js/lib/money.ts); format() is for emails and SMS.
  */
 final class Money
 {
@@ -37,5 +38,14 @@ final class Money
         $decimals = $currency?->decimals() ?? 2;
 
         return number_format($minor / 10 ** $decimals, $decimals, '.', '');
+    }
+
+    /** For messages, e.g. 49950 INR → "₹499.50". */
+    public static function format(int $minor, string $currencyCode): string
+    {
+        $currency = Currency::tryFrom($currencyCode);
+        $decimals = $currency?->decimals() ?? 2;
+
+        return (string) Number::currency($minor / 10 ** $decimals, in: $currencyCode, locale: config('app.locale'));
     }
 }
