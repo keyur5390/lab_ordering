@@ -30,6 +30,9 @@ the catalogue, orders, collection schedule and reports from an admin area.
 | Lab staff | Mark samples received, upload reports | **OPEN** |
 | Admin | Manage catalogue, prices, settings, orders, users | [assumed] |
 
+- Roles are built as `customer` and `admin` (B-04). Admins are not created via sign-up: an existing
+  account is promoted with `php artisan user:role {email} admin`. [default] `TODO(client)`: who may
+  create admins, and whether an admin user-management screen is needed.
 - **OPEN:** Can a customer order for family members (multiple patient profiles per account)? [Yes, patient profiles] `TODO(client)`
 - **OPEN:** Login method: email + password, phone + OTP, or both? [Email + password, with email verification] `TODO(client)`. *Built with this default in B-03; no 2FA.*
 - **OPEN:** Can a guest check out without an account? [No] `TODO(client)`
@@ -121,4 +124,5 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-29 | Roles (B-04): customer + admin only; collector/lab staff wait on client; admins promoted via CLI | Dev |
 | 2026-10-29 | Auth (B-03): email + password with email verification, built on the [default] pending client confirmation | Dev |

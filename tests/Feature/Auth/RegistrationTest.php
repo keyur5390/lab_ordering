@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Notification;
@@ -27,6 +28,18 @@ it('registers a user, logs them in and sends a verification email', function () 
         ->and($user->hasVerifiedEmail())->toBeFalse();
     $this->assertAuthenticatedAs($user);
     Notification::assertSentTo($user, VerifyEmail::class);
+});
+
+it('always registers a customer, even if a role is submitted', function () {
+    $this->post(route('register.store'), [
+        'name' => 'Asha Patel',
+        'email' => 'asha@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'role' => 'admin',
+    ])->assertRedirect(route('account'));
+
+    expect(User::sole()->role)->toBe(UserRole::Customer);
 });
 
 it('rejects invalid registration data', function (array $data, string $field) {

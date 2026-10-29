@@ -19,6 +19,9 @@ php artisan migrate --seed
 composer run dev              # server, queue, logs and Vite at http://localhost:8000
 ```
 
+Seeded logins (password `password`): `test@example.com` (customer) and `admin@example.com` (admin).
+To make an existing user an admin: `php artisan user:role someone@example.com admin`.
+
 ## Checks
 
 ```bash

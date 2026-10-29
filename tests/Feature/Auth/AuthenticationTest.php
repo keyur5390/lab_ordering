@@ -68,6 +68,8 @@ it('shares the signed-in user with every page', function () {
                 'name' => $user->name,
                 'email' => $user->email,
                 'email_verified' => true,
+                'role' => 'customer',
+                'can_access_admin' => false,
             ])
         );
 });

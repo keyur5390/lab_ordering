@@ -1,9 +1,14 @@
+/** Mirrors App\Enums\UserRole. */
+export type UserRole = 'customer' | 'admin';
+
 /** Mirrors App\Http\Resources\UserResource. */
 export interface User {
     id: number;
     name: string;
     email: string;
     email_verified: boolean;
+    role: UserRole;
+    can_access_admin: boolean;
 }
 
 /**
