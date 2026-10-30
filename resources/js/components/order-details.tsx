@@ -32,6 +32,7 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                 <DetailRow label="Collection">
                     {formatSlot(order.slot_starts_at, order.slot_ends_at, order.timezone)}
                 </DetailRow>
+                {order.collector_first_name && <DetailRow label="Collector">{order.collector_first_name}</DetailRow>}
                 <DetailRow label="Address">
                     {order.address.label && <span className="font-medium">{order.address.label}: </span>}
                     {addressText(order.address)}

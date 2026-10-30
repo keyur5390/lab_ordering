@@ -54,6 +54,8 @@ class NotificationTemplateService
             'total' => Money::format(149900, $this->settings->currency()->value ?? 'INR'),
             'order_url' => route('orders.show', 'ORD-000123'),
             'amount' => Money::format(49900, $this->settings->currency()->value ?? 'INR'),
+            'collector_name' => 'Ravi',
+            'reason' => 'Nobody at home. Rang twice.',
         ];
     }
 
@@ -75,6 +77,9 @@ class NotificationTemplateService
             'total' => Money::format($order->total_amount, $order->currency),
             'order_url' => $event->forAdmins() ? route('admin.orders.show', $order) : route('orders.show', $order),
             'amount' => Money::format($amount ?? $order->total_amount, $order->currency),
+            // Customers see the collector's first name only.
+            'collector_name' => (string) str($order->collector?->name ?? '')->before(' '),
+            'reason' => collect([$order->visit_failure_reason?->label(), $order->visit_failure_note])->filter()->implode('. '),
         ];
     }
 }

@@ -1,3 +1,4 @@
+import { CollectorCard, type CollectorInfo } from '@/components/collector-card';
 import { OrderActions } from '@/components/order-actions';
 import { OrderDetails } from '@/components/order-details';
 import { OrderStatusBadge } from '@/components/order-status-badge';
@@ -17,7 +18,7 @@ const labStatuses: Order['status'][] = [
     'report_ready',
 ];
 
-export default function AdminOrderShow({ order }: { order: Order }) {
+export default function AdminOrderShow({ order, collector }: { order: Order; collector: CollectorInfo }) {
     const { errors } = usePage<SharedData & { errors: Record<string, string> }>().props;
 
     return (
@@ -54,6 +55,9 @@ export default function AdminOrderShow({ order }: { order: Order }) {
             <div className="mt-6 max-w-3xl space-y-6">
                 {/* Keyed so the amount resets to what is left after each refund. */}
                 {order.can_refund && <RefundForm key={order.payment?.refundable} order={order} />}
+                {(collector.assigned || collector.can_assign || order.payment_collected) && (
+                    <CollectorCard key={collector.assigned?.id ?? 'none'} order={order} collector={collector} />
+                )}
                 <OrderDetails order={order} prescriptionUrl={route('orders.prescription', order.number)} />
             </div>
         </AdminLayout>

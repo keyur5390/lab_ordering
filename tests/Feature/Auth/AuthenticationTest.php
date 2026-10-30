@@ -70,6 +70,7 @@ it('shares the signed-in user with every page', function () {
                 'role' => 'customer',
                 'can_access_admin' => false,
                 'can_access_lab' => false,
+                'can_access_collector' => false,
             ])
         );
 });

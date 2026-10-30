@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\CollectionPaymentMethod;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
+use App\Enums\VisitFailureReason;
 use Database\Factories\OrderFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +26,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $collected_at
  * @property Carbon|null $received_at_lab_at
  * @property Carbon|null $report_ready_at
+ * @property int|null $collector_id
+ * @property Carbon|null $collector_assigned_at
+ * @property Carbon|null $visit_failed_at
+ * @property VisitFailureReason|null $visit_failure_reason
+ * @property string|null $visit_failure_note
+ * @property Carbon|null $payment_collected_at
+ * @property CollectionPaymentMethod|null $payment_collected_method
  * @property int|null $service_area_id
  * @property Carbon $slot_starts_at UTC
  * @property Carbon $slot_ends_at UTC
@@ -61,6 +70,11 @@ class Order extends Model
             'collected_at' => 'datetime',
             'received_at_lab_at' => 'datetime',
             'report_ready_at' => 'datetime',
+            'collector_assigned_at' => 'datetime',
+            'visit_failed_at' => 'datetime',
+            'visit_failure_reason' => VisitFailureReason::class,
+            'payment_collected_at' => 'datetime',
+            'payment_collected_method' => CollectionPaymentMethod::class,
             'slot_starts_at' => 'datetime',
             'slot_ends_at' => 'datetime',
             'address' => 'array',
@@ -81,6 +95,14 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function collector(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'collector_id');
     }
 
     /**

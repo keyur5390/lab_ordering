@@ -174,8 +174,11 @@ class OrderService
             $order->update([
                 'slot_starts_at' => $slotStartsAt->utc(),
                 'slot_ends_at' => $slotStartsAt->addMinutes($area->slot_minutes)->utc(),
-                // The reminder is sent again for the new slot.
+                // The reminder is sent again for the new slot, and a failed visit is behind us.
                 'reminder_sent_at' => null,
+                'visit_failed_at' => null,
+                'visit_failure_reason' => null,
+                'visit_failure_note' => null,
             ]);
         });
 

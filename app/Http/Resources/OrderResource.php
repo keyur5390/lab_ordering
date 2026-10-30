@@ -78,6 +78,12 @@ class OrderResource extends JsonResource
                     'created_at' => $refund->created_at->setTimezone($timezone)->toIso8601String(),
                 ]))->values(),
             ]),
+            // Customers see the collector's first name (client, 2026-10-30).
+            'collector_first_name' => $this->collector ? (string) str($this->collector->name)->before(' ') : null,
+            'payment_collected' => $this->payment_collected_at ? [
+                'at' => $this->payment_collected_at->setTimezone($timezone)->toIso8601String(),
+                'method' => $this->payment_collected_method?->label(),
+            ] : null,
             'can_pay' => (bool) $user?->can('pay', $this->resource),
             'can_refund' => $this->whenLoaded('payments', fn () => (bool) $user?->can('refund', $this->resource), false),
             'can_cancel' => (bool) $user?->can('cancel', $this->resource),

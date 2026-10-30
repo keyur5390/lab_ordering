@@ -7,8 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\RescheduleOrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
+use App\Services\CollectorService;
 use App\Services\OrderService;
 use App\Services\SlotService;
+use App\Settings\Settings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -41,10 +43,21 @@ class OrderController extends Controller
         ]);
     }
 
-    public function show(Order $order): Response
+    public function show(Request $request, Order $order, CollectorService $collectors, Settings $settings): Response
     {
         return Inertia::render('admin/orders/show', [
-            'order' => OrderResource::make($order->load(['items', 'user', 'payments.refunds.user'])),
+            'order' => OrderResource::make($order->load(['items', 'user', 'payments.refunds.user', 'collector'])),
+            // Collectors (client, 2026-10-30): who is assigned, who could be, and how the visit went.
+            'collector' => [
+                'assigned' => $order->collector?->only(['id', 'name']),
+                'options' => $collectors->collectorsFor($order)->map->only(['id', 'name'])->values(),
+                'can_assign' => $request->user()->can('assignCollector', $order) && $collectors->canAssign($order),
+                'visit_failed' => $order->visit_failed_at ? [
+                    'at' => $order->visit_failed_at->setTimezone($settings->timezone())->toIso8601String(),
+                    'reason' => $order->visit_failure_reason?->label(),
+                    'note' => $order->visit_failure_note,
+                ] : null,
+            ],
         ]);
     }
 

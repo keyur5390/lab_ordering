@@ -26,6 +26,7 @@ class UserResource extends JsonResource
             'role' => $this->role->value,
             'can_access_admin' => $this->resource->can('access-admin'),
             'can_access_lab' => $this->resource->can('access-lab'),
+            'can_access_collector' => $this->resource->can('access-collector'),
         ];
     }
 }

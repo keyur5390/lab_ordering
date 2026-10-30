@@ -3,9 +3,11 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\ClosureController;
+use App\Http\Controllers\Admin\CollectorController;
 use App\Http\Controllers\Admin\LabPackageController;
 use App\Http\Controllers\Admin\LabTestController;
 use App\Http\Controllers\Admin\NotificationTemplateController;
+use App\Http\Controllers\Admin\OrderCollectorController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\ScheduleController;
@@ -14,6 +16,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogueController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\Collector\VisitController;
 use App\Http\Controllers\Lab\OrderController as LabOrderController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PatientController;
@@ -62,6 +65,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
+// Collectors: their visits for a day (client, 2026-10-30).
+Route::middleware(['auth', 'verified', 'can:access-collector'])
+    ->prefix('collector')
+    ->name('collector.')
+    ->controller(VisitController::class)
+    ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/visits/{order}/claim', 'claim')->name('claim');
+        Route::post('/visits/{order}/collected', 'collected')->name('collected');
+        Route::post('/visits/{order}/failed', 'failed')->name('failed');
+        Route::post('/visits/{order}/payment', 'payment')->name('payment');
+    });
+
 // Lab staff and admins: the lab area and read-only order pages (client, 2026-10-29).
 Route::middleware(['auth', 'verified', 'can:access-lab'])
     ->prefix('admin')
@@ -98,6 +114,9 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
             Route::put('/{order}/reschedule', 'reschedule')->name('reschedule');
         });
         Route::post('/orders/{order}/refunds', [RefundController::class, 'store'])->name('orders.refunds.store');
+        Route::put('/orders/{order}/collector', [OrderCollectorController::class, 'update'])->name('orders.collector.update');
+        Route::get('/collectors', [CollectorController::class, 'index'])->name('collectors.index');
+        Route::put('/collectors/{collector}', [CollectorController::class, 'update'])->name('collectors.update');
 
         Route::get('/notifications', [NotificationTemplateController::class, 'index'])->name('notifications.index');
         Route::get('/notifications/{template}/edit', [NotificationTemplateController::class, 'edit'])->name('notifications.edit');

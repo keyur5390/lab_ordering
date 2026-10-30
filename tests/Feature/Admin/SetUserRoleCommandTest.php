@@ -25,7 +25,7 @@ it('rejects an unknown role', function () {
     $user = User::factory()->create();
 
     $this->artisan('user:role', ['email' => $user->email, 'role' => 'superuser'])
-        ->expectsOutput('Unknown role. Use one of: customer, admin, lab_staff.')
+        ->expectsOutput('Unknown role. Use one of: customer, admin, lab_staff, collector.')
         ->assertFailed();
 
     expect($user->fresh()->role)->toBe(UserRole::Customer);

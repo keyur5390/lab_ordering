@@ -57,6 +57,16 @@ class OrderNotifier
         $this->send(NotificationEvent::OrderRescheduled, $order);
     }
 
+    public function collectorAssigned(Order $order): void
+    {
+        $this->send(NotificationEvent::CollectorAssigned, $order);
+    }
+
+    public function visitFailed(Order $order): void
+    {
+        $this->send(NotificationEvent::AdminVisitFailed, $order);
+    }
+
     public function reportReady(Order $order): void
     {
         $this->send(NotificationEvent::ReportReady, $order);

@@ -11,6 +11,8 @@ export interface User {
     can_access_admin: boolean;
     /** Lab area and read-only order pages (lab staff and admins). */
     can_access_lab: boolean;
+    /** The collector's visits screen. */
+    can_access_collector: boolean;
 }
 
 /**
@@ -269,6 +271,10 @@ export interface Order {
     prescription_name: string | null;
     /** Online payment totals and refunds, on detail pages. */
     payment?: OrderPayment;
+    /** Collector's first name, once assigned. */
+    collector_first_name: string | null;
+    /** Pay-at-collection orders: when and how the collector took payment. */
+    payment_collected: { at: string; method: string | null } | null;
     can_pay: boolean;
     can_refund: boolean;
     can_cancel: boolean;

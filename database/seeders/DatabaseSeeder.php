@@ -7,6 +7,7 @@ use App\Enums\Currency;
 use App\Enums\PatientRelationship;
 use App\Enums\Sex;
 use App\Enums\UserRole;
+use App\Models\ServiceArea;
 use App\Models\User;
 use App\Settings\Settings;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -56,5 +57,12 @@ class DatabaseSeeder extends Seeder
         app(Settings::class)->setCancellationCutoffHours(12);
 
         $this->call([CatalogueSeeder::class, ServiceAreaSeeder::class]);
+
+        // Demo collector covering every demo area.
+        User::factory()->create([
+            'name' => 'Ravi Collector',
+            'email' => 'collector@example.com',
+            'role' => UserRole::Collector,
+        ])->collectorAreas()->attach(ServiceArea::pluck('id'));
     }
 }

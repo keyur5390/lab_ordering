@@ -22,6 +22,11 @@ function NavLinks({ stacked }: { stacked?: boolean }) {
             </Link>
             {auth.user ? (
                 <>
+                    {auth.user.can_access_collector && (
+                        <Link href={route('collector.index')} className={linkClass}>
+                            My visits
+                        </Link>
+                    )}
                     {auth.user.can_access_admin ? (
                         <Link href={route('admin.dashboard')} className={linkClass}>
                             Admin

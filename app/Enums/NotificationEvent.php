@@ -21,10 +21,13 @@ enum NotificationEvent: string
     case CollectionReminder = 'collection_reminder';
     /** All reports for the order are uploaded. */
     case ReportReady = 'report_ready';
+    /** A collector is assigned (or changed) for the home visit. */
+    case CollectorAssigned = 'collector_assigned';
 
     case AdminNewOrder = 'admin_new_order';
     case AdminOrderCancelled = 'admin_order_cancelled';
     case AdminRefundFailed = 'admin_refund_failed';
+    case AdminVisitFailed = 'admin_visit_failed';
 
     public function label(): string
     {
@@ -37,16 +40,18 @@ enum NotificationEvent: string
             self::OrderRescheduled => 'Collection rescheduled',
             self::CollectionReminder => 'Collection reminder',
             self::ReportReady => 'Reports ready',
+            self::CollectorAssigned => 'Collector assigned',
             self::AdminNewOrder => 'New order',
             self::AdminOrderCancelled => 'Order cancelled',
             self::AdminRefundFailed => 'Refund failed',
+            self::AdminVisitFailed => 'Home visit failed',
         };
     }
 
     /** Admin alerts go by email to the address in Settings; the rest go to the customer. */
     public function forAdmins(): bool
     {
-        return in_array($this, [self::AdminNewOrder, self::AdminOrderCancelled, self::AdminRefundFailed], true);
+        return in_array($this, [self::AdminNewOrder, self::AdminOrderCancelled, self::AdminRefundFailed, self::AdminVisitFailed], true);
     }
 
     /**
@@ -68,6 +73,8 @@ enum NotificationEvent: string
 
         return match ($this) {
             self::PaymentReceived, self::RefundIssued, self::AdminRefundFailed => [...$common, 'amount'],
+            self::CollectorAssigned => [...$common, 'collector_name'],
+            self::AdminVisitFailed => [...$common, 'collector_name', 'reason'],
             default => $common,
         };
     }

@@ -26,11 +26,23 @@ the catalogue, orders, collection schedule and reports from an admin area.
 |------|--------|--------|
 | Guest | Browse catalogue, view test details, view prices | [assumed] |
 | Customer | Everything a guest can, plus order, pay, manage patients/addresses, download reports | [assumed] |
-| Phlebotomist / collector | See assigned collections, update collection status | **OPEN**: in v1? |
+| Phlebotomist / collector | Home visits in their areas: take visits, mark collected or failed, take payment | Client, 2026-10-30 (B-15) |
 | Lab staff | Mark samples collected and received, upload reports, read all orders | Client, 2026-10-29 (B-14) |
 | Admin | Manage catalogue, prices, settings, orders, users | [assumed] |
 
-- Roles are built as `customer`, `admin` (B-04) and `lab_staff` (B-14). Admins are not created via sign-up: an existing
+- Roles are built as `customer`, `admin` (B-04), `lab_staff` (B-14) and `collector` (B-15).
+- **Collectors (client, 2026-10-30):** *Built in B-15.*
+  - Each collector works in one or more service areas (Admin → Collectors).
+  - Admins assign a collector from the order's area, or change or remove them, until the sample is collected.
+    Collectors can also take unassigned visits in their areas from their day screen (`/collector`).
+  - Collectors see their visits for a day: address with a map link, the customer's phone, and patients with
+    their tests.
+  - They mark the sample collected, or the visit failed. [Reasons: nobody at home, refused/not ready, address
+    not found, other with a note.] `TODO(client)` A failed visit alerts admins, who reschedule (which clears
+    it) or cancel.
+  - For pay-at-collection orders they record the payment. [Methods: cash, card, UPI, other.] `TODO(client)`
+  - Customers get a "Collector assigned" message (again if the collector changes) and see the collector's
+    first name on the order. Admins are not created via sign-up: an existing
   account is promoted with `php artisan user:role {email} admin`. [default] `TODO(client)`: who may
   create admins, and whether an admin user-management screen is needed.
 - **Patient profiles (client, 2026-10-29):** customers book for themselves and family members through
@@ -160,7 +172,8 @@ plus `cancelled` and `refunded`.
 - Pay-at-collection orders start as `confirmed`; online orders start as `pending_payment` (§7).
 - Lab staff and admins move orders on to `sample_collected` → `received_at_lab`, and to `report_ready` once
   all reports are uploaded (§9).
-- `collector_assigned` waits on the collector role (§2). `completed` is not used yet (OPEN).
+- Assigning a collector moves an order to `collector_assigned`; removing them moves it back to `confirmed`
+  (§2). `completed` is not used yet (OPEN).
 - **Cancel and reschedule (client, 2026-10-29):** customers can, before collection, until a cutoff of
   N hours before the slot, set in Admin → Settings ⚙️. Until it is set, only admins can. Admins can
   always, before collection.
@@ -211,8 +224,9 @@ plus `cancelled` and `refunded`.
   - Collection reminder: `reminder_hours_before` ⚙️ [24] `TODO(client)` hours before the slot. Sent once,
     and again after a reschedule. Orders booked inside that window get none.
   - Reports ready (B-14): with the PDFs attached (§9).
+  - Collector assigned (B-15): the collector's first name.
 - **Admin alerts (client, 2026-10-29):** emailed to `admin_notification_email` ⚙️ for new confirmed orders,
-  cancellations and refunds the gateway rejected.
+  cancellations, refunds the gateway rejected and failed home visits (B-15).
 - **Wording (client, 2026-10-29):** edited by admins per event and channel in Admin → Notifications, with
   placeholders such as `{order_number}` and `{slot}`. Each message can be switched off. Default wording is
   added by the migration. [SMS up to 640 characters; over 160 is sent as several messages.] `TODO(client)`
@@ -253,6 +267,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-30 | Collectors (B-15): per-area collectors; admins assign and collectors take visits; collected, failed visit, payment taken; customer told the collector's name | Client |
 | 2026-10-29 | Lab & reports (B-14): lab staff role with lab area + read-only orders; lab staff/admins mark collected and received; one PDF per item per patient; report ready by email (attached) and link | Client |
 | 2026-10-29 | Notifications (B-13): email + SMS (WhatsApp later); SMS drivers, admin picks; admin-editable wording; customer SMS opt-out; admin alerts incl. refund failures | Client |
 | 2026-10-29 | Payments (B-12): Stripe and Razorpay, admin picks; customer chooses online or at collection; slot held for an admin-set time; automatic full refund on cancel plus admin partial refunds | Client |

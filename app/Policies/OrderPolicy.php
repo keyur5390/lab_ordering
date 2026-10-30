@@ -47,6 +47,18 @@ class OrderPolicy
         return $user->isAdmin() && $this->payments->amounts($order)['refundable'] > 0;
     }
 
+    /** Admins assign collectors (client, 2026-10-30). */
+    public function assignCollector(User $user, Order $order): bool
+    {
+        return $user->isAdmin();
+    }
+
+    /** The assigned collector works on the visit. */
+    public function visit(User $user, Order $order): bool
+    {
+        return $user->isCollector() && $order->collector_id === $user->id;
+    }
+
     private function change(User $user, Order $order): bool
     {
         if ($user->isAdmin()) {

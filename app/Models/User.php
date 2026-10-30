@@ -9,6 +9,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -111,6 +112,21 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
+    }
+
+    public function isCollector(): bool
+    {
+        return $this->role === UserRole::Collector;
+    }
+
+    /**
+     * Service areas a collector works in.
+     *
+     * @return BelongsToMany<ServiceArea, $this>
+     */
+    public function collectorAreas(): BelongsToMany
+    {
+        return $this->belongsToMany(ServiceArea::class, 'collector_service_area');
     }
 
     /** Lab staff and admins do the lab work (PROJECT.md §2). */

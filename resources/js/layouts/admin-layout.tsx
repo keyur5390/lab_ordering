@@ -14,6 +14,7 @@ import {
     Menu,
     Package,
     Settings,
+    Truck,
     X,
     type LucideIcon,
 } from 'lucide-react';
@@ -48,6 +49,7 @@ const navItems: NavItem[] = [
         activePattern: 'admin.service-areas.*',
         icon: MapPinned,
     },
+    { label: 'Collectors', routeName: 'admin.collectors.index', activePattern: 'admin.collectors.*', icon: Truck },
     { label: 'Closures', routeName: 'admin.closures.index', activePattern: 'admin.closures.*', icon: CalendarOff },
     {
         label: 'Notifications',
