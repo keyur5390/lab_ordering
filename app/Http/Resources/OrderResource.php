@@ -44,6 +44,13 @@ class OrderResource extends JsonResource
             'currency' => $this->currency,
             'subtotal_amount' => $this->subtotal_amount,
             'total_amount' => $this->total_amount,
+            // As charged (client, 2026-10-30): coupon, collection fee and tax.
+            'coupon_code' => $this->coupon_code,
+            'discount_amount' => $this->discount_amount,
+            'collection_fee_amount' => $this->collection_fee_amount,
+            'tax_rate_percent' => $this->tax_rate_basis_points !== null ? $this->tax_rate_basis_points / 100 : null,
+            'tax_inclusive' => $this->tax_inclusive,
+            'tax_amount' => $this->tax_amount,
             'items_count' => $this->whenCounted('items'),
             'customer' => $this->whenLoaded('user', fn () => ['name' => $this->user->name, 'email' => $this->user->email]),
             // Grouped by patient for display.

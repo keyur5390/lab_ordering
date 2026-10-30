@@ -4,7 +4,9 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\ServiceAreaType;
 use App\Models\ServiceArea;
+use App\Settings\Settings;
 use App\Support\Countries;
+use App\Support\Money;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -49,6 +51,8 @@ class SaveServiceAreaRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', Rule::enum(ServiceAreaType::class)],
             'is_active' => ['boolean'],
+            // Empty means free (client, 2026-10-30: per-area fee).
+            'collection_fee' => ['nullable', 'string', 'regex:'.Money::decimalPattern(app(Settings::class)->currency())],
             ...match ($type) {
                 ServiceAreaType::Postcodes => [
                     'country' => ['required', Rule::in(Countries::codes())],
@@ -78,6 +82,7 @@ class SaveServiceAreaRequest extends FormRequest
     {
         return [
             'postcode_list.required' => 'Enter at least one postcode.',
+            'collection_fee.regex' => 'Enter an amount like 99 or 99.50.',
             'postcode_list.*.regex' => 'Postcodes use letters, numbers, spaces and dashes only.',
             'center_latitude.required' => 'Tap the map to set the centre.',
             'center_longitude.required' => 'Tap the map to set the centre.',
@@ -112,6 +117,9 @@ class SaveServiceAreaRequest extends FormRequest
             'name' => $this->validated('name'),
             'type' => $type,
             'is_active' => $this->validated('is_active'),
+            'collection_fee_amount' => $this->filled('collection_fee')
+                ? Money::toMinor($this->validated('collection_fee'), app(Settings::class)->currency())
+                : 0,
             'country' => $type === ServiceAreaType::Postcodes ? $this->validated('country') : null,
             'center_latitude' => $type === ServiceAreaType::Radius ? (float) $this->validated('center_latitude') : null,
             'center_longitude' => $type === ServiceAreaType::Radius ? (float) $this->validated('center_longitude') : null,

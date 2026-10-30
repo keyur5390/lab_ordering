@@ -41,6 +41,13 @@ use Illuminate\Support\Carbon;
  * @property string $currency
  * @property int $subtotal_amount
  * @property int $total_amount
+ * @property int|null $coupon_id
+ * @property string|null $coupon_code
+ * @property int $discount_amount
+ * @property int $collection_fee_amount
+ * @property int|null $tax_rate_basis_points
+ * @property bool $tax_inclusive
+ * @property int $tax_amount
  * @property string|null $prescription_path
  * @property string|null $prescription_name
  * @property Carbon|null $cancelled_at
@@ -80,6 +87,11 @@ class Order extends Model
             'address' => 'array',
             'subtotal_amount' => 'integer',
             'total_amount' => 'integer',
+            'discount_amount' => 'integer',
+            'collection_fee_amount' => 'integer',
+            'tax_rate_basis_points' => 'integer',
+            'tax_inclusive' => 'boolean',
+            'tax_amount' => 'integer',
             'cancelled_at' => 'datetime',
         ];
     }

@@ -8,6 +8,7 @@ use App\Enums\PaymentMethod;
 use App\Models\Address;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Coupon;
 use App\Models\LabPackage;
 use App\Models\LabTest;
 use App\Models\Order;
@@ -15,6 +16,7 @@ use App\Models\Patient;
 use App\Models\ServiceArea;
 use App\Models\User;
 use App\Settings\Settings;
+use App\Support\Money;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +37,8 @@ class OrderService
         private SlotService $slots,
         private PaymentService $payments,
         private OrderNotifier $notifier,
+        private OrderPricingService $orderPricing,
+        private CouponService $coupons,
         private Settings $settings,
     ) {}
 
@@ -48,7 +52,7 @@ class OrderService
      *
      * @throws ValidationException
      */
-    public function place(User $user, Cart $cart, array $patientIdsByCartItem, Address $address, CarbonImmutable $slotStartsAt, ?UploadedFile $prescription, PaymentMethod $paymentMethod = PaymentMethod::PayAtCollection): Order
+    public function place(User $user, Cart $cart, array $patientIdsByCartItem, Address $address, CarbonImmutable $slotStartsAt, ?UploadedFile $prescription, PaymentMethod $paymentMethod = PaymentMethod::PayAtCollection, ?string $couponCode = null): Order
     {
         $currency = $this->settings->currency()
             ?? throw ValidationException::withMessages(['order' => 'Ordering is not open yet. Please try again later.']);
@@ -86,16 +90,23 @@ class OrderService
             throw ValidationException::withMessages(['prescription' => 'A prescription is needed for one or more tests.']);
         }
 
-        $order = DB::transaction(function () use ($user, $cart, $cartItems, $patientIdsByCartItem, $patients, $address, $area, $slotStartsAt, $prescription, $currency, $paymentMethod, $online) {
-            $this->lockAndCheckSlot($area, $slotStartsAt);
-
-            $lines = [];
-            foreach ($cartItems as $item) {
-                foreach ($patientIdsByCartItem[$item->id] as $patientId) {
-                    $lines[] = $this->orderLine($item, $patients->get($patientId));
-                }
+        $lines = [];
+        foreach ($cartItems as $item) {
+            foreach ($patientIdsByCartItem[$item->id] as $patientId) {
+                $lines[] = $this->orderLine($item, $patients->get($patientId));
             }
-            $subtotal = array_sum(array_column($lines, 'price_amount'));
+        }
+        $subtotal = array_sum(array_column($lines, 'price_amount'));
+
+        $minimum = $this->settings->minimumOrderAmount();
+        if ($minimum !== null && $subtotal < $minimum) {
+            throw ValidationException::withMessages(['order' => 'The minimum order is '.Money::format($minimum, $currency->value).'.']);
+        }
+
+        $order = DB::transaction(function () use ($user, $cart, $lines, $subtotal, $address, $area, $slotStartsAt, $prescription, $currency, $paymentMethod, $online, $couponCode) {
+            $this->lockAndCheckSlot($area, $slotStartsAt);
+            $coupon = $couponCode ? $this->lockAndCheckCoupon($couponCode, $user, $subtotal) : null;
+            $price = $this->orderPricing->quote($subtotal, $area, $coupon);
 
             $order = $user->orders()->create([
                 'status' => $online ? OrderStatus::PendingPayment : OrderStatus::Confirmed,
@@ -108,8 +119,14 @@ class OrderService
                 'address' => $address->only(['label', 'line1', 'line2', 'city', 'region', 'postcode', 'country', 'latitude', 'longitude']),
                 'currency' => $currency->value,
                 'subtotal_amount' => $subtotal,
-                // TODO(client): collection fee, tax and discounts are OPEN in PROJECT.md §4.
-                'total_amount' => $subtotal,
+                'coupon_id' => $coupon?->id,
+                'coupon_code' => $coupon?->code,
+                'discount_amount' => $price['discount'],
+                'collection_fee_amount' => $price['collection_fee'],
+                'tax_rate_basis_points' => $price['tax_rate_basis_points'],
+                'tax_inclusive' => $price['tax_inclusive'],
+                'tax_amount' => $price['tax'],
+                'total_amount' => $price['total'],
             ]);
             $order->update(['number' => sprintf('ORD-%06d', $order->id)]);
             $order->items()->createMany($lines);
@@ -210,6 +227,23 @@ class OrderService
         if (! $this->slots->isBookable($area, $slotStartsAt)) {
             throw ValidationException::withMessages(['slot_starts_at' => 'That slot is no longer available. Please choose another.']);
         }
+    }
+
+    /**
+     * Locks the coupon so two orders can't both take its last use, then checks it.
+     *
+     * @throws ValidationException
+     */
+    private function lockAndCheckCoupon(string $code, User $user, int $subtotal): Coupon
+    {
+        $coupon = Coupon::where('code', Coupon::normalise($code))->lockForUpdate()->first();
+        $problem = $coupon ? $this->coupons->problem($coupon, $user, $subtotal) : 'We don\'t recognise this code.';
+
+        if ($problem) {
+            throw ValidationException::withMessages(['coupon_code' => $problem]);
+        }
+
+        return $coupon;
     }
 
     /**

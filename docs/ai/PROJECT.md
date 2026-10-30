@@ -80,10 +80,24 @@ All amounts come from the database or settings. Never from code.
 - **Currency (client, 2026-10-29):** one active currency for the whole site, chosen by the admin in
   Admin → Settings ⚙️. Changing it does not convert existing prices. [Offered: AED, AUD, CAD, EUR, GBP,
   INR, SGD, USD; all 2-decimal.] `TODO(client)`
-- **OPEN:** Whether prices include tax. Tax rate(s) ⚙️.
-- **OPEN:** Home collection fee? Flat, by area, or waived above an order value ⚙️?
-- **OPEN:** Minimum order value ⚙️?
-- **OPEN:** Coupons/promo codes in v1? Rules (percentage/flat, expiry, usage limits)?
+- *Built in B-16.* The order total is: tests total − coupon discount + home collection fee. Tax is either
+  included in that amount or added on top. Orders keep each figure as charged.
+- **Collection fee (client, 2026-10-30, our recommendation):** each service area has its own fee ⚙️ (empty
+  = free). It is free when the tests total after any coupon reaches `free_collection_above` ⚙️.
+  [Compared after the coupon.] `TODO(client)`
+- **Tax (client, 2026-10-30, our recommendation):** one rate `tax_rate_basis_points` ⚙️, applied to the tests
+  after the discount plus the fee. Admins choose whether prices include it (shown as "Includes ₹X tax") or
+  it is added at checkout (`tax_inclusive` ⚙️). [Included by default; no rate = no tax.] `TODO(client)`
+  It is rounded half-up to the minor unit.
+- **Minimum order (client, 2026-10-30):** `minimum_order_amount` ⚙️, compared with the tests total before
+  any coupon. Empty means no minimum.
+- **Coupons (client, 2026-10-30):** Admin → Coupons.
+  - A code (not case-sensitive) gives a percent off (with an optional cap) or a fixed amount off the tests
+    total, never more than the total.
+  - Optional: start and end dates (inclusive, site timezone), a total use limit, a per-customer limit,
+    a minimum tests total, and an on/off switch.
+  - Customers apply one code at checkout. [Cancelled or refunded orders give their use back.]
+    `TODO(client)` Used coupons can't be deleted, only switched off.
 - Money is stored as integer minor units (e.g. paise/cents). [convention, see CONVENTIONS.md]
 
 ## 5. Ordering flow
@@ -111,7 +125,7 @@ All amounts come from the database or settings. Never from code.
   - **Prescriptions:** admins flag tests that need one; checkout requires an upload when the order
     contains such a test (or a package that includes one). Stored privately; only the customer and
     admins can download it. [PDF, JPG or PNG up to 10 MB.] `TODO(client)`
-  - [Total = sum of item prices × patients; no fee, tax or discount until §4 is settled.] `TODO(client)`
+  - The total follows §4 (coupon, collection fee, tax).
   - The cart is emptied when the order is placed. Orders keep snapshots of what was booked (names,
     prices, package contents, patient details, address).
 
@@ -244,6 +258,12 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | `cancellation_cutoff_hours` | Customers can cancel/reschedule until this many hours before the slot | none; only admins can until set |
 | `payment_gateway` | Online payment gateway (`stripe`, `razorpay`), or off; keys come from `.env` | off |
 | `payment_hold_minutes` | How long an unpaid online order holds its slot | [15] `TODO(client)` |
+| `free_collection_above` | Home collection is free from this tests total (after any coupon) | none; fee always charged |
+| `minimum_order_amount` | Smallest tests total that can be checked out | none |
+| `tax_rate_basis_points` | Tax rate (1800 = 18%) | none; no tax |
+| `tax_inclusive` | Prices include tax (true) or tax is added at checkout | [true] `TODO(client)` |
+| Per service area (DB) | Home collection fee | 0 (free) |
+| `coupons` (DB) | Promo codes and their rules | none |
 | `notify_by_email` | Email customers about their orders | on |
 | `sms_driver` | SMS driver (`log`, `twilio`), or off; Twilio keys come from `.env` | off |
 | `reminder_hours_before` | Hours before the slot to send the collection reminder; 0 = off | [24] `TODO(client)` |
@@ -267,6 +287,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-30 | Fees, tax & coupons (B-16): per-area fee, free above a set value; one tax rate, included or added; coupons with %/fixed, dates, limits, minimum; minimum order | Client (fee and tax on our recommendation) |
 | 2026-10-30 | Collectors (B-15): per-area collectors; admins assign and collectors take visits; collected, failed visit, payment taken; customer told the collector's name | Client |
 | 2026-10-29 | Lab & reports (B-14): lab staff role with lab area + read-only orders; lab staff/admins mark collected and received; one PDF per item per patient; report ready by email (attached) and link | Client |
 | 2026-10-29 | Notifications (B-13): email + SMS (WhatsApp later); SMS drivers, admin picks; admin-editable wording; customer SMS opt-out; admin alerts incl. refund failures | Client |

@@ -26,6 +26,14 @@ class Settings
 
     public const PAYMENT_HOLD_MINUTES = 'payment_hold_minutes';
 
+    public const FREE_COLLECTION_ABOVE = 'free_collection_above';
+
+    public const MINIMUM_ORDER_AMOUNT = 'minimum_order_amount';
+
+    public const TAX_RATE_BASIS_POINTS = 'tax_rate_basis_points';
+
+    public const TAX_INCLUSIVE = 'tax_inclusive';
+
     public const NOTIFY_BY_EMAIL = 'notify_by_email';
 
     public const SMS_DRIVER = 'sms_driver';
@@ -110,6 +118,62 @@ class Settings
     public function setPaymentHoldMinutes(?int $minutes): void
     {
         $this->set(self::PAYMENT_HOLD_MINUTES, $minutes);
+    }
+
+    /**
+     * Home collection is free when the tests total (after any coupon) reaches this, in minor units.
+     * Null: never free (client, 2026-10-30: per-area fee, free above a site-wide value).
+     */
+    public function freeCollectionAbove(): ?int
+    {
+        $amount = $this->get(self::FREE_COLLECTION_ABOVE);
+
+        return is_numeric($amount) ? (int) $amount : null;
+    }
+
+    public function setFreeCollectionAbove(?int $amount): void
+    {
+        $this->set(self::FREE_COLLECTION_ABOVE, $amount);
+    }
+
+    /** Smallest tests total that can be checked out, in minor units; null for no minimum. */
+    public function minimumOrderAmount(): ?int
+    {
+        $amount = $this->get(self::MINIMUM_ORDER_AMOUNT);
+
+        return is_numeric($amount) ? (int) $amount : null;
+    }
+
+    public function setMinimumOrderAmount(?int $amount): void
+    {
+        $this->set(self::MINIMUM_ORDER_AMOUNT, $amount);
+    }
+
+    /** Tax rate in basis points (1800 = 18%); null when no tax is applied. */
+    public function taxRateBasisPoints(): ?int
+    {
+        $rate = $this->get(self::TAX_RATE_BASIS_POINTS);
+
+        return is_numeric($rate) && (int) $rate > 0 ? (int) $rate : null;
+    }
+
+    public function setTaxRateBasisPoints(?int $rate): void
+    {
+        $this->set(self::TAX_RATE_BASIS_POINTS, $rate);
+    }
+
+    /**
+     * Whether prices already include tax (the tax is shown as a part of the total) or tax is added
+     * on top. TODO(client): defaults to included; confirm for the launch country.
+     */
+    public function taxInclusive(): bool
+    {
+        return (bool) $this->get(self::TAX_INCLUSIVE, true);
+    }
+
+    public function setTaxInclusive(bool $inclusive): void
+    {
+        $this->set(self::TAX_INCLUSIVE, $inclusive);
     }
 
     /** Whether customers get order emails (client, 2026-10-29: admins switch channels site-wide). On until turned off. */

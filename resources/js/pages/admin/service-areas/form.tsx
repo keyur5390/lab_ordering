@@ -31,6 +31,7 @@ export default function ServiceAreaForm({ area, types, countries, map }: Service
         name: area?.name ?? '',
         type: area?.type ?? ('postcodes' as ServiceAreaType),
         is_active: area?.is_active ?? true,
+        collection_fee: area && area.collection_fee_amount > 0 ? area.collection_fee : '',
         country: area?.country ?? '',
         postcodes: area?.postcodes?.join('\n') ?? '',
         center_latitude: area?.center?.[0]?.toString() ?? '',
@@ -80,6 +81,16 @@ export default function ServiceAreaForm({ area, types, countries, map }: Service
                             Published (addresses inside it can book home collection)
                         </Label>
                     </div>
+                    <FormField
+                        id="collection_fee"
+                        label="Home collection fee (optional)"
+                        hint="Charged once per order. Leave empty for free collection. The amount above which collection is free is in Settings."
+                        inputMode="decimal"
+                        className="sm:w-48"
+                        value={data.collection_fee}
+                        onChange={(e) => setData('collection_fee', e.target.value)}
+                        error={errors.collection_fee}
+                    />
                 </div>
 
                 <fieldset className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6">

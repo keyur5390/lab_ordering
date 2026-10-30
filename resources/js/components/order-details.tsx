@@ -121,10 +121,52 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                     ))}
                 </ul>
 
-                <div className="mt-4 flex items-baseline justify-between rounded-card border border-border bg-surface p-4">
-                    <span className="font-semibold">Total</span>
-                    <Price amount={order.total_amount} currencyCode={order.currency} className="text-lg" />
-                </div>
+                <dl className="mt-4 space-y-1.5 rounded-card border border-border bg-surface p-4 text-sm">
+                    <div className="flex justify-between gap-3">
+                        <dt>Tests</dt>
+                        <dd>
+                            <Price amount={order.subtotal_amount} currencyCode={order.currency} />
+                        </dd>
+                    </div>
+                    {order.discount_amount > 0 && (
+                        <div className="flex justify-between gap-3">
+                            <dt>Code {order.coupon_code}</dt>
+                            <dd>
+                                −<Price amount={order.discount_amount} currencyCode={order.currency} />
+                            </dd>
+                        </div>
+                    )}
+                    <div className="flex justify-between gap-3">
+                        <dt>Home collection</dt>
+                        <dd>
+                            {order.collection_fee_amount > 0 ? (
+                                <Price amount={order.collection_fee_amount} currencyCode={order.currency} />
+                            ) : (
+                                'Free'
+                            )}
+                        </dd>
+                    </div>
+                    {order.tax_rate_percent !== null && !order.tax_inclusive && (
+                        <div className="flex justify-between gap-3">
+                            <dt>Tax ({order.tax_rate_percent}%)</dt>
+                            <dd>
+                                <Price amount={order.tax_amount} currencyCode={order.currency} />
+                            </dd>
+                        </div>
+                    )}
+                    <div className="flex items-baseline justify-between gap-3 border-t border-border pt-3">
+                        <dt className="text-base font-semibold">Total</dt>
+                        <dd>
+                            <Price amount={order.total_amount} currencyCode={order.currency} className="text-lg" />
+                        </dd>
+                    </div>
+                    {order.tax_rate_percent !== null && order.tax_inclusive && (
+                        <p className="text-xs text-muted">
+                            Includes <Price amount={order.tax_amount} currencyCode={order.currency} /> tax (
+                            {order.tax_rate_percent}%).
+                        </p>
+                    )}
+                </dl>
             </section>
 
             {order.payment && order.payment.refunds.length > 0 && (

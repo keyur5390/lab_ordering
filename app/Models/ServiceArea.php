@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $capacity_per_slot
  * @property int|null $lead_time_minutes
  * @property int|null $booking_window_days
+ * @property int $collection_fee_amount
  */
 class ServiceArea extends Model
 {
@@ -37,7 +38,7 @@ class ServiceArea extends Model
      */
     protected $fillable = [
         'name', 'type', 'country', 'center_latitude', 'center_longitude', 'radius_meters', 'polygon', 'is_active',
-        'slot_minutes', 'capacity_per_slot', 'lead_time_minutes', 'booking_window_days',
+        'slot_minutes', 'capacity_per_slot', 'lead_time_minutes', 'booking_window_days', 'collection_fee_amount',
     ];
 
     /**
@@ -56,6 +57,7 @@ class ServiceArea extends Model
             'capacity_per_slot' => 'integer',
             'lead_time_minutes' => 'integer',
             'booking_window_days' => 'integer',
+            'collection_fee_amount' => 'integer',
         ];
     }
 

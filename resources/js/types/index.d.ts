@@ -189,6 +189,9 @@ export interface ServiceArea {
     is_active: boolean;
     /** Has slot settings, so it offers collection slots. */
     has_schedule: boolean;
+    /** Home collection fee, as a decimal for the form and in minor units. */
+    collection_fee: string;
+    collection_fee_amount: number;
 }
 
 export type SlotStatus = 'available' | 'full' | 'closed' | 'too_soon';
@@ -250,6 +253,13 @@ export interface Order {
     currency: string;
     subtotal_amount: number;
     total_amount: number;
+    coupon_code: string | null;
+    discount_amount: number;
+    collection_fee_amount: number;
+    /** Null when no tax applied. */
+    tax_rate_percent: number | null;
+    tax_inclusive: boolean;
+    tax_amount: number;
     items_count?: number;
     customer?: { name: string; email: string };
     patients?: {

@@ -4,9 +4,11 @@ namespace Database\Seeders;
 
 use App\Actions\CreateSelfPatient;
 use App\Enums\Currency;
+use App\Enums\DiscountType;
 use App\Enums\PatientRelationship;
 use App\Enums\Sex;
 use App\Enums\UserRole;
+use App\Models\Coupon;
 use App\Models\ServiceArea;
 use App\Models\User;
 use App\Settings\Settings;
@@ -57,6 +59,18 @@ class DatabaseSeeder extends Seeder
         app(Settings::class)->setCancellationCutoffHours(12);
 
         $this->call([CatalogueSeeder::class, ServiceAreaSeeder::class]);
+
+        // Demo pricing: ₹49 collection in Pune, free from ₹999; a 10% welcome code.
+        ServiceArea::where('name', 'like', 'Pune%')->update(['collection_fee_amount' => 4900]);
+        app(Settings::class)->setFreeCollectionAbove(99900);
+        Coupon::create([
+            'code' => 'WELCOME10',
+            'description' => '10% off your first order',
+            'discount_type' => DiscountType::Percent,
+            'discount_value' => 10,
+            'max_discount_amount' => 50000,
+            'per_customer_limit' => 1,
+        ]);
 
         // Demo collector covering every demo area.
         User::factory()->create([

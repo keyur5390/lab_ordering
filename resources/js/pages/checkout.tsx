@@ -5,6 +5,7 @@ import { Alert } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { InputError } from '@/components/ui/input-error';
 import { TextLink } from '@/components/ui/text-link';
 import AppLayout from '@/layouts/app-layout';
@@ -12,7 +13,7 @@ import { cn } from '@/lib/utils';
 import type { Address, CartLine, Patient, PaymentMethod, SlotDay } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { FileUp } from 'lucide-react';
-import type { FormEvent, ReactNode } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 
 interface CheckoutProps {
     /** Available cart lines. */
@@ -25,6 +26,32 @@ interface CheckoutProps {
     /** Whether customers can pay online (a gateway is set up). */
     onlinePayment: boolean;
     paymentHoldMinutes: number;
+    /** Worked out on the server (OrderPricingService); reloaded as the order changes. */
+    quote: CheckoutQuote;
+    /** The code the customer entered, if any, and why it can't be used. */
+    coupon: { code: string; description: string | null; error: string | null } | null;
+}
+
+interface CheckoutQuote {
+    subtotal: number;
+    discount: number;
+    collection_fee: number;
+    collection_fee_waived: boolean;
+    tax_rate_basis_points: number | null;
+    tax_inclusive: boolean;
+    tax: number;
+    total: number;
+    minimum: number | null;
+    free_collection_above: number | null;
+}
+
+function SummaryRow({ label, children, muted }: { label: ReactNode; children: ReactNode; muted?: boolean }) {
+    return (
+        <div className={cn('flex justify-between gap-3 text-sm', muted && 'text-muted')}>
+            <span className="min-w-0">{label}</span>
+            <span className="shrink-0">{children}</span>
+        </div>
+    );
 }
 
 const paymentOptions: { value: PaymentMethod; title: string; hint: (holdMinutes: number) => string }[] = [
@@ -63,6 +90,8 @@ export default function Checkout({
     prescriptionRequired,
     onlinePayment,
     paymentHoldMinutes,
+    quote,
+    coupon,
 }: CheckoutProps) {
     const selfPatient = patients.find((patient) => patient.is_self && patient.is_complete);
     const { data, setData, post, processing, errors, transform } = useForm({
@@ -81,22 +110,43 @@ export default function Checkout({
     const paymentStep = prescriptionRequired ? 5 : 4;
     const payOnline = data.payment_method === 'online';
 
-    // Price is per patient; the server works out the final total.
-    const total = lines.reduce((sum, line) => sum + line.price_amount * (data.items[line.id]?.length ?? 0), 0);
+    const [couponInput, setCouponInput] = useState(coupon?.code ?? '');
+    const appliedCoupon = coupon && !coupon.error ? coupon.code : '';
+    const belowMinimum = quote.minimum !== null && quote.subtotal < quote.minimum;
+    const taxPercent = quote.tax_rate_basis_points !== null ? quote.tax_rate_basis_points / 100 : null;
 
-    transform((form) => ({ ...form, prescription: prescriptionRequired ? form.prescription : null }));
+    transform((form) => ({
+        ...form,
+        prescription: prescriptionRequired ? form.prescription : null,
+        coupon_code: appliedCoupon || null,
+    }));
+
+    /** Re-prices the order on the server (and reloads slots when the address changes). */
+    const refresh = (next: { items?: Record<string, number[]>; address_id?: number | null; coupon?: string }) => {
+        const items = next.items ?? data.items;
+        router.reload({
+            only: next.address_id !== undefined ? ['slots', 'addressId', 'quote', 'coupon'] : ['quote', 'coupon'],
+            data: {
+                address_id: next.address_id ?? data.address_id,
+                counts: Object.fromEntries(Object.entries(items).map(([id, patients]) => [id, patients.length])),
+                coupon: next.coupon ?? appliedCoupon,
+            },
+        });
+    };
 
     const togglePatient = (lineId: number, patientId: number, checked: boolean) => {
         const current = data.items[lineId] ?? [];
-        setData('items', {
+        const items = {
             ...data.items,
             [lineId]: checked ? [...current, patientId] : current.filter((id) => id !== patientId),
-        });
+        };
+        setData('items', items);
+        refresh({ items });
     };
 
     const chooseAddress = (id: number) => {
         setData((form) => ({ ...form, address_id: id, slot_starts_at: null }));
-        router.reload({ only: ['slots', 'addressId'], data: { address_id: id } });
+        refresh({ address_id: id });
     };
 
     const submit = (e: FormEvent) => {
@@ -318,15 +368,98 @@ export default function Checkout({
                                 );
                             })}
                         </ul>
+                        <div className="space-y-1.5 border-t border-border pt-3">
+                            <SummaryRow label="Tests">
+                                <Price amount={quote.subtotal} />
+                            </SummaryRow>
+                            {quote.discount > 0 && (
+                                <SummaryRow label={`Code ${appliedCoupon}`}>
+                                    −<Price amount={quote.discount} />
+                                </SummaryRow>
+                            )}
+                            {data.address_id && (
+                                <SummaryRow label="Home collection">
+                                    {quote.collection_fee > 0 ? <Price amount={quote.collection_fee} /> : 'Free'}
+                                </SummaryRow>
+                            )}
+                            {quote.collection_fee > 0 && quote.free_collection_above !== null && (
+                                <p className="text-xs text-muted">
+                                    Free collection on orders of <Price amount={quote.free_collection_above} /> or more.
+                                </p>
+                            )}
+                            {taxPercent !== null && !quote.tax_inclusive && (
+                                <SummaryRow label={`Tax (${taxPercent}%)`}>
+                                    <Price amount={quote.tax} />
+                                </SummaryRow>
+                            )}
+                        </div>
                         <div className="flex items-baseline justify-between border-t border-border pt-3">
                             <span className="font-semibold">Total</span>
-                            <Price amount={total} className="text-lg" />
+                            <Price amount={quote.total} className="text-lg" />
                         </div>
+                        {taxPercent !== null && quote.tax_inclusive && (
+                            <p className="text-xs text-muted">
+                                Includes <Price amount={quote.tax} /> tax ({taxPercent}%).
+                            </p>
+                        )}
+
+                        <div className="space-y-1.5 border-t border-border pt-3">
+                            <label htmlFor="coupon" className="text-sm font-medium">
+                                Promo code
+                            </label>
+                            <div className="flex gap-2">
+                                <Input
+                                    id="coupon"
+                                    value={couponInput}
+                                    autoCapitalize="characters"
+                                    aria-describedby={
+                                        coupon?.error || allErrors.coupon_code ? 'coupon-error' : undefined
+                                    }
+                                    onChange={(e) => setCouponInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            refresh({ coupon: couponInput.trim() });
+                                        }
+                                    }}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    disabled={!couponInput.trim()}
+                                    onClick={() => refresh({ coupon: couponInput.trim() })}
+                                >
+                                    Apply
+                                </Button>
+                            </div>
+                            {appliedCoupon && (
+                                <p className="text-sm text-success-600" role="status">
+                                    {appliedCoupon} applied{coupon?.description && `: ${coupon.description}`}.{' '}
+                                    <button
+                                        type="button"
+                                        className="font-medium text-primary-700 underline"
+                                        onClick={() => {
+                                            setCouponInput('');
+                                            refresh({ coupon: '' });
+                                        }}
+                                    >
+                                        Remove
+                                    </button>
+                                </p>
+                            )}
+                            <InputError id="coupon-error" message={coupon?.error ?? allErrors.coupon_code} />
+                        </div>
+
+                        {belowMinimum && quote.minimum !== null && (
+                            <Alert tone="warning">
+                                The minimum order is <Price amount={quote.minimum} />. Add more tests to continue.
+                            </Alert>
+                        )}
                         <p className="text-sm text-muted">
                             Payment: {payOnline ? 'online, on the next page' : 'pay at collection'}.
                         </p>
                         {!onlinePayment && <InputError message={errors.payment_method} />}
-                        <Button type="submit" className="w-full" processing={processing}>
+                        <Button type="submit" className="w-full" processing={processing} disabled={belowMinimum}>
                             {payOnline ? 'Continue to payment' : 'Place order'}
                         </Button>
                     </aside>

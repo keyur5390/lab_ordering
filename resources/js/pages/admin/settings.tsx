@@ -17,6 +17,10 @@ interface SettingsProps {
     paymentGateway: string | null;
     gateways: { value: string; label: string; configured: boolean; env_keys: string }[];
     paymentHoldMinutes: number;
+    freeCollectionAbove: string | null;
+    minimumOrder: string | null;
+    taxRate: string | null;
+    taxInclusive: boolean;
     notifyByEmail: boolean;
     smsDriver: string | null;
     smsDrivers: { value: string; label: string; configured: boolean; env_keys: string | null }[];
@@ -33,6 +37,10 @@ export default function Settings({
     paymentGateway,
     gateways,
     paymentHoldMinutes,
+    freeCollectionAbove,
+    minimumOrder,
+    taxRate,
+    taxInclusive,
     notifyByEmail,
     smsDriver,
     smsDrivers,
@@ -45,6 +53,10 @@ export default function Settings({
         cancellation_cutoff_hours: cancellationCutoffHours?.toString() ?? '',
         payment_gateway: paymentGateway ?? '',
         payment_hold_minutes: paymentHoldMinutes.toString(),
+        free_collection_above: freeCollectionAbove ?? '',
+        minimum_order: minimumOrder ?? '',
+        tax_rate: taxRate ?? '',
+        tax_inclusive: taxInclusive,
         notify_by_email: notifyByEmail,
         sms_driver: smsDriver ?? '',
         reminder_hours_before: reminderHoursBefore.toString(),
@@ -136,6 +148,61 @@ export default function Settings({
                         onChange={(e) => setData('cancellation_cutoff_hours', e.target.value)}
                         error={errors.cancellation_cutoff_hours}
                     />
+                </section>
+
+                <section className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6">
+                    <h2 className="text-base font-semibold">Pricing</h2>
+                    <p className="text-sm text-muted">
+                        Each service area has its own home collection fee. Promo codes are under{' '}
+                        <TextLink href={route('admin.coupons.index')}>Coupons</TextLink>.
+                    </p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <FormField
+                            id="free_collection_above"
+                            label="Free collection on orders from"
+                            hint="Tests total after any promo code. Leave empty to always charge the fee."
+                            inputMode="decimal"
+                            value={data.free_collection_above}
+                            onChange={(e) => setData('free_collection_above', e.target.value)}
+                            error={errors.free_collection_above}
+                        />
+                        <FormField
+                            id="minimum_order"
+                            label="Minimum order"
+                            hint="Tests total. Leave empty for no minimum."
+                            inputMode="decimal"
+                            value={data.minimum_order}
+                            onChange={(e) => setData('minimum_order', e.target.value)}
+                            error={errors.minimum_order}
+                        />
+                        <FormField
+                            id="tax_rate"
+                            label="Tax rate (%)"
+                            hint="Leave empty for no tax."
+                            inputMode="decimal"
+                            value={data.tax_rate}
+                            onChange={(e) => setData('tax_rate', e.target.value)}
+                            error={errors.tax_rate}
+                        />
+                        <fieldset className="space-y-2">
+                            <legend className="text-sm font-medium">Prices</legend>
+                            {[
+                                { value: true, label: 'Include tax (tax is shown as part of the total)' },
+                                { value: false, label: 'Exclude tax (tax is added at checkout)' },
+                            ].map((option) => (
+                                <label key={String(option.value)} className="flex min-h-11 items-center gap-3 text-sm">
+                                    <input
+                                        type="radio"
+                                        name="tax_inclusive"
+                                        className="size-4 accent-primary-600"
+                                        checked={data.tax_inclusive === option.value}
+                                        onChange={() => setData('tax_inclusive', option.value)}
+                                    />
+                                    {option.label}
+                                </label>
+                            ))}
+                        </fieldset>
+                    </div>
                 </section>
 
                 <section className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6">

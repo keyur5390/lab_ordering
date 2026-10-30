@@ -6,7 +6,11 @@ use App\Http\Requests\PlaceOrderRequest;
 use App\Http\Resources\AddressResource;
 use App\Http\Resources\PatientResource;
 use App\Models\Address;
+use App\Models\Coupon;
+use App\Models\ServiceArea;
 use App\Services\CartService;
+use App\Services\CouponService;
+use App\Services\OrderPricingService;
 use App\Services\OrderService;
 use App\Services\Payments\PaymentGatewayException;
 use App\Services\PaymentService;
@@ -29,6 +33,9 @@ class CheckoutController extends Controller
         private ServiceAreaService $areas,
         private SlotService $slots,
         private PaymentService $payments,
+        private OrderPricingService $orderPricing,
+        private CouponService $coupons,
+        private Settings $settings,
     ) {}
 
     public function show(Request $request, Settings $settings): Response
@@ -46,6 +53,12 @@ class CheckoutController extends Controller
         $address = $addresses->firstWhere('id', $addressId);
         $area = $address ? $this->areas->coveringArea($address) : null;
 
+        // Worked out at most once per request, only when the page or a partial reload needs it.
+        $cached = null;
+        $pricing = function () use (&$cached, $request, $lines, $area) {
+            return $cached ??= $this->pricing($request, $lines->all(), $area);
+        };
+
         return Inertia::render('checkout', [
             'lines' => $lines,
             'totalAmount' => $this->cart->total($lines->all()),
@@ -55,9 +68,47 @@ class CheckoutController extends Controller
             // Reloaded on its own when the address changes.
             'slots' => fn () => $area ? $this->slots->days($area) : [],
             'prescriptionRequired' => $lines->contains('requires_prescription', true),
+            // Price breakdown (fee, coupon, tax), reloaded as patients, address and coupon change.
+            'quote' => fn () => $pricing()['quote'],
+            'coupon' => fn () => $pricing()['coupon'],
             'onlinePayment' => $this->payments->onlineAvailable(),
             'paymentHoldMinutes' => $settings->paymentHoldMinutes(),
         ])->toResponse($request);
+    }
+
+    /**
+     * The checkout summary's numbers, from OrderPricingService. Patient counts per cart item come from
+     * the page (`counts`); on first load each item is for the customer when their profile is complete.
+     *
+     * @param  list<array<string, mixed>>  $lines
+     * @return array{quote: array<string, mixed>, coupon: array<string, mixed>|null}
+     */
+    private function pricing(Request $request, array $lines, ?ServiceArea $area): array
+    {
+        $user = $request->user();
+        $counts = $request->input('counts');
+        $selfComplete = (bool) $user->patients()->get()->first(fn ($patient) => $patient->isSelf())?->isComplete();
+        $patientCount = $user->patients()->count();
+        $subtotal = collect($lines)->sum(fn (array $line) => $line['price_amount'] * (is_array($counts)
+            ? min(max((int) ($counts[$line['id']] ?? 0), 0), $patientCount)
+            : (int) $selfComplete));
+
+        $code = trim((string) $request->input('coupon'));
+        $coupon = $code !== '' ? $this->coupons->find($code) : null;
+        $problem = $code === '' ? null : ($coupon ? $this->coupons->problem($coupon, $user, $subtotal) : 'We don\'t recognise this code.');
+
+        return [
+            'quote' => [
+                ...$this->orderPricing->quote($subtotal, $area, $problem ? null : $coupon),
+                'minimum' => $this->settings->minimumOrderAmount(),
+                'free_collection_above' => $this->settings->freeCollectionAbove(),
+            ],
+            'coupon' => $code === '' ? null : [
+                'code' => Coupon::normalise($code),
+                'description' => $problem ? null : $coupon?->description,
+                'error' => $problem,
+            ],
+        ];
     }
 
     public function store(PlaceOrderRequest $request): Response
@@ -73,6 +124,7 @@ class CheckoutController extends Controller
             $request->slotStartsAt(),
             $request->file('prescription'),
             $request->paymentMethod(),
+            $request->validated('coupon_code'),
         );
 
         if (! $request->paymentMethod()->isOnline()) {

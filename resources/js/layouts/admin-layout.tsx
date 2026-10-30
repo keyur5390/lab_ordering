@@ -14,6 +14,7 @@ import {
     Menu,
     Package,
     Settings,
+    TicketPercent,
     Truck,
     X,
     type LucideIcon,
@@ -49,6 +50,7 @@ const navItems: NavItem[] = [
         activePattern: 'admin.service-areas.*',
         icon: MapPinned,
     },
+    { label: 'Coupons', routeName: 'admin.coupons.index', activePattern: 'admin.coupons.*', icon: TicketPercent },
     { label: 'Collectors', routeName: 'admin.collectors.index', activePattern: 'admin.collectors.*', icon: Truck },
     { label: 'Closures', routeName: 'admin.closures.index', activePattern: 'admin.closures.*', icon: CalendarOff },
     {

@@ -5,6 +5,7 @@ namespace App\Http\Requests\Admin;
 use App\Enums\Currency;
 use App\Enums\PaymentGatewayName;
 use App\Enums\SmsDriver;
+use App\Support\Money;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -32,6 +33,12 @@ class UpdateSettingsRequest extends FormRequest
             )],
             // Empty uses the default.
             'payment_hold_minutes' => ['nullable', 'integer', 'min:5', 'max:1440'],
+            // Pricing (client, 2026-10-30). Money in the chosen currency; empty turns each off.
+            'free_collection_above' => ['nullable', 'string', 'regex:'.Money::decimalPattern(Currency::tryFrom((string) $this->input('currency')))],
+            'minimum_order' => ['nullable', 'string', 'regex:'.Money::decimalPattern(Currency::tryFrom((string) $this->input('currency')))],
+            // Percent with up to 2 decimals, e.g. 18 or 5.5.
+            'tax_rate' => ['nullable', 'numeric', 'regex:/^\d{1,3}(\.\d{1,2})?$/', 'min:0', 'max:100'],
+            'tax_inclusive' => ['nullable', 'boolean'],
             'notify_by_email' => ['nullable', 'boolean'],
             // Empty turns SMS off. Only drivers whose keys are in .env can be chosen.
             'sms_driver' => ['nullable', Rule::enum(SmsDriver::class)->only(
@@ -51,6 +58,9 @@ class UpdateSettingsRequest extends FormRequest
     {
         return [
             'payment_gateway.enum' => 'Add this gateway\'s keys to the server settings (.env) before choosing it.',
+            'free_collection_above.regex' => 'Enter an amount like 999 or 999.50.',
+            'minimum_order.regex' => 'Enter an amount like 299 or 299.50.',
+            'tax_rate.regex' => 'Enter a percentage like 18 or 5.5.',
             'sms_driver.enum' => 'Add this provider\'s keys to the server settings (.env) before choosing it.',
         ];
     }

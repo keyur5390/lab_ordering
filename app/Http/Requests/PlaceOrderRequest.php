@@ -33,6 +33,7 @@ class PlaceOrderRequest extends FormRequest
             'address_id' => ['required', 'integer', Rule::exists('addresses', 'id')->where('user_id', $this->user()->id)],
             'slot_starts_at' => ['required', 'date'],
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
+            'coupon_code' => ['nullable', 'string', 'max:40'],
             // TODO(client): confirm accepted file types and size.
             'prescription' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
         ];
