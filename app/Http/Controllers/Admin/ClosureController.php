@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreClosureRequest;
+use App\Models\Branch;
 use App\Models\CollectionClosure;
 use App\Models\ServiceArea;
 use App\Settings\Settings;
@@ -13,7 +14,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Holidays and other closures (client, 2026-10-29: whole or part days; one area or all).
+ * Holidays and other closures (client, 2026-10-29: whole or part days; one area, one branch or everywhere).
  */
 class ClosureController extends Controller
 {
@@ -23,14 +24,14 @@ class ClosureController extends Controller
 
         return Inertia::render('admin/closures', [
             // Current and upcoming closures; past ones are kept but not listed.
-            'closures' => CollectionClosure::with('serviceArea:id,name')
+            'closures' => CollectionClosure::with(['serviceArea:id,name', 'branch:id,name'])
                 ->whereDate('ends_on', '>=', $today)
                 ->orderBy('starts_on')
                 ->orderBy('starts_at')
                 ->get()
                 ->map(fn (CollectionClosure $closure) => [
                     'id' => $closure->id,
-                    'area' => $closure->serviceArea?->name,
+                    'area' => $closure->serviceArea?->name ?? $closure->branch?->name,
                     'starts_on' => $closure->starts_on->toDateString(),
                     'ends_on' => $closure->ends_on->toDateString(),
                     'starts_at' => $closure->starts_at ? substr($closure->starts_at, 0, 5) : null,
@@ -39,6 +40,8 @@ class ClosureController extends Controller
                 ]),
             'areas' => ServiceArea::orderBy('name')->get(['id', 'name'])
                 ->map(fn (ServiceArea $area) => ['value' => (string) $area->id, 'label' => $area->name]),
+            'branches' => Branch::orderBy('name')->get(['id', 'name'])
+                ->map(fn (Branch $branch) => ['value' => (string) $branch->id, 'label' => $branch->name]),
             'today' => $today,
         ]);
     }

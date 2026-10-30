@@ -59,7 +59,7 @@ class OrderController extends Controller
 
         return Inertia::render('orders/reschedule', [
             'order' => OrderResource::make($order),
-            'slots' => $order->serviceArea ? $slots->days($order->serviceArea) : [],
+            'slots' => $order->schedule() ? $slots->days($order->schedule()) : [],
             'submitUrl' => route('orders.reschedule', $order),
             'backUrl' => route('orders.show', $order),
             'admin' => false,

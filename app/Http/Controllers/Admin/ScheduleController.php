@@ -24,7 +24,10 @@ class ScheduleController extends Controller
         Gate::authorize('update', $serviceArea);
 
         return Inertia::render('admin/service-areas/schedule', [
-            'area' => ['id' => $serviceArea->id, 'name' => $serviceArea->name],
+            'owner' => ['name' => $serviceArea->name, 'kind' => 'area'],
+            'submitUrl' => route('admin.service-areas.schedule.update', $serviceArea),
+            'backUrl' => route('admin.service-areas.index'),
+            'backLabel' => 'Service areas',
             'schedule' => [
                 'slot_minutes' => $serviceArea->slot_minutes,
                 'capacity_per_slot' => $serviceArea->capacity_per_slot,

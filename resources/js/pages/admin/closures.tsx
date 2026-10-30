@@ -26,6 +26,7 @@ interface Closure {
 interface ClosuresProps {
     closures: Closure[];
     areas: Option[];
+    branches: Option[];
     today: string;
 }
 
@@ -41,9 +42,10 @@ function when(closure: Closure): string {
         : `${date(closure.starts_on)} – ${date(closure.ends_on)}`;
 }
 
-export default function Closures({ closures, areas, today }: ClosuresProps) {
+export default function Closures({ closures, areas, branches, today }: ClosuresProps) {
     const { data, setData, post, processing, errors, reset } = useForm({
         service_area_id: '',
+        branch_id: '',
         starts_on: '',
         ends_on: '',
         whole_day: true,
@@ -60,7 +62,8 @@ export default function Closures({ closures, areas, today }: ClosuresProps) {
     return (
         <AdminLayout title="Closures">
             <p className="mb-6 max-w-3xl text-sm text-muted">
-                Holidays and other times when no home collections happen. Slots inside a closure show as closed.
+                Holidays and other times when no home collections or lab visits happen. Slots inside a closure show as
+                closed.
             </p>
 
             <form
@@ -70,19 +73,43 @@ export default function Closures({ closures, areas, today }: ClosuresProps) {
             >
                 <h2 className="text-base font-semibold">Add a closure</h2>
 
-                <Field id="service_area_id" label="Applies to" error={errors.service_area_id}>
+                <Field id="service_area_id" label="Applies to" error={errors.service_area_id ?? errors.branch_id}>
                     {(control) => (
                         <Select
                             {...control}
-                            value={data.service_area_id}
-                            onChange={(e) => setData('service_area_id', e.target.value)}
+                            value={
+                                data.branch_id
+                                    ? `branch:${data.branch_id}`
+                                    : data.service_area_id
+                                      ? `area:${data.service_area_id}`
+                                      : ''
+                            }
+                            onChange={(e) => {
+                                const [kind, id] = e.target.value.split(':');
+                                setData((form) => ({
+                                    ...form,
+                                    service_area_id: kind === 'area' ? (id ?? '') : '',
+                                    branch_id: kind === 'branch' ? (id ?? '') : '',
+                                }));
+                            }}
                         >
-                            <option value="">All service areas</option>
-                            {areas.map((area) => (
-                                <option key={area.value} value={area.value}>
-                                    {area.label}
-                                </option>
-                            ))}
+                            <option value="">Everywhere (all areas and branches)</option>
+                            <optgroup label="Service areas (home collection)">
+                                {areas.map((area) => (
+                                    <option key={area.value} value={`area:${area.value}`}>
+                                        {area.label}
+                                    </option>
+                                ))}
+                            </optgroup>
+                            {branches.length > 0 && (
+                                <optgroup label="Branches (lab visits)">
+                                    {branches.map((branch) => (
+                                        <option key={branch.value} value={`branch:${branch.value}`}>
+                                            {branch.label}
+                                        </option>
+                                    ))}
+                                </optgroup>
+                            )}
                         </Select>
                     )}
                 </Field>
@@ -169,7 +196,7 @@ export default function Closures({ closures, areas, today }: ClosuresProps) {
                                 <div className="min-w-0">
                                     <p className="font-medium">{when(closure)}</p>
                                     <p className="text-sm text-muted">
-                                        {closure.area ?? 'All service areas'}
+                                        {closure.area ?? 'Everywhere'}
                                         {closure.reason && ` · ${closure.reason}`}
                                     </p>
                                 </div>

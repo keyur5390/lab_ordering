@@ -121,7 +121,7 @@ All amounts come from the database or settings. Never from code.
   - One order can cover several patients: each cart item is booked for one or more of the customer's
     complete patient profiles, and the price is per patient. One address and one slot per order (one
     home visit).
-  - Only home collection for now; lab visits wait on lab branches.
+  - Home collection or a lab visit at a branch (B-17). Lab visits have no collection fee and no collector.
   - **Prescriptions:** admins flag tests that need one; checkout requires an upload when the order
     contains such a test (or a package that includes one). Stored privately; only the customer and
     admins can download it. [PDF, JPG or PNG up to 10 MB.] `TODO(client)`
@@ -142,7 +142,13 @@ All amounts come from the database or settings. Never from code.
 - **Maps (client, 2026-10-29):** free option: Leaflet with OpenStreetMap tiles, no geocoding. The tile server
   is set in `.env` (`MAP_TILE_URL`); OpenStreetMap's own servers are for light use only, so use a tile
   provider in production. [Default map centre is world view.] `TODO(client)`: centre on the launch city.
-- Lab branches (for lab visits) are a separate task.
+- **Lab branches (client, 2026-10-30):** *Built in B-17.* Admin → Branches.
+  - Each branch has a name, an address with a map pin, optional phone, email, directions and a photo
+    (stored publicly; needs `php artisan storage:link`), and a published switch.
+  - It has its own schedule, set up like a service area's. Every branch takes every test.
+  - Customers choose "Home collection" or "Visit a lab" at checkout, then a branch and one of its slots.
+    The option appears only when a published branch has a schedule.
+  - Closures can apply to one area, one branch, or everywhere.
 - **Collection schedule (client, 2026-10-29): per service area** ⚙️. *Built in B-10.* Each area has:
   - slot length (minutes), collections per slot (capacity), lead time (earliest bookable slot, counted
     from now) and booking window (days, starting today);
@@ -263,6 +269,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | `tax_rate_basis_points` | Tax rate (1800 = 18%) | none; no tax |
 | `tax_inclusive` | Prices include tax (true) or tax is added at checkout | [true] `TODO(client)` |
 | Per service area (DB) | Home collection fee | 0 (free) |
+| Per branch (DB) | Address, contact, directions, photo; slot length, capacity, lead time, window, weekly hours | none; no slots until set |
 | `coupons` (DB) | Promo codes and their rules | none |
 | `notify_by_email` | Email customers about their orders | on |
 | `sms_driver` | SMS driver (`log`, `twilio`), or off; Twilio keys come from `.env` | off |
@@ -287,6 +294,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-30 | Lab branches (B-17): branches with address, pin, contact, directions, photo; own slot schedule; lab visits at checkout; all tests at every branch | Client |
 | 2026-10-30 | Fees, tax & coupons (B-16): per-area fee, free above a set value; one tax rate, included or added; coupons with %/fixed, dates, limits, minimum; minimum order | Client (fee and tax on our recommendation) |
 | 2026-10-30 | Collectors (B-15): per-area collectors; admins assign and collectors take visits; collected, failed visit, payment taken; customer told the collector's name | Client |
 | 2026-10-29 | Lab & reports (B-14): lab staff role with lab area + read-only orders; lab staff/admins mark collected and received; one PDF per item per patient; report ready by email (attached) and link | Client |

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ServiceAreaType;
+use App\Models\Contracts\HasSlotSchedule;
 use Database\Factories\ServiceAreaFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $booking_window_days
  * @property int $collection_fee_amount
  */
-class ServiceArea extends Model
+class ServiceArea extends Model implements HasSlotSchedule
 {
     /** @use HasFactory<ServiceAreaFactory> */
     use HasFactory;
@@ -89,6 +90,11 @@ class ServiceArea extends Model
     public function closures(): HasMany
     {
         return $this->hasMany(CollectionClosure::class);
+    }
+
+    public function scheduleKey(): string
+    {
+        return 'service_area_id';
     }
 
     /** Has everything needed to offer slots. */

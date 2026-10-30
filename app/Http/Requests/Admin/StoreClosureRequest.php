@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\Branch;
 use App\Models\ServiceArea;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -21,6 +22,7 @@ class StoreClosureRequest extends FormRequest
     {
         $this->merge([
             'service_area_id' => $this->filled('service_area_id') ? $this->input('service_area_id') : null,
+            'branch_id' => $this->filled('branch_id') ? $this->input('branch_id') : null,
             'ends_on' => $this->filled('ends_on') ? $this->input('ends_on') : $this->input('starts_on'),
             'whole_day' => $this->boolean('whole_day'),
         ]);
@@ -35,6 +37,8 @@ class StoreClosureRequest extends FormRequest
 
         return [
             'service_area_id' => ['nullable', 'integer', Rule::exists(ServiceArea::class, 'id')],
+            // One branch (B-17); a closure is for one area, one branch, or everywhere.
+            'branch_id' => ['nullable', 'integer', Rule::exists(Branch::class, 'id'), 'prohibits:service_area_id'],
             'starts_on' => ['required', 'date_format:Y-m-d'],
             'ends_on' => ['required', 'date_format:Y-m-d', 'after_or_equal:starts_on', ...($partial ? ['same:starts_on'] : [])],
             'whole_day' => ['boolean'],
@@ -72,6 +76,7 @@ class StoreClosureRequest extends FormRequest
 
         return [
             'service_area_id' => $this->validated('service_area_id'),
+            'branch_id' => $this->validated('branch_id'),
             'starts_on' => $this->validated('starts_on'),
             'ends_on' => $this->validated('ends_on'),
             'starts_at' => $wholeDay ? null : $this->validated('starts_at'),

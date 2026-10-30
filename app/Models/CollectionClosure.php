@@ -10,10 +10,11 @@ use Illuminate\Support\Carbon;
 
 /**
  * A holiday or other closure: whole day(s), or part of one day. Applies to one service area,
- * or to all of them when service_area_id is null.
+ * or one branch (B-17), or everywhere when neither is set.
  *
  * @property int $id
  * @property int|null $service_area_id
+ * @property int|null $branch_id
  * @property Carbon $starts_on
  * @property Carbon $ends_on
  * @property string|null $starts_at HH:MM[:SS], local time
@@ -28,7 +29,7 @@ class CollectionClosure extends Model
     /**
      * @var list<string>
      */
-    protected $fillable = ['service_area_id', 'starts_on', 'ends_on', 'starts_at', 'ends_at', 'reason'];
+    protected $fillable = ['service_area_id', 'branch_id', 'starts_on', 'ends_on', 'starts_at', 'ends_at', 'reason'];
 
     /**
      * @return array<string, string>
@@ -47,6 +48,14 @@ class CollectionClosure extends Model
     public function serviceArea(): BelongsTo
     {
         return $this->belongsTo(ServiceArea::class);
+    }
+
+    /**
+     * @return BelongsTo<Branch, $this>
+     */
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function isWholeDay(): bool

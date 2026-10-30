@@ -8,6 +8,7 @@ use App\Enums\DiscountType;
 use App\Enums\PatientRelationship;
 use App\Enums\Sex;
 use App\Enums\UserRole;
+use App\Models\Branch;
 use App\Models\Coupon;
 use App\Models\ServiceArea;
 use App\Models\User;
@@ -71,6 +72,25 @@ class DatabaseSeeder extends Seeder
             'max_discount_amount' => 50000,
             'per_customer_limit' => 1,
         ]);
+
+        // Demo lab branch, open Mon–Sat 07:00–13:00 with 15-minute slots.
+        $branch = Branch::create([
+            'name' => 'FC Road Lab (demo)',
+            'line1' => '21 Fergusson College Road',
+            'city' => 'Pune',
+            'region' => 'Maharashtra',
+            'postcode' => '411004',
+            'country' => 'IN',
+            'latitude' => 18.5236,
+            'longitude' => 73.8410,
+            'phone' => '+91 20 2555 0101',
+            'directions' => 'Ground floor, next to the pharmacy. Parking at the back.',
+            'slot_minutes' => 15,
+            'capacity_per_slot' => 3,
+            'lead_time_minutes' => 60,
+            'booking_window_days' => 14,
+        ]);
+        $branch->hours()->createMany(collect(range(1, 6))->map(fn (int $day) => ['weekday' => $day, 'opens_at' => '07:00', 'closes_at' => '13:00'])->all());
 
         // Demo collector covering every demo area.
         User::factory()->create([

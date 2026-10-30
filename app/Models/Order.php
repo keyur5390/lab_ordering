@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CollectionPaymentMethod;
+use App\Enums\CollectionType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\VisitFailureReason;
@@ -27,6 +28,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $received_at_lab_at
  * @property Carbon|null $report_ready_at
  * @property int|null $collector_id
+ * @property CollectionType $collection_type
+ * @property int|null $branch_id
  * @property Carbon|null $collector_assigned_at
  * @property Carbon|null $visit_failed_at
  * @property VisitFailureReason|null $visit_failure_reason
@@ -72,6 +75,7 @@ class Order extends Model
         return [
             'status' => OrderStatus::class,
             'payment_method' => PaymentMethod::class,
+            'collection_type' => CollectionType::class,
             'payment_expires_at' => 'datetime',
             'reminder_sent_at' => 'datetime',
             'collected_at' => 'datetime',
@@ -107,6 +111,20 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return BelongsTo<Branch, $this>
+     */
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    /** Where the slot comes from: the branch for lab visits, otherwise the service area. */
+    public function schedule(): ?Contracts\HasSlotSchedule
+    {
+        return $this->collection_type === CollectionType::LabVisit ? $this->branch : $this->serviceArea;
     }
 
     /**

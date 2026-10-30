@@ -3,21 +3,24 @@
 namespace App\Services;
 
 use App\Enums\CartItemType;
+use App\Enums\CollectionType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Models\Address;
+use App\Models\Branch;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Contracts\HasSlotSchedule;
 use App\Models\Coupon;
 use App\Models\LabPackage;
 use App\Models\LabTest;
 use App\Models\Order;
 use App\Models\Patient;
-use App\Models\ServiceArea;
 use App\Models\User;
 use App\Settings\Settings;
 use App\Support\Money;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -46,13 +49,14 @@ class OrderService
      * Places an order from the customer's cart. Each available cart item is booked for the
      * chosen patients; price is per patient. The cart is emptied afterwards. Pay-at-collection
      * orders are confirmed at once; online orders wait for payment, holding their slot for the
-     * admin-set hold time (client, 2026-10-29).
+     * admin-set hold time (client, 2026-10-29). The sample is taken at the customer's address (home
+     * collection, slot from the covering service area) or at a branch (lab visit, the branch's slots).
      *
      * @param  array<int, list<int>>  $patientIdsByCartItem  cart item id => patient ids
      *
      * @throws ValidationException
      */
-    public function place(User $user, Cart $cart, array $patientIdsByCartItem, Address $address, CarbonImmutable $slotStartsAt, ?UploadedFile $prescription, PaymentMethod $paymentMethod = PaymentMethod::PayAtCollection, ?string $couponCode = null): Order
+    public function place(User $user, Cart $cart, array $patientIdsByCartItem, Address|Branch $place, CarbonImmutable $slotStartsAt, ?UploadedFile $prescription, PaymentMethod $paymentMethod = PaymentMethod::PayAtCollection, ?string $couponCode = null): Order
     {
         $currency = $this->settings->currency()
             ?? throw ValidationException::withMessages(['order' => 'Ordering is not open yet. Please try again later.']);
@@ -81,8 +85,12 @@ class OrderService
             throw ValidationException::withMessages($errors);
         }
 
-        $area = $this->areas->coveringArea($address);
-        if (! $area?->hasSchedule()) {
+        $labVisit = $place instanceof Branch;
+        $schedule = $labVisit ? $place : $this->areas->coveringArea($place);
+        if ($labVisit && (! $place->is_active || ! $place->hasSchedule())) {
+            throw ValidationException::withMessages(['branch_id' => 'This branch is not taking bookings.']);
+        }
+        if (! $schedule?->hasSchedule()) {
             throw ValidationException::withMessages(['address_id' => 'We do not collect at this address yet.']);
         }
 
@@ -103,20 +111,26 @@ class OrderService
             throw ValidationException::withMessages(['order' => 'The minimum order is '.Money::format($minimum, $currency->value).'.']);
         }
 
-        $order = DB::transaction(function () use ($user, $cart, $lines, $subtotal, $address, $area, $slotStartsAt, $prescription, $currency, $paymentMethod, $online, $couponCode) {
-            $this->lockAndCheckSlot($area, $slotStartsAt);
+        $order = DB::transaction(function () use ($user, $cart, $lines, $subtotal, $place, $labVisit, $schedule, $slotStartsAt, $prescription, $currency, $paymentMethod, $online, $couponCode) {
+            $this->lockAndCheckSlot($schedule, $slotStartsAt);
             $coupon = $couponCode ? $this->lockAndCheckCoupon($couponCode, $user, $subtotal) : null;
-            $price = $this->orderPricing->quote($subtotal, $area, $coupon);
+            // Lab visits have no collection fee.
+            $price = $this->orderPricing->quote($subtotal, $labVisit ? null : $schedule, $coupon);
 
             $order = $user->orders()->create([
                 'status' => $online ? OrderStatus::PendingPayment : OrderStatus::Confirmed,
                 'payment_method' => $paymentMethod,
                 'payment_expires_at' => $online ? now()->addMinutes($this->settings->paymentHoldMinutes()) : null,
-                'service_area_id' => $area->id,
+                'collection_type' => $labVisit ? CollectionType::LabVisit : CollectionType::Home,
+                'service_area_id' => $labVisit ? null : $schedule->id,
+                'branch_id' => $labVisit ? $place->id : null,
                 'slot_starts_at' => $slotStartsAt->utc(),
-                'slot_ends_at' => $slotStartsAt->addMinutes($area->slot_minutes)->utc(),
-                'address_id' => $address->id,
-                'address' => $address->only(['label', 'line1', 'line2', 'city', 'region', 'postcode', 'country', 'latitude', 'longitude']),
+                'slot_ends_at' => $slotStartsAt->addMinutes($schedule->slot_minutes)->utc(),
+                'address_id' => $labVisit ? null : $place->id,
+                // Where the sample is taken, as booked: the customer's address or the branch's.
+                'address' => $labVisit
+                    ? $place->addressSnapshot()
+                    : $place->only(['label', 'line1', 'line2', 'city', 'region', 'postcode', 'country', 'latitude', 'longitude']),
                 'currency' => $currency->value,
                 'subtotal_amount' => $subtotal,
                 'coupon_id' => $coupon?->id,
@@ -177,7 +191,7 @@ class OrderService
      */
     public function reschedule(Order $order, CarbonImmutable $slotStartsAt): void
     {
-        $area = $order->serviceArea;
+        $area = $order->schedule();
         if (! $area) {
             throw ValidationException::withMessages(['slot_starts_at' => 'This order can no longer be rescheduled online.']);
         }
@@ -220,9 +234,9 @@ class OrderService
      *
      * @throws ValidationException
      */
-    private function lockAndCheckSlot(ServiceArea $area, CarbonImmutable $slotStartsAt): void
+    private function lockAndCheckSlot(HasSlotSchedule&Model $area, CarbonImmutable $slotStartsAt): void
     {
-        ServiceArea::whereKey($area->id)->lockForUpdate()->first();
+        $area->newQuery()->whereKey($area->id)->lockForUpdate()->first();
 
         if (! $this->slots->isBookable($area, $slotStartsAt)) {
             throw ValidationException::withMessages(['slot_starts_at' => 'That slot is no longer available. Please choose another.']);

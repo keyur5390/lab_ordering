@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\CollectionType;
 use App\Enums\PaymentMethod;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -19,18 +20,27 @@ class PlaceOrderRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge(['collection_type' => $this->input('collection_type', CollectionType::Home->value)]);
+    }
+
     /**
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
+        $labVisit = $this->input('collection_type') === CollectionType::LabVisit->value;
+
         return [
             // cart item id => list of patient ids
             'items' => ['required', 'array'],
             'items.*' => ['array'],
             // Not `distinct`: that compares across all items, and one patient can have several items.
             'items.*.*' => ['integer'],
-            'address_id' => ['required', 'integer', Rule::exists('addresses', 'id')->where('user_id', $this->user()->id)],
+            'collection_type' => ['required', Rule::enum(CollectionType::class)],
+            'address_id' => $labVisit ? ['nullable'] : ['required', 'integer', Rule::exists('addresses', 'id')->where('user_id', $this->user()->id)],
+            'branch_id' => $labVisit ? ['required', 'integer', Rule::exists('branches', 'id')->where('is_active', true)] : ['nullable'],
             'slot_starts_at' => ['required', 'date'],
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)],
             'coupon_code' => ['nullable', 'string', 'max:40'],
@@ -47,6 +57,8 @@ class PlaceOrderRequest extends FormRequest
         return [
             'address_id.required' => 'Choose an address for the collection.',
             'address_id.exists' => 'Choose one of your addresses.',
+            'branch_id.required' => 'Choose a branch to visit.',
+            'branch_id.exists' => 'Choose one of our branches.',
             'slot_starts_at.required' => 'Choose a collection slot.',
             'payment_method.required' => 'Choose how you would like to pay.',
             'prescription.mimes' => 'Upload the prescription as a PDF, JPG or PNG.',

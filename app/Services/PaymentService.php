@@ -9,7 +9,6 @@ use App\Enums\PaymentStatus;
 use App\Enums\RefundStatus;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\ServiceArea;
 use App\Models\User;
 use App\Services\Payments\InvalidWebhookSignature;
 use App\Services\Payments\PaymentGateway;
@@ -296,12 +295,12 @@ class PaymentService
     /** For a late payment: whether the order's slot can still be booked. */
     private function slotStillFree(Order $order): bool
     {
-        $area = $order->serviceArea;
+        $area = $order->schedule();
         if (! $area) {
             return false;
         }
 
-        ServiceArea::whereKey($area->id)->lockForUpdate()->first();
+        $area->newQuery()->whereKey($area->id)->lockForUpdate()->first();
 
         return $this->slots->isBookable($area, CarbonImmutable::parse($order->slot_starts_at));
     }

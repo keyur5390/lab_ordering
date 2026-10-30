@@ -3,16 +3,17 @@
 namespace App\Services;
 
 use App\Enums\OrderStatus;
+use App\Models\BranchHour;
 use App\Models\CollectionClosure;
+use App\Models\Contracts\HasSlotSchedule;
 use App\Models\Order;
-use App\Models\ServiceArea;
 use App\Models\ServiceAreaHour;
 use App\Settings\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * Home-collection slots for a service area (PROJECT.md §6). Slots come from the area's weekly
+ * Slots for a service area (home collection, PROJECT.md §6) or a branch (lab visits, B-17). Slots come from the area's weekly
  * hours, stepped by its slot length, in the site timezone. Every slot in the booking window is
  * returned with a status, so the picker can show unavailable ones disabled (DESIGN.md §6).
  */
@@ -35,7 +36,7 @@ class SlotService
      *
      * @return list<array{date: string, closed_reason: string|null, slots: list<array{starts_at: string, ends_at: string, time: string, remaining: int, status: string}>}>
      */
-    public function days(ServiceArea $area, ?CarbonImmutable $now = null): array
+    public function days(HasSlotSchedule $area, ?CarbonImmutable $now = null): array
     {
         if (! $area->hasSchedule()) {
             return [];
@@ -94,7 +95,7 @@ class SlotService
     /**
      * Whether a slot starting at this moment can be booked right now.
      */
-    public function isBookable(ServiceArea $area, CarbonImmutable $startsAt, ?CarbonImmutable $now = null): bool
+    public function isBookable(HasSlotSchedule $area, CarbonImmutable $startsAt, ?CarbonImmutable $now = null): bool
     {
         foreach ($this->days($area, $now) as $day) {
             foreach ($day['slots'] as $slot) {
@@ -113,7 +114,7 @@ class SlotService
      *
      * @return list<CarbonImmutable>
      */
-    private function slotStarts(CarbonImmutable $day, ServiceAreaHour $range, int $slotMinutes): array
+    private function slotStarts(CarbonImmutable $day, ServiceAreaHour|BranchHour $range, int $slotMinutes): array
     {
         $opens = $this->minutesOfDay($range->opens_at);
         $closes = $this->minutesOfDay($range->closes_at);
@@ -144,14 +145,16 @@ class SlotService
     }
 
     /**
-     * Closures for this area or for all areas that touch the date range.
+     * Closures for this area or branch, or for everywhere, that touch the date range.
      *
      * @return Collection<int, CollectionClosure>
      */
-    private function closures(ServiceArea $area, CarbonImmutable $from, CarbonImmutable $to): Collection
+    private function closures(HasSlotSchedule $area, CarbonImmutable $from, CarbonImmutable $to): Collection
     {
         return CollectionClosure::query()
-            ->where(fn ($query) => $query->whereNull('service_area_id')->orWhere('service_area_id', $area->id))
+            ->where(fn ($query) => $query
+                ->where(fn ($everywhere) => $everywhere->whereNull('service_area_id')->whereNull('branch_id'))
+                ->orWhere($area->scheduleKey(), $area->id))
             ->whereDate('starts_on', '<=', $to->toDateString())
             ->whereDate('ends_on', '>=', $from->toDateString())
             ->get();
@@ -164,10 +167,10 @@ class SlotService
      *
      * @return array<string, int>
      */
-    private function bookedCounts(ServiceArea $area, CarbonImmutable $from, CarbonImmutable $to, CarbonImmutable $now): array
+    private function bookedCounts(HasSlotSchedule $area, CarbonImmutable $from, CarbonImmutable $to, CarbonImmutable $now): array
     {
         return Order::query()
-            ->where('service_area_id', $area->id)
+            ->where($area->scheduleKey(), $area->id)
             ->whereIn('status', OrderStatus::holdingSlot())
             ->where(fn ($query) => $query
                 ->where('status', '!=', OrderStatus::PendingPayment)

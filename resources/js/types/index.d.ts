@@ -232,6 +232,16 @@ export interface Order {
     number: string;
     status: OrderStatus;
     status_label: string;
+    collection_type: CollectionType;
+    collection_type_label: string;
+    /** Lab visits, on detail pages: how to find and contact the branch. */
+    branch?: {
+        name: string;
+        phone: string | null;
+        email: string | null;
+        directions: string | null;
+        map_url: string;
+    } | null;
     payment_method: PaymentMethod;
     payment_method_label: string;
     /** While pending payment: when the slot hold ends (site timezone). */
@@ -292,6 +302,30 @@ export interface Order {
 }
 
 export type PaymentMethod = 'pay_at_collection' | 'online';
+
+export type CollectionType = 'home' | 'lab_visit';
+
+/** Mirrors App\Http\Resources\BranchResource. */
+export interface Branch {
+    id: number;
+    name: string;
+    line1: string;
+    line2: string | null;
+    city: string;
+    region: string | null;
+    postcode: string;
+    country: string;
+    country_name: string;
+    latitude: number;
+    longitude: number;
+    map_url: string;
+    phone: string | null;
+    email: string | null;
+    directions: string | null;
+    photo_url: string | null;
+    is_active: boolean;
+    has_schedule: boolean;
+}
 
 export interface OrderPayment {
     paid: number;

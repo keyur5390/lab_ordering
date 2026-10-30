@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\CollectionPaymentMethod;
+use App\Enums\CollectionType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\VisitFailureReason;
@@ -28,10 +29,11 @@ class CollectorService
         private Settings $settings,
     ) {}
 
-    /** A collector can be (re)assigned until the sample is collected. */
+    /** A collector can be (re)assigned to a home visit until the sample is collected. */
     public function canAssign(Order $order): bool
     {
-        return in_array($order->status, [OrderStatus::Confirmed, OrderStatus::CollectorAssigned], true);
+        return $order->collection_type === CollectionType::Home
+            && in_array($order->status, [OrderStatus::Confirmed, OrderStatus::CollectorAssigned], true);
     }
 
     /**

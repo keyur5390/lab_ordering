@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CollectionType;
 use App\Http\Requests\PlaceOrderRequest;
 use App\Http\Resources\AddressResource;
+use App\Http\Resources\BranchResource;
 use App\Http\Resources\PatientResource;
 use App\Models\Address;
+use App\Models\Branch;
 use App\Models\Coupon;
 use App\Models\ServiceArea;
 use App\Services\CartService;
@@ -53,10 +56,16 @@ class CheckoutController extends Controller
         $address = $addresses->firstWhere('id', $addressId);
         $area = $address ? $this->areas->coveringArea($address) : null;
 
+        // Lab visits (client, 2026-10-30): branches that take bookings, and the chosen one's slots.
+        $branches = Branch::where('is_active', true)->orderBy('name')->get()->filter->hasSchedule()->values();
+        $labVisit = $request->input('collection_type') === CollectionType::LabVisit->value && $branches->isNotEmpty();
+        $branch = $labVisit ? ($branches->firstWhere('id', $request->integer('branch_id')) ?? $branches->first()) : null;
+
         // Worked out at most once per request, only when the page or a partial reload needs it.
         $cached = null;
-        $pricing = function () use (&$cached, $request, $lines, $area) {
-            return $cached ??= $this->pricing($request, $lines->all(), $area);
+        $pricing = function () use (&$cached, $request, $lines, $area, $labVisit) {
+            // Lab visits have no collection fee.
+            return $cached ??= $this->pricing($request, $lines->all(), $labVisit ? null : $area);
         };
 
         return Inertia::render('checkout', [
@@ -66,7 +75,10 @@ class CheckoutController extends Controller
             'addresses' => AddressResource::collection($addresses),
             'addressId' => $address?->id,
             // Reloaded on its own when the address changes.
-            'slots' => fn () => $area ? $this->slots->days($area) : [],
+            'slots' => fn () => ($schedule = $labVisit ? $branch : $area) ? $this->slots->days($schedule) : [],
+            'collectionType' => $labVisit ? CollectionType::LabVisit->value : CollectionType::Home->value,
+            'branches' => BranchResource::collection($branches),
+            'branchId' => $branch?->id,
             'prescriptionRequired' => $lines->contains('requires_prescription', true),
             // Price breakdown (fee, coupon, tax), reloaded as patients, address and coupon change.
             'quote' => fn () => $pricing()['quote'],
@@ -114,13 +126,15 @@ class CheckoutController extends Controller
     public function store(PlaceOrderRequest $request): Response
     {
         $cart = $this->cart->currentOrCreate($request);
-        $address = $request->user()->addresses()->findOrFail($request->validated('address_id'));
+        $place = $request->validated('collection_type') === CollectionType::LabVisit->value
+            ? Branch::findOrFail($request->validated('branch_id'))
+            : $request->user()->addresses()->findOrFail($request->validated('address_id'));
 
         $order = $this->orders->place(
             $request->user(),
             $cart,
             $request->patientIdsByCartItem(),
-            $address,
+            $place,
             $request->slotStartsAt(),
             $request->file('prescription'),
             $request->paymentMethod(),

@@ -17,7 +17,11 @@ interface HourRange {
 }
 
 interface ScheduleProps {
-    area: { id: number; name: string };
+    /** A service area or a branch (B-17); both have the same schedule. */
+    owner: { name: string; kind: 'area' | 'branch' };
+    submitUrl: string;
+    backUrl: string;
+    backLabel: string;
     schedule: {
         slot_minutes: number | null;
         capacity_per_slot: number | null;
@@ -32,7 +36,7 @@ interface ScheduleProps {
 
 const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-export default function Schedule({ area, schedule, timezone, preview }: ScheduleProps) {
+export default function Schedule({ owner, submitUrl, backUrl, backLabel, schedule, timezone, preview }: ScheduleProps) {
     const { data, setData, put, processing, errors, isDirty } = useForm({
         slot_minutes: schedule.slot_minutes?.toString() ?? '',
         capacity_per_slot: schedule.capacity_per_slot?.toString() ?? '',
@@ -44,7 +48,7 @@ export default function Schedule({ area, schedule, timezone, preview }: Schedule
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        put(route('admin.service-areas.schedule.update', area.id), { preserveScroll: true });
+        put(submitUrl, { preserveScroll: true });
     };
 
     const updateRange = (index: number, field: 'opens_at' | 'closes_at', value: string) =>
@@ -54,9 +58,9 @@ export default function Schedule({ area, schedule, timezone, preview }: Schedule
         );
 
     return (
-        <AdminLayout title={`Schedule: ${area.name}`}>
-            <TextLink href={route('admin.service-areas.index')} className="text-sm">
-                ← Service areas
+        <AdminLayout title={`Schedule: ${owner.name}`}>
+            <TextLink href={backUrl} className="text-sm">
+                ← {backLabel}
             </TextLink>
 
             <form onSubmit={submit} className="mt-4 max-w-3xl space-y-6" noValidate>
@@ -64,7 +68,8 @@ export default function Schedule({ area, schedule, timezone, preview }: Schedule
                     <div>
                         <h2 className="text-base font-semibold">Slots</h2>
                         <p className="mt-1 text-sm text-muted">
-                            Times are in {timezone} (Admin → Settings). Without these, this area offers no slots.
+                            Times are in {timezone} (Admin → Settings). Without these, this{' '}
+                            {owner.kind === 'branch' ? 'branch' : 'area'} offers no slots.
                         </p>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">

@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
 /**
- * A service area's collection schedule: slot settings plus weekly opening ranges.
+ * A service area's or branch's schedule: slot settings plus weekly opening ranges.
  * The bounds are sanity limits, not business rules; the values themselves are the admin's.
  */
 class UpdateScheduleRequest extends FormRequest
@@ -17,7 +17,8 @@ class UpdateScheduleRequest extends FormRequest
     {
         $area = $this->route('service_area');
 
-        return $area instanceof ServiceArea && $this->user()->can('update', $area);
+        // Service areas go through their policy; branches are admin-only (B-17).
+        return $area instanceof ServiceArea ? $this->user()->can('update', $area) : $this->user()->can('access-admin');
     }
 
     /**

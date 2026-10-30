@@ -5,6 +5,7 @@ import type { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Bell,
+    Building2,
     Microscope,
     CalendarOff,
     ClipboardList,
@@ -52,6 +53,7 @@ const navItems: NavItem[] = [
     },
     { label: 'Coupons', routeName: 'admin.coupons.index', activePattern: 'admin.coupons.*', icon: TicketPercent },
     { label: 'Collectors', routeName: 'admin.collectors.index', activePattern: 'admin.collectors.*', icon: Truck },
+    { label: 'Branches', routeName: 'admin.branches.index', activePattern: 'admin.branches.*', icon: Building2 },
     { label: 'Closures', routeName: 'admin.closures.index', activePattern: 'admin.closures.*', icon: CalendarOff },
     {
         label: 'Notifications',

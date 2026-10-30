@@ -29,13 +29,36 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
     return (
         <div className="space-y-6">
             <dl className="divide-y divide-border rounded-card border border-border bg-surface px-4 md:px-6">
-                <DetailRow label="Collection">
+                <DetailRow label={order.collection_type === 'lab_visit' ? 'Lab visit' : 'Collection'}>
                     {formatSlot(order.slot_starts_at, order.slot_ends_at, order.timezone)}
                 </DetailRow>
                 {order.collector_first_name && <DetailRow label="Collector">{order.collector_first_name}</DetailRow>}
-                <DetailRow label="Address">
+                <DetailRow label={order.collection_type === 'lab_visit' ? 'Branch' : 'Address'}>
                     {order.address.label && <span className="font-medium">{order.address.label}: </span>}
                     {addressText(order.address)}
+                    {order.branch && (
+                        <span className="mt-1 block space-y-1 text-muted">
+                            {order.branch.directions && <span className="block">{order.branch.directions}</span>}
+                            <span className="flex flex-wrap gap-x-4">
+                                <a
+                                    href={order.branch.map_url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="font-medium text-primary-700 hover:underline"
+                                >
+                                    Map
+                                </a>
+                                {order.branch.phone && (
+                                    <a
+                                        href={`tel:${order.branch.phone.replace(/[\s-]/g, '')}`}
+                                        className="font-medium text-primary-700 hover:underline"
+                                    >
+                                        {order.branch.phone}
+                                    </a>
+                                )}
+                            </span>
+                        </span>
+                    )}
                 </DetailRow>
                 <DetailRow label="Payment">
                     {order.payment_method_label}
@@ -136,16 +159,18 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                             </dd>
                         </div>
                     )}
-                    <div className="flex justify-between gap-3">
-                        <dt>Home collection</dt>
-                        <dd>
-                            {order.collection_fee_amount > 0 ? (
-                                <Price amount={order.collection_fee_amount} currencyCode={order.currency} />
-                            ) : (
-                                'Free'
-                            )}
-                        </dd>
-                    </div>
+                    {order.collection_type === 'home' && (
+                        <div className="flex justify-between gap-3">
+                            <dt>Home collection</dt>
+                            <dd>
+                                {order.collection_fee_amount > 0 ? (
+                                    <Price amount={order.collection_fee_amount} currencyCode={order.currency} />
+                                ) : (
+                                    'Free'
+                                )}
+                            </dd>
+                        </div>
+                    )}
                     {order.tax_rate_percent !== null && !order.tax_inclusive && (
                         <div className="flex justify-between gap-3">
                             <dt>Tax ({order.tax_rate_percent}%)</dt>

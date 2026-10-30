@@ -10,7 +10,7 @@ import { InputError } from '@/components/ui/input-error';
 import { TextLink } from '@/components/ui/text-link';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
-import type { Address, CartLine, Patient, PaymentMethod, SlotDay } from '@/types';
+import type { Address, Branch, CartLine, CollectionType, Patient, PaymentMethod, SlotDay } from '@/types';
 import { Head, router, useForm } from '@inertiajs/react';
 import { FileUp } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
@@ -21,6 +21,10 @@ interface CheckoutProps {
     patients: Patient[];
     addresses: Address[];
     addressId: number | null;
+    /** Lab visits (B-17): branches taking bookings, and the chosen one. */
+    collectionType: CollectionType;
+    branches: Branch[];
+    branchId: number | null;
     slots: SlotDay[];
     prescriptionRequired: boolean;
     /** Whether customers can pay online (a gateway is set up). */
@@ -86,6 +90,9 @@ export default function Checkout({
     patients,
     addresses,
     addressId,
+    collectionType,
+    branches,
+    branchId,
     slots,
     prescriptionRequired,
     onlinePayment,
@@ -101,6 +108,8 @@ export default function Checkout({
             number[]
         >,
         address_id: addressId,
+        collection_type: collectionType,
+        branch_id: branchId,
         slot_starts_at: null as string | null,
         prescription: null as File | null,
         payment_method: (onlinePayment ? 'online' : 'pay_at_collection') as PaymentMethod,
@@ -122,12 +131,24 @@ export default function Checkout({
     }));
 
     /** Re-prices the order on the server (and reloads slots when the address changes). */
-    const refresh = (next: { items?: Record<string, number[]>; address_id?: number | null; coupon?: string }) => {
+    const refresh = (next: {
+        items?: Record<string, number[]>;
+        address_id?: number | null;
+        collection_type?: CollectionType;
+        branch_id?: number | null;
+        coupon?: string;
+    }) => {
         const items = next.items ?? data.items;
+        const placeChanged =
+            next.address_id !== undefined || next.collection_type !== undefined || next.branch_id !== undefined;
         router.reload({
-            only: next.address_id !== undefined ? ['slots', 'addressId', 'quote', 'coupon'] : ['quote', 'coupon'],
+            only: placeChanged
+                ? ['slots', 'addressId', 'collectionType', 'branchId', 'quote', 'coupon']
+                : ['quote', 'coupon'],
             data: {
                 address_id: next.address_id ?? data.address_id,
+                collection_type: next.collection_type ?? data.collection_type,
+                branch_id: next.branch_id ?? data.branch_id,
                 counts: Object.fromEntries(Object.entries(items).map(([id, patients]) => [id, patients.length])),
                 coupon: next.coupon ?? appliedCoupon,
             },
@@ -142,6 +163,19 @@ export default function Checkout({
         };
         setData('items', items);
         refresh({ items });
+    };
+
+    const labVisit = data.collection_type === 'lab_visit';
+
+    const chooseType = (type: CollectionType) => {
+        const branch = type === 'lab_visit' ? (data.branch_id ?? branches[0]?.id ?? null) : data.branch_id;
+        setData((form) => ({ ...form, collection_type: type, branch_id: branch, slot_starts_at: null }));
+        refresh({ collection_type: type, branch_id: branch });
+    };
+
+    const chooseBranch = (id: number) => {
+        setData((form) => ({ ...form, branch_id: id, slot_starts_at: null }));
+        refresh({ branch_id: id });
     };
 
     const chooseAddress = (id: number) => {
@@ -235,8 +269,86 @@ export default function Checkout({
                             </ul>
                         </Step>
 
-                        <Step number={2} title="Where should we collect?">
-                            {addresses.length === 0 ? (
+                        <Step number={2} title={labVisit ? 'Which branch will you visit?' : 'Where should we collect?'}>
+                            {branches.length > 0 && (
+                                <div
+                                    role="radiogroup"
+                                    aria-label="How to give your sample"
+                                    className="mb-4 grid gap-2 sm:grid-cols-2"
+                                >
+                                    {(
+                                        [
+                                            { value: 'home', title: 'Home collection', hint: 'We come to you.' },
+                                            {
+                                                value: 'lab_visit',
+                                                title: 'Visit a lab',
+                                                hint: 'Come to one of our branches.',
+                                            },
+                                        ] as const
+                                    ).map((option) => (
+                                        <label
+                                            key={option.value}
+                                            className="flex cursor-pointer gap-3 rounded-control border border-border p-3 has-[:checked]:border-primary-600 has-[:checked]:bg-primary-50"
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="collection_type"
+                                                className="mt-0.5 size-4 accent-primary-600"
+                                                checked={data.collection_type === option.value}
+                                                onChange={() => chooseType(option.value)}
+                                            />
+                                            <span className="text-sm">
+                                                <span className="block font-medium">{option.title}</span>
+                                                <span className="block text-muted">{option.hint}</span>
+                                            </span>
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
+                            {labVisit ? (
+                                <div role="radiogroup" aria-label="Branch" className="space-y-2">
+                                    {branches.map((branch) => (
+                                        <label
+                                            key={branch.id}
+                                            className="flex cursor-pointer gap-3 rounded-control border border-border p-3 has-[:checked]:border-primary-600 has-[:checked]:bg-primary-50"
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="branch_id"
+                                                className="mt-0.5 size-4 shrink-0 accent-primary-600"
+                                                checked={data.branch_id === branch.id}
+                                                onChange={() => chooseBranch(branch.id)}
+                                            />
+                                            <span className="min-w-0 flex-1 text-sm">
+                                                <span className="block font-medium">{branch.name}</span>
+                                                <span className="block">{addressLines(branch).join(', ')}</span>
+                                                {branch.directions && (
+                                                    <span className="block text-muted">{branch.directions}</span>
+                                                )}
+                                                <span className="mt-1 flex flex-wrap gap-x-4">
+                                                    <a
+                                                        href={branch.map_url}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="font-medium text-primary-700 hover:underline"
+                                                    >
+                                                        Map
+                                                    </a>
+                                                    {branch.phone && <span className="text-muted">{branch.phone}</span>}
+                                                </span>
+                                            </span>
+                                            {branch.photo_url && (
+                                                <img
+                                                    src={branch.photo_url}
+                                                    alt=""
+                                                    className="size-16 shrink-0 rounded-control object-cover"
+                                                />
+                                            )}
+                                        </label>
+                                    ))}
+                                    <InputError message={allErrors.branch_id} className="mt-2" />
+                                </div>
+                            ) : addresses.length === 0 ? (
                                 <p className="text-sm text-muted">
                                     You have no saved addresses.{' '}
                                     <TextLink href={route('addresses.create')}>Add an address</TextLink>
@@ -279,13 +391,13 @@ export default function Checkout({
                                     </TextLink>
                                 </div>
                             )}
-                            <InputError message={errors.address_id} className="mt-2" />
+                            {!labVisit && <InputError message={errors.address_id} className="mt-2" />}
                         </Step>
 
-                        <Step number={3} title="When should we come?">
-                            {data.address_id ? (
+                        <Step number={3} title={labVisit ? 'When will you visit?' : 'When should we come?'}>
+                            {(labVisit ? data.branch_id : data.address_id) ? (
                                 <SlotPicker
-                                    key={data.address_id}
+                                    key={`${data.collection_type}-${labVisit ? data.branch_id : data.address_id}`}
                                     days={slots}
                                     value={data.slot_starts_at}
                                     onChange={(startsAt) => setData('slot_starts_at', startsAt)}
@@ -377,12 +489,12 @@ export default function Checkout({
                                     −<Price amount={quote.discount} />
                                 </SummaryRow>
                             )}
-                            {data.address_id && (
+                            {!labVisit && data.address_id && (
                                 <SummaryRow label="Home collection">
                                     {quote.collection_fee > 0 ? <Price amount={quote.collection_fee} /> : 'Free'}
                                 </SummaryRow>
                             )}
-                            {quote.collection_fee > 0 && quote.free_collection_above !== null && (
+                            {!labVisit && quote.collection_fee > 0 && quote.free_collection_above !== null && (
                                 <p className="text-xs text-muted">
                                     Free collection on orders of <Price amount={quote.free_collection_above} /> or more.
                                 </p>

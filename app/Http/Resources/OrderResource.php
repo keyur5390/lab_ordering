@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\CollectionType;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -33,6 +34,14 @@ class OrderResource extends JsonResource
             'number' => $this->number,
             'status' => $this->status->value,
             'status_label' => $this->status->label(),
+            'collection_type' => $this->collection_type->value,
+            'collection_type_label' => $this->collection_type->label(),
+            // Lab visits (B-17): how to find and contact the branch; detail pages only.
+            'branch' => $this->whenLoaded('items', fn () => $this->collection_type === CollectionType::LabVisit && $this->branch
+                ? $this->branch->only(['name', 'phone', 'email', 'directions']) + [
+                    'map_url' => "https://www.openstreetmap.org/?mlat={$this->branch->latitude}&mlon={$this->branch->longitude}#map=17/{$this->branch->latitude}/{$this->branch->longitude}",
+                ]
+                : null),
             'payment_method' => $this->payment_method->value,
             'payment_method_label' => $this->payment_method->label(),
             'payment_expires_at' => $this->payment_expires_at?->setTimezone($timezone)->toIso8601String(),
