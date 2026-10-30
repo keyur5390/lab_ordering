@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\ClosureController;
 use App\Http\Controllers\Admin\CollectorController;
 use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LabPackageController;
 use App\Http\Controllers\Admin\LabTestController;
 use App\Http\Controllers\Admin\NotificationTemplateController;
@@ -101,7 +102,7 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-        Route::inertia('/', 'admin/dashboard')->name('dashboard');
+        Route::get('/', DashboardController::class)->name('dashboard');
 
         Route::resource('tests', LabTestController::class)->except('show');
         Route::resource('packages', LabPackageController::class)->except('show');

@@ -279,6 +279,26 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Per test (DB) | Requires a prescription | off |
 | Per service area (DB) | Slot length, capacity per slot, lead time, booking window, weekly hours | none; no slots until set |
 
+## 11a. Admin dashboard
+
+*Built in B-18 (client, 2026-10-30).* Admin → Dashboard shows:
+- **Alerts** (with an icon and label, never colour alone):
+  - no currency;
+  - nothing bookable;
+  - cancelled orders whose refund the gateway rejected;
+  - failed visits;
+  - unpaid orders expiring within 10 minutes;
+  - no admin alert email;
+  - no cancellation cutoff.
+- **Today's work:**
+  - home collections and lab visits today;
+  - home visits without a collector (today and tomorrow);
+  - open failed visits;
+  - samples waiting for reports.
+- **Money** for today, 7 or 30 days, in the site currency: paid online, paid at collection, refunded
+  (processing or done), and net.
+- **Orders by status**, each linking to the filtered order list.
+
 ## 12. Compliance & data
 
 - **OPEN:** Applicable regulations (e.g. HIPAA, GDPR, India DPDP Act)? Data residency?
@@ -294,6 +314,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-30 | Admin dashboard (B-18): today's work, orders by status, money by period, alerts | Client |
 | 2026-10-30 | Lab branches (B-17): branches with address, pin, contact, directions, photo; own slot schedule; lab visits at checkout; all tests at every branch | Client |
 | 2026-10-30 | Fees, tax & coupons (B-16): per-area fee, free above a set value; one tax rate, included or added; coupons with %/fixed, dates, limits, minimum; minimum order | Client (fee and tax on our recommendation) |
 | 2026-10-30 | Collectors (B-15): per-area collectors; admins assign and collectors take visits; collected, failed visit, payment taken; customer told the collector's name | Client |
