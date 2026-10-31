@@ -35,7 +35,7 @@ class OrderController extends Controller
         Gate::authorize('view', $order);
 
         return Inertia::render('orders/show', [
-            'order' => OrderResource::make($order->load(['items', 'payments.refunds'])),
+            'order' => OrderResource::make($order->load(['items', 'payments.refunds', 'invoice.creditNotes'])),
             'cutoffHours' => $settings->cancellationCutoffHours(),
         ]);
     }

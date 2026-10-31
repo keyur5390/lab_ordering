@@ -2,6 +2,7 @@ import { CollectorCard, type CollectorInfo } from '@/components/collector-card';
 import { OrderActions } from '@/components/order-actions';
 import { OrderDetails } from '@/components/order-details';
 import { OrderStatusBadge } from '@/components/order-status-badge';
+import { RecordPaymentForm } from '@/components/record-payment-form';
 import { RefundForm } from '@/components/refund-form';
 import { Alert } from '@/components/ui/alert';
 import { TextLink } from '@/components/ui/text-link';
@@ -55,6 +56,7 @@ export default function AdminOrderShow({ order, collector }: { order: Order; col
             <div className="mt-6 max-w-3xl space-y-6">
                 {/* Keyed so the amount resets to what is left after each refund. */}
                 {order.can_refund && <RefundForm key={order.payment?.refundable} order={order} />}
+                {order.can_record_payment && <RecordPaymentForm order={order} />}
                 {(collector.assigned || collector.can_assign || order.payment_collected) && (
                     <CollectorCard key={collector.assigned?.id ?? 'none'} order={order} collector={collector} />
                 )}

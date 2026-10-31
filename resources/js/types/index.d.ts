@@ -299,6 +299,10 @@ export interface Order {
     collector_first_name: string | null;
     /** Pay-at-collection orders: when and how the collector took payment. */
     payment_collected: { at: string; method: string | null } | null;
+    /** Issued when paid (B-21); detail pages only. */
+    invoice?: { number: string; url: string; credit_notes: { number: string; amount: number; url: string }[] } | null;
+    /** Staff can record a pay-at-collection payment. */
+    can_record_payment: boolean;
     can_pay: boolean;
     can_refund: boolean;
     can_cancel: boolean;

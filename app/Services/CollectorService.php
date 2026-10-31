@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Enums\CollectionPaymentMethod;
 use App\Enums\CollectionType;
 use App\Enums\OrderStatus;
-use App\Enums\PaymentMethod;
 use App\Enums\VisitFailureReason;
 use App\Models\Order;
 use App\Models\User;
@@ -25,6 +24,7 @@ class CollectorService
 {
     public function __construct(
         private LabService $lab,
+        private PaymentService $payments,
         private OrderNotifier $notifier,
         private Settings $settings,
     ) {}
@@ -157,12 +157,11 @@ class CollectorService
      */
     public function recordPayment(Order $order, CollectionPaymentMethod $method): void
     {
-        if ($order->payment_method !== PaymentMethod::PayAtCollection || $order->payment_collected_at !== null
-            || ! in_array($order->status, [OrderStatus::CollectorAssigned, OrderStatus::SampleCollected], true)) {
+        if (! in_array($order->status, [OrderStatus::CollectorAssigned, OrderStatus::SampleCollected], true)) {
             throw ValidationException::withMessages(['method' => 'There is no payment to collect for this order.']);
         }
 
-        $order->update(['payment_collected_at' => now(), 'payment_collected_method' => $method]);
+        $this->payments->recordCollectedPayment($order, $method);
     }
 
     /**

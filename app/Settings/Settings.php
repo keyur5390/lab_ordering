@@ -34,6 +34,8 @@ class Settings
 
     public const TAX_INCLUSIVE = 'tax_inclusive';
 
+    public const INVOICE_SELLER = 'invoice_seller';
+
     public const NOTIFY_BY_EMAIL = 'notify_by_email';
 
     public const SMS_DRIVER = 'sms_driver';
@@ -174,6 +176,32 @@ class Settings
     public function setTaxInclusive(bool $inclusive): void
     {
         $this->set(self::TAX_INCLUSIVE, $inclusive);
+    }
+
+    /**
+     * Seller details printed on invoices and credit notes (client, 2026-10-31): business name (the
+     * site name until set), address, tax ID and a footer line.
+     *
+     * @return array{name: string, address: string|null, tax_id: string|null, footer: string|null}
+     */
+    public function invoiceSeller(): array
+    {
+        $seller = (array) $this->get(self::INVOICE_SELLER, []);
+
+        return [
+            'name' => ($seller['name'] ?? null) ?: (string) config('app.name'),
+            'address' => ($seller['address'] ?? null) ?: null,
+            'tax_id' => ($seller['tax_id'] ?? null) ?: null,
+            'footer' => ($seller['footer'] ?? null) ?: null,
+        ];
+    }
+
+    /**
+     * @param  array{name?: string|null, address?: string|null, tax_id?: string|null, footer?: string|null}  $seller
+     */
+    public function setInvoiceSeller(array $seller): void
+    {
+        $this->set(self::INVOICE_SELLER, $seller);
     }
 
     /** Whether customers get order emails (client, 2026-10-29: admins switch channels site-wide). On until turned off. */

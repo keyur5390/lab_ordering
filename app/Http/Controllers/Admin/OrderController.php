@@ -46,7 +46,7 @@ class OrderController extends Controller
     public function show(Request $request, Order $order, CollectorService $collectors, Settings $settings): Response
     {
         return Inertia::render('admin/orders/show', [
-            'order' => OrderResource::make($order->load(['items', 'user', 'payments.refunds.user', 'collector'])),
+            'order' => OrderResource::make($order->load(['items', 'user', 'payments.refunds.user', 'invoice.creditNotes', 'collector'])),
             // Collectors (client, 2026-10-30): who is assigned, who could be, and how the visit went.
             'collector' => [
                 'assigned' => $order->collector?->only(['id', 'name']),

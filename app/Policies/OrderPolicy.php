@@ -53,6 +53,12 @@ class OrderPolicy
         return $user->isAdmin();
     }
 
+    /** Lab staff and admins record pay-at-collection payments (B-21); collectors use their own screen. */
+    public function recordPayment(User $user, Order $order): bool
+    {
+        return $user->isLabStaff();
+    }
+
     /** The assigned collector works on the visit. */
     public function visit(User $user, Order $order): bool
     {

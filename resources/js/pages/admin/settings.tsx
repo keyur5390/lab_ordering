@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select } from '@/components/ui/select';
 import { TextLink } from '@/components/ui/text-link';
+import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin-layout';
 import { useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
@@ -21,6 +22,7 @@ interface SettingsProps {
     minimumOrder: string | null;
     taxRate: string | null;
     taxInclusive: boolean;
+    invoiceSeller: { name: string; address: string | null; tax_id: string | null; footer: string | null };
     notifyByEmail: boolean;
     smsDriver: string | null;
     smsDrivers: { value: string; label: string; configured: boolean; env_keys: string | null }[];
@@ -41,6 +43,7 @@ export default function Settings({
     minimumOrder,
     taxRate,
     taxInclusive,
+    invoiceSeller,
     notifyByEmail,
     smsDriver,
     smsDrivers,
@@ -57,6 +60,10 @@ export default function Settings({
         minimum_order: minimumOrder ?? '',
         tax_rate: taxRate ?? '',
         tax_inclusive: taxInclusive,
+        invoice_name: invoiceSeller.name,
+        invoice_address: invoiceSeller.address ?? '',
+        invoice_tax_id: invoiceSeller.tax_id ?? '',
+        invoice_footer: invoiceSeller.footer ?? '',
         notify_by_email: notifyByEmail,
         sms_driver: smsDriver ?? '',
         reminder_hours_before: reminderHoursBefore.toString(),
@@ -203,6 +210,49 @@ export default function Settings({
                             ))}
                         </fieldset>
                     </div>
+                </section>
+
+                <section className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6">
+                    <h2 className="text-base font-semibold">Invoices</h2>
+                    <p className="text-sm text-muted">
+                        Printed on invoices and credit notes. Changes apply to new invoices only; issued ones keep what
+                        they showed.
+                    </p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <FormField
+                            id="invoice_name"
+                            label="Business name"
+                            value={data.invoice_name}
+                            onChange={(e) => setData('invoice_name', e.target.value)}
+                            error={errors.invoice_name}
+                        />
+                        <FormField
+                            id="invoice_tax_id"
+                            label="Tax ID (optional)"
+                            hint="For example a GSTIN or VAT number."
+                            value={data.invoice_tax_id}
+                            onChange={(e) => setData('invoice_tax_id', e.target.value)}
+                            error={errors.invoice_tax_id}
+                        />
+                    </div>
+                    <Field id="invoice_address" label="Business address (optional)" error={errors.invoice_address}>
+                        {(control) => (
+                            <Textarea
+                                {...control}
+                                rows={3}
+                                value={data.invoice_address}
+                                onChange={(e) => setData('invoice_address', e.target.value)}
+                            />
+                        )}
+                    </Field>
+                    <FormField
+                        id="invoice_footer"
+                        label="Footer (optional)"
+                        hint="For example payment terms or a thank-you line."
+                        value={data.invoice_footer}
+                        onChange={(e) => setData('invoice_footer', e.target.value)}
+                        error={errors.invoice_footer}
+                    />
                 </section>
 
                 <section className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6">

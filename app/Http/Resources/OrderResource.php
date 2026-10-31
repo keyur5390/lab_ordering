@@ -3,6 +3,8 @@
 namespace App\Http\Resources;
 
 use App\Enums\CollectionType;
+use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -100,6 +102,20 @@ class OrderResource extends JsonResource
                 'at' => $this->payment_collected_at->setTimezone($timezone)->toIso8601String(),
                 'method' => $this->payment_collected_method?->label(),
             ] : null,
+            // Issued when paid (B-21), with a credit note per refund; detail pages only.
+            'invoice' => $this->whenLoaded('invoice', fn () => $this->invoice ? [
+                'number' => $this->invoice->number,
+                'url' => route('orders.invoice', $this->resource),
+                'credit_notes' => $this->invoice->creditNotes->map(fn ($note) => [
+                    'number' => $note->number,
+                    'amount' => $note->amount,
+                    'url' => route('orders.credit-notes.show', [$this->resource, $note]),
+                ])->values(),
+            ] : null),
+            // Pay-at-collection orders still owing (same statuses as PaymentService::recordCollectedPayment).
+            'can_record_payment' => $this->payment_method === PaymentMethod::PayAtCollection && $this->payment_collected_at === null
+                && in_array($this->status, [OrderStatus::Confirmed, OrderStatus::CollectorAssigned, OrderStatus::SampleCollected, OrderStatus::ReceivedAtLab, OrderStatus::ReportReady], true)
+                && (bool) $user?->can('recordPayment', $this->resource),
             'can_pay' => (bool) $user?->can('pay', $this->resource),
             'can_refund' => $this->whenLoaded('payments', fn () => (bool) $user?->can('refund', $this->resource), false),
             'can_cancel' => (bool) $user?->can('cancel', $this->resource),

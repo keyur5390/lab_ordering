@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\CollectionPaymentMethod;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentGatewayName;
 use App\Enums\PaymentMethod;
@@ -32,6 +33,7 @@ class PaymentService
         private Settings $settings,
         private SlotService $slots,
         private OrderNotifier $notifier,
+        private InvoiceService $invoices,
     ) {}
 
     /** Whether customers can choose to pay online: a gateway is chosen and its keys are set. */
@@ -161,6 +163,8 @@ class PaymentService
 
             if ($order->payment_expires_at?->isFuture() || $this->slotStillFree($order)) {
                 $order->update(['status' => OrderStatus::Confirmed, 'payment_expires_at' => null]);
+                // Paid, so invoiced (client, 2026-10-31).
+                $this->invoices->issue($order, $payment);
                 // Sent once the transaction commits.
                 $this->notifier->paymentReceived($order, $payment->amount);
 
@@ -268,6 +272,7 @@ class PaymentService
                     'gateway_refund_id' => $refundId,
                 ]);
                 $this->notifier->refunded($order, $refund);
+                $this->invoices->creditNoteFor($refund);
 
                 $succeeded = $succeeded && $status->counts();
                 $amount -= $part;
@@ -282,6 +287,23 @@ class PaymentService
 
             return $succeeded;
         });
+    }
+
+    /**
+     * Pay-at-collection orders: the collector (or, for lab visits, staff) took the full amount. The
+     * order is invoiced then (client, 2026-10-31).
+     *
+     * @throws ValidationException
+     */
+    public function recordCollectedPayment(Order $order, CollectionPaymentMethod $method): void
+    {
+        if ($order->payment_method !== PaymentMethod::PayAtCollection || $order->payment_collected_at !== null
+            || ! in_array($order->status, [OrderStatus::Confirmed, OrderStatus::CollectorAssigned, OrderStatus::SampleCollected, OrderStatus::ReceivedAtLab, OrderStatus::ReportReady], true)) {
+            throw ValidationException::withMessages(['method' => 'There is no payment to collect for this order.']);
+        }
+
+        $order->update(['payment_collected_at' => now(), 'payment_collected_method' => $method]);
+        $this->invoices->issue($order);
     }
 
     /** Refunds everything still refundable. Returns null when nothing was paid online. */

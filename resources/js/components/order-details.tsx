@@ -75,6 +75,32 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                         </>
                     )}
                 </DetailRow>
+                {order.invoice && (
+                    <DetailRow label="Invoice">
+                        <a
+                            href={order.invoice.url}
+                            className="inline-flex items-center gap-1.5 font-medium text-primary-700 hover:underline"
+                        >
+                            <FileText className="size-4" aria-hidden="true" />
+                            {order.invoice.number}
+                        </a>
+                        {order.invoice.credit_notes.map((note) => (
+                            <span key={note.number} className="mt-1 block">
+                                <a
+                                    href={note.url}
+                                    className="inline-flex items-center gap-1.5 font-medium text-primary-700 hover:underline"
+                                >
+                                    <FileText className="size-4" aria-hidden="true" />
+                                    {note.number}
+                                </a>
+                                <span className="text-muted">
+                                    {' '}
+                                    · credit note, <Price amount={note.amount} currencyCode={order.currency} />
+                                </span>
+                            </span>
+                        ))}
+                    </DetailRow>
+                )}
                 {order.has_prescription && (
                     <DetailRow label="Prescription">
                         {prescriptionUrl ? (

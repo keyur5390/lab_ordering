@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\LabTestController;
 use App\Http\Controllers\Admin\NotificationTemplateController;
 use App\Http\Controllers\Admin\OrderCollectorController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\OrderPaymentController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\ServiceAreaController;
@@ -22,6 +23,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogueController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Collector\VisitController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Lab\OrderController as LabOrderController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PatientController;
@@ -63,6 +65,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{order}/prescription', 'prescription')->name('prescription');
     });
     Route::get('/account/orders/{order}/reports/{item}', [ReportController::class, 'show'])->scopeBindings()->name('orders.reports.show');
+    Route::get('/account/orders/{order}/invoice', [InvoiceController::class, 'invoice'])->name('orders.invoice');
+    Route::get('/account/orders/{order}/credit-notes/{creditNote}', [InvoiceController::class, 'creditNote'])->name('orders.credit-notes.show');
 
     Route::controller(PaymentController::class)->prefix('account/orders/{order}/payments')->name('orders.payments.')->group(function () {
         Route::post('/', 'store')->name('store');
@@ -90,6 +94,7 @@ Route::middleware(['auth', 'verified', 'can:access-lab'])
     ->group(function () {
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+        Route::post('/orders/{order}/payment', [OrderPaymentController::class, 'store'])->name('orders.payment.store');
 
         Route::controller(LabOrderController::class)->prefix('lab')->name('lab.')->group(function () {
             Route::get('/', 'index')->name('index');

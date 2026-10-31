@@ -196,6 +196,23 @@ All amounts come from the database or settings. Never from code.
 - **OPEN:** Tracking refund outcomes after the gateway accepts them (refund webhooks). Refunds still
   processing are shown as such.
 
+### Invoices and credit notes
+
+*Built in B-21 (client, 2026-10-31).*
+- **Issued when paid:** online orders when the payment confirms; pay-at-collection orders when payment is
+  recorded, by the collector or by staff on the admin order page (lab visits have no collector). Unpaid
+  orders have no invoice.
+- **Numbers:** `INV-{year}-{00001}`, restarting each calendar year in the site timezone. The counter is
+  locked, so numbers are never repeated or skipped.
+- **Contents:** seller details from Admin → Settings → Invoices (business name, address, tax ID, footer),
+  the customer, the address, lines and the full breakdown. They are kept as issued, and the invoice never
+  changes.
+- **Credit notes:** each refund of the invoiced payment gets one, `CN-{year}-{00001}`, referencing the
+  invoice. Refunds of payments that were never invoiced (duplicates, late payments) get none.
+- **PDFs** are drawn on demand. The order's customer, lab staff and admins can download them from the order
+  page.
+- **OPEN:** attaching the invoice to the payment email; legal invoice wording for the launch country.
+
 ## 8. Order lifecycle
 
 [Assumed statuses, confirm:] `TODO(client)`
@@ -284,6 +301,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Per service area (DB) | Home collection fee | 0 (free) |
 | Per branch (DB) | Address, contact, directions, photo; slot length, capacity, lead time, window, weekly hours | none; no slots until set |
 | `coupons` (DB) | Promo codes and their rules | none |
+| `invoice_seller` | Business name, address, tax ID and footer on invoices | site name; rest empty |
 | `notify_by_email` | Email customers about their orders | on |
 | `sms_driver` | SMS driver (`log`, `twilio`), or off; Twilio keys come from `.env` | off |
 | `reminder_hours_before` | Hours before the slot to send the collection reminder; 0 = off | [24] `TODO(client)` |
@@ -327,6 +345,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-31 | Invoices (B-21): issued when paid; seller details from Settings; yearly numbers; credit note per refund | Client |
 | 2026-10-31 | Users (B-20): change roles, disable accounts, invite staff, view customer details; not on yourself | Client |
 | 2026-10-31 | Catalogue (B-19): categories (many per item), search, filters (category, type, no fasting), sort by name/price | Client |
 | 2026-10-30 | Admin dashboard (B-18): today's work, orders by status, money by period, alerts | Client |

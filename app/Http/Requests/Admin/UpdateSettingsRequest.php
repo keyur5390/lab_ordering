@@ -39,6 +39,11 @@ class UpdateSettingsRequest extends FormRequest
             // Percent with up to 2 decimals, e.g. 18 or 5.5.
             'tax_rate' => ['nullable', 'numeric', 'regex:/^\d{1,3}(\.\d{1,2})?$/', 'min:0', 'max:100'],
             'tax_inclusive' => ['nullable', 'boolean'],
+            // Seller details on invoices (B-21); empty name falls back to the site name.
+            'invoice_name' => ['nullable', 'string', 'max:255'],
+            'invoice_address' => ['nullable', 'string', 'max:500'],
+            'invoice_tax_id' => ['nullable', 'string', 'max:50'],
+            'invoice_footer' => ['nullable', 'string', 'max:500'],
             'notify_by_email' => ['nullable', 'boolean'],
             // Empty turns SMS off. Only drivers whose keys are in .env can be chosen.
             'sms_driver' => ['nullable', Rule::enum(SmsDriver::class)->only(
