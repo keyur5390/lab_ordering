@@ -5,6 +5,7 @@ namespace App\Http\Requests\Admin;
 use App\Enums\Currency;
 use App\Enums\DiscountType;
 use App\Enums\PackagePricingMode;
+use App\Models\Category;
 use App\Models\LabPackage;
 use App\Models\LabTest;
 use App\Settings\Settings;
@@ -57,6 +58,9 @@ class SaveLabPackageRequest extends FormRequest
             ],
             'description' => ['nullable', 'string', 'max:5000'],
             'is_active' => ['boolean'],
+            // Categories (client, 2026-10-31): any number.
+            'category_ids' => ['nullable', 'array'],
+            'category_ids.*' => ['integer', 'distinct', Rule::exists(Category::class, 'id')],
             'test_ids' => ['required', 'array', 'min:'.self::MIN_TESTS],
             'test_ids.*' => ['integer', 'distinct', Rule::exists(LabTest::class, 'id')],
             'pricing_mode' => ['required', Rule::enum(PackagePricingMode::class)],
@@ -149,5 +153,13 @@ class SaveLabPackageRequest extends FormRequest
     private function currency(): ?Currency
     {
         return app(Settings::class)->currency();
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function categoryIds(): array
+    {
+        return array_map('intval', $this->validated('category_ids') ?? []);
     }
 }

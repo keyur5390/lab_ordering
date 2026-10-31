@@ -9,15 +9,17 @@ import { TextLink } from '@/components/ui/text-link';
 import AdminLayout from '@/layouts/admin-layout';
 import type { LabTest } from '@/types';
 import { useForm } from '@inertiajs/react';
+import { CategoryPicker } from '@/components/admin/category-picker';
 import type { FormEvent } from 'react';
 
 interface TestFormProps {
     test: LabTest | null;
     /** Current price as a decimal string, e.g. "499.50". */
     price: string;
+    categories: { id: number; name: string }[];
 }
 
-export default function TestForm({ test, price }: TestFormProps) {
+export default function TestForm({ test, price, categories }: TestFormProps) {
     const priceHint = useCurrencyHint();
     const { data, setData, post, put, processing, errors } = useForm({
         name: test?.name ?? '',
@@ -29,6 +31,7 @@ export default function TestForm({ test, price }: TestFormProps) {
         preparation: test?.preparation ?? '',
         is_active: test?.is_active ?? true,
         requires_prescription: test?.requires_prescription ?? false,
+        category_ids: test?.categories?.map((category) => category.id ?? 0) ?? ([] as number[]),
     });
 
     const submit = (e: FormEvent) => {
@@ -124,6 +127,13 @@ export default function TestForm({ test, price }: TestFormProps) {
                             />
                         )}
                     </Field>
+
+                    <CategoryPicker
+                        categories={categories}
+                        value={data.category_ids}
+                        onChange={(ids) => setData('category_ids', ids)}
+                        error={errors.category_ids}
+                    />
 
                     <div className="flex items-center gap-2">
                         <Checkbox

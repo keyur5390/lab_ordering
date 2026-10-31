@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\Category;
 use App\Models\LabTest;
 use App\Settings\Settings;
 use App\Support\Money;
@@ -49,6 +50,9 @@ class SaveLabTestRequest extends FormRequest
             'turnaround_hours' => ['required', 'integer', 'min:1', 'max:8760'],
             'price' => ['required', 'string', 'regex:'.Money::decimalPattern(app(Settings::class)->currency())],
             'is_active' => ['boolean'],
+            // Categories (client, 2026-10-31): any number.
+            'category_ids' => ['nullable', 'array'],
+            'category_ids.*' => ['integer', 'distinct', Rule::exists(Category::class, 'id')],
             'requires_prescription' => ['boolean'],
         ];
     }
@@ -84,5 +88,13 @@ class SaveLabTestRequest extends FormRequest
         $data['price_amount'] = Money::toMinor($this->validated('price'), app(Settings::class)->currency());
 
         return $data;
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function categoryIds(): array
+    {
+        return array_map('intval', $this->validated('category_ids') ?? []);
     }
 }

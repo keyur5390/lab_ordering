@@ -1,3 +1,4 @@
+import { CategoryLinks } from '@/components/catalogue/category-links';
 import { DetailRow } from '@/components/catalogue/detail-row';
 import { AddToCartButton } from '@/components/catalogue/add-to-cart-button';
 import { Price } from '@/components/catalogue/price';
@@ -28,6 +29,9 @@ export default function PackageDetail({ package: pkg }: { package: LabPackage })
                     <AddToCartButton type="package" id={pkg.id} className="min-w-32" />
                 </div>
                 {pkg.description && <p className="mt-4 text-base text-muted">{pkg.description}</p>}
+                <div className="mt-4">
+                    <CategoryLinks categories={pkg.categories} />
+                </div>
 
                 <dl className="mt-6 divide-y divide-border rounded-card border border-border bg-surface px-4 md:px-6">
                     <DetailRow label="Tests included">{tests.length}</DetailRow>

@@ -69,7 +69,12 @@ the catalogue, orders, collection schedule and reports from an admin area.
 - [A package must contain at least 2 tests.] `TODO(client)`
 - [A package's turnaround is its slowest test's.] `TODO(client)`
 - [A test that belongs to a package can't be deleted; remove it from the package or unpublish it.] `TODO(client)`
-- **OPEN:** Categories/organ groupings? Search? Filters?
+- **Categories, search and filters (client, 2026-10-31):** *Built in B-19.*
+  - Admins manage categories (Admin → Categories). A test or package can be in several. Renaming keeps the
+    link (slug).
+  - `/tests` searches names and codes, and packages by the names of the tests inside. Filters: category, tests
+    or packages, and no fasting or preparation (a package qualifies only if none of its tests needs any).
+  - Sort by name or price (low/high). Filters live in the URL, so links can be shared.
 - **OPEN:** Is a package price independent, or derived from its tests minus a discount?
 - **OPEN:** Is a catalogue item ever unavailable by city/area?
 
@@ -314,6 +319,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-31 | Catalogue (B-19): categories (many per item), search, filters (category, type, no fasting), sort by name/price | Client |
 | 2026-10-30 | Admin dashboard (B-18): today's work, orders by status, money by period, alerts | Client |
 | 2026-10-30 | Lab branches (B-17): branches with address, pin, contact, directions, photo; own slot schedule; lab visits at checkout; all tests at every branch | Client |
 | 2026-10-30 | Fees, tax & coupons (B-16): per-area fee, free above a set value; one tax rate, included or added; coupons with %/fixed, dates, limits, minimum; minimum order | Client (fee and tax on our recommendation) |

@@ -38,6 +38,7 @@ class LabPackageResource extends JsonResource
             'tests_total_amount' => $pricing->testsTotal($this->resource),
             'turnaround_hours' => $pricing->turnaroundHours($this->resource),
             'is_active' => $this->is_active,
+            'categories' => $this->whenLoaded('categories', fn () => $this->categories->map->only(['id', 'name', 'slug'])->values()),
             'tests_count' => $this->tests->count(),
             'tests' => LabTestResource::collection($this->whenLoaded('tests')),
         ];

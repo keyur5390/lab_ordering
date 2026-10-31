@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\DiscountType;
+use App\Models\Category;
 use App\Models\LabPackage;
 use App\Models\LabTest;
 use Illuminate\Database\Seeder;
@@ -38,10 +39,21 @@ class CatalogueSeeder extends Seeder
             'is_active' => true,
         ])]);
 
+        // Demo categories; one test can be in several.
+        $categories = collect(['Diabetes', 'Heart', 'Thyroid', 'Liver & kidney', 'Vitamins', 'General health'])
+            ->mapWithKeys(fn (string $name) => [$name => Category::create(['name' => $name, 'slug' => Str::slug($name)])]);
+        foreach ([
+            'FBS' => ['Diabetes'], 'HBA1C' => ['Diabetes', 'Heart'], 'LIPID' => ['Heart'], 'THY' => ['Thyroid'],
+            'LFT' => ['Liver & kidney'], 'KFT' => ['Liver & kidney'], 'VITD' => ['Vitamins'], 'CBC' => ['General health'],
+            'URINE' => ['General health'],
+        ] as $code => $names) {
+            $tests[$code]->categories()->attach($categories->only($names)->pluck('id'));
+        }
+
         // Demo: one test needs a prescription.
         $tests['VITD']->update(['requires_prescription' => true]);
 
-        LabPackage::create([
+        $basic = LabPackage::create([
             'name' => 'Basic Health Check',
             'code' => 'BASIC',
             'slug' => 'basic-health-check',
@@ -49,13 +61,17 @@ class CatalogueSeeder extends Seeder
             'pricing_mode' => 'fixed',
             'price_amount' => 99900,
             'is_active' => true,
-        ])->tests()->sync($tests->only(['CBC', 'FBS', 'URINE'])->pluck('id'));
+        ]);
+        $basic->tests()->sync($tests->only(['CBC', 'FBS', 'URINE'])->pluck('id'));
+        $basic->categories()->attach($categories['General health']);
 
-        LabPackage::factory()->discounted(DiscountType::Percent, 20)->create([
+        $full = LabPackage::factory()->discounted(DiscountType::Percent, 20)->create([
             'name' => 'Full Body Checkup',
             'code' => 'FULL',
             'slug' => 'full-body-checkup',
             'description' => 'Demo package priced at 20% off its tests.',
-        ])->tests()->sync($tests->only(['CBC', 'LIPID', 'FBS', 'HBA1C', 'THY', 'LFT', 'KFT'])->pluck('id'));
+        ]);
+        $full->tests()->sync($tests->only(['CBC', 'LIPID', 'FBS', 'HBA1C', 'THY', 'LFT', 'KFT'])->pluck('id'));
+        $full->categories()->attach($categories->only(['General health', 'Diabetes', 'Heart'])->pluck('id'));
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SaveLabPackageRequest;
 use App\Http\Resources\LabPackageResource;
 use App\Http\Resources\LabTestResource;
+use App\Models\Category;
 use App\Models\LabPackage;
 use App\Models\LabTest;
 use App\Settings\Settings;
@@ -48,6 +49,7 @@ class LabPackageController extends Controller
                 'slug' => Slug::unique(LabPackage::class, $request->validated('name')),
             ]);
             $package->tests()->sync($request->testIds());
+            $package->categories()->sync($request->categoryIds());
         });
 
         return to_route('admin.packages.index')->with('status', 'Package created.');
@@ -57,7 +59,7 @@ class LabPackageController extends Controller
     {
         Gate::authorize('update', $package);
 
-        $package->load('tests');
+        $package->load(['tests', 'categories']);
         $currency = $settings->currency();
 
         return Inertia::render('admin/packages/form', [
@@ -80,6 +82,7 @@ class LabPackageController extends Controller
         DB::transaction(function () use ($request, $package) {
             $package->update($request->modelAttributes());
             $package->tests()->sync($request->testIds());
+            $package->categories()->sync($request->categoryIds());
         });
 
         return to_route('admin.packages.index')->with('status', 'Package saved.');
@@ -102,6 +105,7 @@ class LabPackageController extends Controller
         return [
             'tests' => LabTestResource::collection(LabTest::orderBy('name')->get()),
             'minTests' => SaveLabPackageRequest::MIN_TESTS,
+            'categories' => Category::orderBy('name')->get(['id', 'name'])->map->only(['id', 'name'])->all(),
         ];
     }
 }

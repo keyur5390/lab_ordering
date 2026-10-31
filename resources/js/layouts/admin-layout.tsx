@@ -15,6 +15,7 @@ import {
     Menu,
     Package,
     Settings,
+    Tags,
     TicketPercent,
     Truck,
     X,
@@ -43,6 +44,7 @@ const navItems: NavItem[] = [
         lab: true,
     },
     { label: 'Lab', routeName: 'admin.lab.index', activePattern: 'admin.lab.*', icon: Microscope, lab: true },
+    { label: 'Categories', routeName: 'admin.categories.index', activePattern: 'admin.categories.*', icon: Tags },
     { label: 'Tests', routeName: 'admin.tests.index', activePattern: 'admin.tests.*', icon: FlaskConical },
     { label: 'Packages', routeName: 'admin.packages.index', activePattern: 'admin.packages.*', icon: Package },
     {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SaveLabTestRequest;
 use App\Http\Resources\LabTestResource;
+use App\Models\Category;
 use App\Models\LabTest;
 use App\Settings\Settings;
 use App\Support\Money;
@@ -29,15 +30,16 @@ class LabTestController extends Controller
     {
         Gate::authorize('create', LabTest::class);
 
-        return Inertia::render('admin/tests/form', ['test' => null, 'price' => '']);
+        return Inertia::render('admin/tests/form', ['test' => null, 'price' => '', 'categories' => $this->categories()]);
     }
 
     public function store(SaveLabTestRequest $request): RedirectResponse
     {
-        LabTest::create([
+        $test = LabTest::create([
             ...$request->modelAttributes(),
             'slug' => Slug::unique(LabTest::class, $request->validated('name')),
         ]);
+        $test->categories()->sync($request->categoryIds());
 
         return to_route('admin.tests.index')->with('status', 'Test created.');
     }
@@ -47,14 +49,16 @@ class LabTestController extends Controller
         Gate::authorize('update', $test);
 
         return Inertia::render('admin/tests/form', [
-            'test' => LabTestResource::make($test),
+            'test' => LabTestResource::make($test->load('categories')),
             'price' => Money::toDecimal($test->price_amount, $settings->currency()),
+            'categories' => $this->categories(),
         ]);
     }
 
     public function update(SaveLabTestRequest $request, LabTest $test): RedirectResponse
     {
         $test->update($request->modelAttributes());
+        $test->categories()->sync($request->categoryIds());
 
         return to_route('admin.tests.index')->with('status', 'Test saved.');
     }
@@ -72,5 +76,13 @@ class LabTestController extends Controller
         $test->delete();
 
         return to_route('admin.tests.index')->with('status', 'Test deleted.');
+    }
+
+    /**
+     * @return list<array{id: int, name: string}>
+     */
+    private function categories(): array
+    {
+        return Category::orderBy('name')->get(['id', 'name'])->map->only(['id', 'name'])->all();
     }
 }

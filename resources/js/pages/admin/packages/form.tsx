@@ -13,6 +13,7 @@ import { TextLink } from '@/components/ui/text-link';
 import AdminLayout from '@/layouts/admin-layout';
 import type { DiscountType, LabPackage, LabTest, PackagePricingMode } from '@/types';
 import { useForm } from '@inertiajs/react';
+import { CategoryPicker } from '@/components/admin/category-picker';
 import type { FormEvent } from 'react';
 
 interface PackageFormProps {
@@ -22,15 +23,17 @@ interface PackageFormProps {
     /** Every test, published or not, to choose from. */
     tests: LabTest[];
     minTests: number;
+    categories: { id: number; name: string }[];
 }
 
-export default function PackageForm({ package: pkg, form, tests, minTests }: PackageFormProps) {
+export default function PackageForm({ package: pkg, form, tests, minTests, categories }: PackageFormProps) {
     const currencyHint = useCurrencyHint();
     const { data, setData, post, put, processing, errors } = useForm({
         name: pkg?.name ?? '',
         code: pkg?.code ?? '',
         description: pkg?.description ?? '',
         is_active: pkg?.is_active ?? true,
+        category_ids: pkg?.categories?.map((category) => category.id ?? 0) ?? ([] as number[]),
         test_ids: pkg?.tests?.map((test) => test.id) ?? ([] as number[]),
         pricing_mode: pkg?.pricing_mode ?? ('fixed' as PackagePricingMode),
         price: form?.price ?? '',
@@ -90,6 +93,12 @@ export default function PackageForm({ package: pkg, form, tests, minTests }: Pac
                             />
                         )}
                     </Field>
+                    <CategoryPicker
+                        categories={categories}
+                        value={data.category_ids}
+                        onChange={(ids) => setData('category_ids', ids)}
+                        error={errors.category_ids}
+                    />
                     <div className="flex items-center gap-2">
                         <Checkbox
                             id="is_active"

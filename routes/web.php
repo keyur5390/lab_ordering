@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\BranchController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ClosureController;
 use App\Http\Controllers\Admin\CollectorController;
 use App\Http\Controllers\Admin\CouponController;
@@ -118,6 +119,7 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
         });
         Route::post('/orders/{order}/refunds', [RefundController::class, 'store'])->name('orders.refunds.store');
         Route::put('/orders/{order}/collector', [OrderCollectorController::class, 'update'])->name('orders.collector.update');
+        Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::resource('coupons', CouponController::class)->except('show');
         Route::resource('branches', BranchController::class)->except('show');
         Route::get('/branches/{branch}/schedule', [BranchController::class, 'editSchedule'])->name('branches.schedule.edit');

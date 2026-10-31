@@ -77,4 +77,12 @@ class LabTest extends Model
     {
         $query->where('is_active', true);
     }
+
+    /**
+     * @return BelongsToMany<Category, $this>
+     */
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class)->orderBy('name');
+    }
 }

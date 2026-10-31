@@ -71,6 +71,8 @@ export interface Currency {
 
 /** Mirrors App\Http\Resources\LabTestResource. Money is in minor units. */
 export interface LabTest {
+    /** On detail pages and in the catalogue (B-19). */
+    categories?: Category[];
     id: number;
     name: string;
     code: string;
@@ -89,6 +91,8 @@ export type DiscountType = 'percent' | 'amount';
 
 /** Mirrors App\Http\Resources\LabPackageResource. Money is in minor units. */
 export interface LabPackage {
+    /** On detail pages and in the catalogue (B-19). */
+    categories?: Category[];
     id: number;
     name: string;
     code: string;
@@ -341,4 +345,11 @@ export interface OrderPayment {
         by: string | null;
         created_at: string;
     }[];
+}
+
+/** A catalogue category (B-19). */
+export interface Category {
+    id?: number;
+    name: string;
+    slug: string;
 }

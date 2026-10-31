@@ -30,6 +30,7 @@ class LabTestResource extends JsonResource
             'turnaround_hours' => $this->turnaround_hours,
             'price_amount' => $this->price_amount,
             'is_active' => $this->is_active,
+            'categories' => $this->whenLoaded('categories', fn () => $this->categories->map->only(['id', 'name', 'slug'])->values()),
         ];
     }
 }
