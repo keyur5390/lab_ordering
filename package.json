@@ -1,0 +1,45 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite",
+        "types": "tsc --noEmit",
+        "lint": "eslint .",
+        "format": "prettier --write resources/",
+        "format:check": "prettier --check resources/"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.5",
+        "@tailwindcss/vite": "^4.0.0",
+        "@types/leaflet": "^1.9.22",
+        "@types/node": "^22.20.5",
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
+        "@vitejs/plugin-react": "^5.2.0",
+        "concurrently": "^9.0.1",
+        "eslint": "^9.39.5",
+        "eslint-plugin-react": "^7.37.5",
+        "eslint-plugin-react-hooks": "^7.1.1",
+        "globals": "^17.13.0",
+        "laravel-vite-plugin": "^2.0.0",
+        "prettier": "^3.9.10",
+        "prettier-plugin-tailwindcss": "^0.8.1",
+        "tailwindcss": "^4.0.0",
+        "typescript": "^6.0.3",
+        "typescript-eslint": "^8.72.1",
+        "vite": "^7.0.7"
+    },
+    "dependencies": {
+        "@inertiajs/react": "^2.3.29",
+        "clsx": "^2.1.1",
+        "leaflet": "^1.9.4",
+        "lucide-react": "^1.63.0",
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1",
+        "react-leaflet": "^5.0.0",
+        "tailwind-merge": "^3.7.0",
+        "ziggy-js": "^2.6.5"
+    }
+}
