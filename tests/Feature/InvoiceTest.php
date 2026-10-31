@@ -56,7 +56,8 @@ describe('issuing', function () {
             ->and($invoice->payment_id)->toBe($this->payment->id)
             ->and($invoice->seller['tax_id'])->toBe('27ABCDE1234F1Z5')
             ->and($invoice->buyer['email'])->toBe('asha@example.com')
-            ->and($invoice->lines)->toBe([['description' => 'Complete Blood Count', 'patient' => 'Asha Rao', 'amount' => 100000]])
+            // toEqual: MySQL's JSON columns don't keep key order.
+            ->and($invoice->lines)->toEqual([['description' => 'Complete Blood Count', 'patient' => 'Asha Rao', 'amount' => 100000]])
             ->and($invoice->totals['total'])->toBe(112100)
             ->and($invoice->payment_note)->toBe('Paid online');
 
