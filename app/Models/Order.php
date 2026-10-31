@@ -28,6 +28,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $collected_at
  * @property Carbon|null $received_at_lab_at
  * @property Carbon|null $report_ready_at
+ * @property Carbon|null $completed_at
  * @property int|null $collector_id
  * @property CollectionType $collection_type
  * @property int|null $branch_id
@@ -82,6 +83,7 @@ class Order extends Model
             'collected_at' => 'datetime',
             'received_at_lab_at' => 'datetime',
             'report_ready_at' => 'datetime',
+            'completed_at' => 'datetime',
             'collector_assigned_at' => 'datetime',
             'visit_failed_at' => 'datetime',
             'visit_failure_reason' => VisitFailureReason::class,

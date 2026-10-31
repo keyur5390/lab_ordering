@@ -30,6 +30,7 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReportHistoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'home')->name('home');
@@ -65,6 +66,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{order}/prescription', 'prescription')->name('prescription');
     });
     Route::get('/account/orders/{order}/reports/{item}', [ReportController::class, 'show'])->scopeBindings()->name('orders.reports.show');
+    Route::get('/account/reports', [ReportHistoryController::class, 'index'])->name('reports.index');
     Route::get('/account/orders/{order}/invoice', [InvoiceController::class, 'invoice'])->name('orders.invoice');
     Route::get('/account/orders/{order}/credit-notes/{creditNote}', [InvoiceController::class, 'creditNote'])->name('orders.credit-notes.show');
 

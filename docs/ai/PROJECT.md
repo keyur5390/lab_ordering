@@ -223,7 +223,10 @@ plus `cancelled` and `refunded`.
 - Lab staff and admins move orders on to `sample_collected` → `received_at_lab`, and to `report_ready` once
   all reports are uploaded (§9).
 - Assigning a collector moves an order to `collector_assigned`; removing them moves it back to `confirmed`
-  (§2). `completed` is not used yet (OPEN).
+  (§2).
+- **Completed (client, 2026-10-31):** *Built in B-22.* An order becomes `completed`, with `completed_at` set,
+  as soon as all its reports are in and it is paid (online, or recorded at collection). It is checked when
+  the last report is uploaded and when the payment is recorded. Reports can still be replaced afterwards.
 - **Cancel and reschedule (client, 2026-10-29):** customers can, before collection, until a cutoff of
   N hours before the slot, set in Admin → Settings ⚙️. Until it is set, only admins can. Admins can
   always, before collection.
@@ -250,7 +253,10 @@ plus `cancelled` and `refunded`.
   - The "Reports ready" email attaches the PDFs when they total no more than [10 MB] `TODO(client)`.
     Otherwise it links to the order.
   - The SMS links to the order. Downloads in the account need sign-in.
-- **OPEN:** Report retention period; when an order becomes `completed`.
+- **Retention (client, 2026-10-31):** reports are kept forever; nothing deletes them.
+- **My reports (client, 2026-10-31):** *Built in B-22.* `/account/reports` lists every report from the
+  customer's orders, newest first, grouped by patient, with a patient filter, download links and links to
+  the order.
 - Reports are sensitive health data. Access is limited to the owning customer and authorised staff, via signed or authorised URLs only. [non-negotiable default]
 
 ## 10. Notifications
@@ -345,6 +351,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-31 | Completion & reports (B-22): completed when all reports are in and paid; My reports page; reports kept forever | Client |
 | 2026-10-31 | Invoices (B-21): issued when paid; seller details from Settings; yearly numbers; credit note per refund | Client |
 | 2026-10-31 | Users (B-20): change roles, disable accounts, invite staff, view customer details; not on yourself | Client |
 | 2026-10-31 | Catalogue (B-19): categories (many per item), search, filters (category, type, no fasting), sort by name/price | Client |

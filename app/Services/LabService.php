@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
@@ -32,10 +34,25 @@ class LabService
         return $order->status === OrderStatus::SampleCollected;
     }
 
-    /** Reports can be uploaded once the sample is at the lab, and replaced afterwards. */
+    /** Reports can be uploaded once the sample is at the lab, and replaced afterwards (also once completed). */
     public function canUploadReports(Order $order): bool
     {
-        return in_array($order->status, [OrderStatus::ReceivedAtLab, OrderStatus::ReportReady], true);
+        return in_array($order->status, [OrderStatus::ReceivedAtLab, OrderStatus::ReportReady, OrderStatus::Completed], true);
+    }
+
+    /**
+     * An order is completed once all its reports are in and it is paid (client, 2026-10-31). Called
+     * when the last report arrives and when a pay-at-collection payment is recorded.
+     */
+    public function completeIfDone(Order $order): void
+    {
+        $paid = $order->payment_method === PaymentMethod::Online
+            ? $order->payments()->where('status', PaymentStatus::Paid)->exists()
+            : $order->payment_collected_at !== null;
+
+        if ($order->status === OrderStatus::ReportReady && $paid) {
+            $order->update(['status' => OrderStatus::Completed, 'completed_at' => now()]);
+        }
     }
 
     /**
@@ -97,6 +114,7 @@ class LabService
 
         if ($ready) {
             $this->notifier->reportReady($ready);
+            $this->completeIfDone($ready);
         }
     }
 

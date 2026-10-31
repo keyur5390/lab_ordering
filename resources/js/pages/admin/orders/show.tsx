@@ -17,6 +17,7 @@ const labStatuses: Order['status'][] = [
     'sample_collected',
     'received_at_lab',
     'report_ready',
+    'completed',
 ];
 
 export default function AdminOrderShow({ order, collector }: { order: Order; collector: CollectorInfo }) {

@@ -29,6 +29,7 @@ class OrderController extends Controller
         OrderStatus::SampleCollected,
         OrderStatus::ReceivedAtLab,
         OrderStatus::ReportReady,
+        OrderStatus::Completed,
     ];
 
     public function __construct(private LabService $lab) {}

@@ -5,7 +5,7 @@ import AppLayout from '@/layouts/app-layout';
 import type { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { ChevronRight, ClipboardList, MapPin, Users, type LucideIcon } from 'lucide-react';
+import { ChevronRight, ClipboardList, FileText, MapPin, Users, type LucideIcon } from 'lucide-react';
 
 interface AccountProps {
     /** Present when SMS is switched on for the site. */
@@ -65,6 +65,12 @@ export default function Account({ sms }: AccountProps) {
             label: 'Orders',
             description: 'Your bookings, collection times and changes',
             icon: ClipboardList,
+        },
+        {
+            href: route('reports.index'),
+            label: 'Reports',
+            description: 'Your test reports from every order',
+            icon: FileText,
         },
         {
             href: route('patients.index'),

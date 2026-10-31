@@ -34,6 +34,7 @@ class PaymentService
         private SlotService $slots,
         private OrderNotifier $notifier,
         private InvoiceService $invoices,
+        private LabService $lab,
     ) {}
 
     /** Whether customers can choose to pay online: a gateway is chosen and its keys are set. */
@@ -304,6 +305,7 @@ class PaymentService
 
         $order->update(['payment_collected_at' => now(), 'payment_collected_method' => $method]);
         $this->invoices->issue($order);
+        $this->lab->completeIfDone($order);
     }
 
     /** Refunds everything still refundable. Returns null when nothing was paid online. */
