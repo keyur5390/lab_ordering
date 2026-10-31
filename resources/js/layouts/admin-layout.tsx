@@ -18,6 +18,7 @@ import {
     Tags,
     TicketPercent,
     Truck,
+    Users,
     X,
     type LucideIcon,
 } from 'lucide-react';
@@ -57,6 +58,7 @@ const navItems: NavItem[] = [
     { label: 'Collectors', routeName: 'admin.collectors.index', activePattern: 'admin.collectors.*', icon: Truck },
     { label: 'Branches', routeName: 'admin.branches.index', activePattern: 'admin.branches.*', icon: Building2 },
     { label: 'Closures', routeName: 'admin.closures.index', activePattern: 'admin.closures.*', icon: CalendarOff },
+    { label: 'Users', routeName: 'admin.users.index', activePattern: 'admin.users.*', icon: Users },
     {
         label: 'Notifications',
         routeName: 'admin.notifications.index',

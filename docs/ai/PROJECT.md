@@ -42,9 +42,17 @@ the catalogue, orders, collection schedule and reports from an admin area.
     it) or cancel.
   - For pay-at-collection orders they record the payment. [Methods: cash, card, UPI, other.] `TODO(client)`
   - Customers get a "Collector assigned" message (again if the collector changes) and see the collector's
-    first name on the order. Admins are not created via sign-up: an existing
-  account is promoted with `php artisan user:role {email} admin`. [default] `TODO(client)`: who may
-  create admins, and whether an admin user-management screen is needed.
+    first name on the order.
+- **User management (client, 2026-10-31):** *Built in B-20.* Admin → Users.
+  - Find users by name or email, filtered by role and status.
+  - See a customer's patients, addresses and latest orders.
+  - Change roles and disable or re-enable accounts. Admins can't do either to their own account, so there is
+    always an admin.
+  - A disabled user can't sign in, and an open session ends on the next request; their orders and history stay.
+  - Invite staff by email: the account counts as verified and gets a "set your password" link, which uses the
+    password-reset token and expiry.
+  - Admins are not created via sign-up. Any admin can make others admins here; the very first is made with
+    `php artisan user:role {email} admin`.
 - **Patient profiles (client, 2026-10-29):** customers book for themselves and family members through
   patient profiles. *Built in B-08.*
   - Each profile has full name, relationship, date of birth, sex (all required) and optional phone and email.
@@ -319,6 +327,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-10-31 | Users (B-20): change roles, disable accounts, invite staff, view customer details; not on yourself | Client |
 | 2026-10-31 | Catalogue (B-19): categories (many per item), search, filters (category, type, no fasting), sort by name/price | Client |
 | 2026-10-30 | Admin dashboard (B-18): today's work, orders by status, money by period, alerts | Client |
 | 2026-10-30 | Lab branches (B-17): branches with address, pin, contact, directions, photo; own slot schedule; lab visits at checkout; all tests at every branch | Client |

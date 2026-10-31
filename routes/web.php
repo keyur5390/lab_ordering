@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\ServiceAreaController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogueController;
 use App\Http\Controllers\CheckoutController;
@@ -120,6 +121,10 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
         Route::post('/orders/{order}/refunds', [RefundController::class, 'store'])->name('orders.refunds.store');
         Route::put('/orders/{order}/collector', [OrderCollectorController::class, 'update'])->name('orders.collector.update');
         Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::resource('users', UserController::class)->only(['index', 'show', 'create', 'store']);
+        Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.role');
+        Route::post('/users/{user}/disable', [UserController::class, 'disable'])->name('users.disable');
+        Route::post('/users/{user}/enable', [UserController::class, 'enable'])->name('users.enable');
         Route::resource('coupons', CouponController::class)->except('show');
         Route::resource('branches', BranchController::class)->except('show');
         Route::get('/branches/{branch}/schedule', [BranchController::class, 'editSchedule'])->name('branches.schedule.edit');

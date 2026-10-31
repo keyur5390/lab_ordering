@@ -64,6 +64,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'role' => UserRole::class,
             'sms_opt_out' => 'boolean',
+            'disabled_at' => 'datetime',
         ];
     }
 
@@ -112,6 +113,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
+    }
+
+    public function isDisabled(): bool
+    {
+        return $this->disabled_at !== null;
     }
 
     public function isCollector(): bool
