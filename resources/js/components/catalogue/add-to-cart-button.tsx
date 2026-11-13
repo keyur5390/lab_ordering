@@ -4,6 +4,7 @@ import type { CartItemType, SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
 import { Check } from 'lucide-react';
 import { useState } from 'react';
+import { t } from '@/lib/i18n';
 
 interface AddToCartButtonProps {
     type: CartItemType;
@@ -28,7 +29,7 @@ export function AddToCartButton({ type, id, className }: AddToCartButtonProps) {
                 )}
             >
                 <Check className="size-4" aria-hidden="true" />
-                In cart
+                {t('In cart')}
             </Link>
         );
     }
@@ -48,13 +49,13 @@ export function AddToCartButton({ type, id, className }: AddToCartButtonProps) {
                                 setProcessing(true);
                                 setError(null);
                             },
-                            onError: (errors) => setError(errors.id ?? errors.type ?? 'Could not add this item.'),
+                            onError: (errors) => setError(errors.id ?? errors.type ?? t('Could not add this item.')),
                             onFinish: () => setProcessing(false),
                         },
                     )
                 }
             >
-                Add
+                {t('Add')}
             </Button>
             {error && (
                 <span role="alert" className="text-sm text-danger-600">

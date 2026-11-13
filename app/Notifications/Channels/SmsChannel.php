@@ -2,10 +2,7 @@
 
 namespace App\Notifications\Channels;
 
-use App\Enums\SmsDriver;
 use App\Notifications\OrderNotification;
-use App\Services\Sms\LogSmsSender;
-use App\Services\Sms\TwilioSmsSender;
 use App\Settings\Settings;
 
 /**
@@ -25,12 +22,7 @@ class SmsChannel
             return;
         }
 
-        $sender = match ($driver) {
-            SmsDriver::Log => app(LogSmsSender::class),
-            SmsDriver::Twilio => app(TwilioSmsSender::class),
-        };
-
         // A failure is thrown so the queued job is retried.
-        $sender->send($to, $message);
+        $driver->sender()->send($to, $message);
     }
 }

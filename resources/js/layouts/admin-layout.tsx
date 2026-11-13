@@ -5,6 +5,7 @@ import type { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Bell,
+    FileText,
     Building2,
     Microscope,
     CalendarOff,
@@ -14,6 +15,7 @@ import {
     MapPinned,
     Menu,
     Package,
+    ScrollText,
     Settings,
     Tags,
     TicketPercent,
@@ -65,6 +67,8 @@ const navItems: NavItem[] = [
         activePattern: 'admin.notifications.*',
         icon: Bell,
     },
+    { label: 'Pages', routeName: 'admin.pages.index', activePattern: 'admin.pages.*', icon: FileText },
+    { label: 'Audit log', routeName: 'admin.audit-log', activePattern: 'admin.audit-log', icon: ScrollText },
     { label: 'Settings', routeName: 'admin.settings.edit', activePattern: 'admin.settings.*', icon: Settings },
 ];
 

@@ -14,6 +14,7 @@ import type { Address, Branch, CartLine, CollectionType, Patient, PaymentMethod,
 import { Head, router, useForm } from '@inertiajs/react';
 import { FileUp } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
+import { t, tx } from '@/lib/i18n';
 
 interface CheckoutProps {
     /** Available cart lines. */
@@ -58,14 +59,19 @@ function SummaryRow({ label, children, muted }: { label: ReactNode; children: Re
     );
 }
 
-const paymentOptions: { value: PaymentMethod; title: string; hint: (holdMinutes: number) => string }[] = [
+const paymentOptions = (): { value: PaymentMethod; title: string; hint: (holdMinutes: number) => string }[] => [
     {
         value: 'online',
-        title: 'Pay online now',
+        title: t('Pay online now'),
         hint: (holdMinutes) =>
-            `You'll pay on our payment partner's secure page. We hold your slot for ${holdMinutes} minutes while you pay.`,
+            t(
+                "You'll pay on our payment partner's secure page. We hold your slot for :minutes minutes while you pay.",
+                {
+                    minutes: holdMinutes,
+                },
+            ),
     },
-    { value: 'pay_at_collection', title: 'Pay at collection', hint: () => 'Pay the collector when they arrive.' },
+    { value: 'pay_at_collection', title: t('Pay at collection'), hint: () => t('Pay the collector when they arrive.') },
 ];
 
 function Step({ number, title, children }: { number: number; title: string; children: ReactNode }) {
@@ -190,13 +196,13 @@ export default function Checkout({
 
     return (
         <AppLayout>
-            <Head title="Checkout" />
+            <Head title={t('Checkout')} />
 
             <form onSubmit={submit} noValidate className="mx-auto max-w-5xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <TextLink href={route('cart.show')} className="text-sm">
-                    ← Cart
+                    {t('← Cart')}
                 </TextLink>
-                <h1 className="mt-4 text-2xl font-semibold md:text-3xl">Checkout</h1>
+                <h1 className="mt-4 text-2xl font-semibold md:text-3xl">{t('Checkout')}</h1>
 
                 {(allErrors.order || allErrors.items) && (
                     <Alert tone="danger" className="mt-4">
@@ -206,11 +212,11 @@ export default function Checkout({
 
                 <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_20rem] lg:items-start">
                     <div className="min-w-0 space-y-6">
-                        <Step number={1} title="Who is each test for?">
+                        <Step number={1} title={t('Who is each test for?')}>
                             {patients.some((patient) => !patient.is_complete) && (
                                 <p className="mb-3 text-sm text-muted">
-                                    Patients need a date of birth and sex before they can be booked.{' '}
-                                    <TextLink href={route('patients.index')}>Update patients</TextLink>
+                                    {t('Patients need a date of birth and sex before they can be booked.')}{' '}
+                                    <TextLink href={route('patients.index')}>{t('Update patients')}</TextLink>
                                 </p>
                             )}
                             <ul className="space-y-4">
@@ -224,7 +230,9 @@ export default function Checkout({
                                             <legend className="flex w-full flex-wrap items-baseline justify-between gap-2">
                                                 <span className="font-medium">{line.name}</span>
                                                 <span className="text-sm text-muted">
-                                                    <Price amount={line.price_amount} /> per person
+                                                    {tx(':price per person', {
+                                                        price: <Price amount={line.price_amount} />,
+                                                    })}
                                                 </span>
                                             </legend>
                                             <div className="mt-2 flex flex-wrap gap-2">
@@ -247,7 +255,7 @@ export default function Checkout({
                                                         />
                                                         {patient.name}
                                                         {!patient.is_complete && (
-                                                            <Badge tone="warning">Details needed</Badge>
+                                                            <Badge tone="warning">{t('Details needed')}</Badge>
                                                         )}
                                                     </label>
                                                 ))}
@@ -255,7 +263,7 @@ export default function Checkout({
                                                     href={route('patients.create')}
                                                     className="flex min-h-11 items-center px-2 text-sm"
                                                 >
-                                                    + Add patient
+                                                    {t('+ Add patient')}
                                                 </TextLink>
                                             </div>
                                             <InputError
@@ -269,20 +277,23 @@ export default function Checkout({
                             </ul>
                         </Step>
 
-                        <Step number={2} title={labVisit ? 'Which branch will you visit?' : 'Where should we collect?'}>
+                        <Step
+                            number={2}
+                            title={labVisit ? t('Which branch will you visit?') : t('Where should we collect?')}
+                        >
                             {branches.length > 0 && (
                                 <div
                                     role="radiogroup"
-                                    aria-label="How to give your sample"
+                                    aria-label={t('How to give your sample')}
                                     className="mb-4 grid gap-2 sm:grid-cols-2"
                                 >
                                     {(
                                         [
-                                            { value: 'home', title: 'Home collection', hint: 'We come to you.' },
+                                            { value: 'home', title: t('Home collection'), hint: t('We come to you.') },
                                             {
                                                 value: 'lab_visit',
-                                                title: 'Visit a lab',
-                                                hint: 'Come to one of our branches.',
+                                                title: t('Visit a lab'),
+                                                hint: t('Come to one of our branches.'),
                                             },
                                         ] as const
                                     ).map((option) => (
@@ -306,7 +317,7 @@ export default function Checkout({
                                 </div>
                             )}
                             {labVisit ? (
-                                <div role="radiogroup" aria-label="Branch" className="space-y-2">
+                                <div role="radiogroup" aria-label={t('Branch')} className="space-y-2">
                                     {branches.map((branch) => (
                                         <label
                                             key={branch.id}
@@ -332,7 +343,7 @@ export default function Checkout({
                                                         rel="noreferrer"
                                                         className="font-medium text-primary-700 hover:underline"
                                                     >
-                                                        Map
+                                                        {t('Map')}
                                                     </a>
                                                     {branch.phone && <span className="text-muted">{branch.phone}</span>}
                                                 </span>
@@ -350,11 +361,11 @@ export default function Checkout({
                                 </div>
                             ) : addresses.length === 0 ? (
                                 <p className="text-sm text-muted">
-                                    You have no saved addresses.{' '}
-                                    <TextLink href={route('addresses.create')}>Add an address</TextLink>
+                                    {t('You have no saved addresses.')}{' '}
+                                    <TextLink href={route('addresses.create')}>{t('Add an address')}</TextLink>
                                 </p>
                             ) : (
-                                <div role="radiogroup" aria-label="Address" className="space-y-2">
+                                <div role="radiogroup" aria-label={t('Address')} className="space-y-2">
                                     {addresses.map((address) => (
                                         <label
                                             key={address.id}
@@ -380,21 +391,21 @@ export default function Checkout({
                                                 <span className="block">{addressLines(address).join(', ')}</span>
                                                 {!address.serviceable && (
                                                     <Badge tone="warning" className="mt-1">
-                                                        Outside our collection area
+                                                        {t('Outside our collection area')}
                                                     </Badge>
                                                 )}
                                             </span>
                                         </label>
                                     ))}
                                     <TextLink href={route('addresses.create')} className="inline-block pt-1 text-sm">
-                                        + Add address
+                                        {t('+ Add address')}
                                     </TextLink>
                                 </div>
                             )}
                             {!labVisit && <InputError message={errors.address_id} className="mt-2" />}
                         </Step>
 
-                        <Step number={3} title={labVisit ? 'When will you visit?' : 'When should we come?'}>
+                        <Step number={3} title={labVisit ? t('When will you visit?') : t('When should we come?')}>
                             {(labVisit ? data.branch_id : data.address_id) ? (
                                 <SlotPicker
                                     key={`${data.collection_type}-${labVisit ? data.branch_id : data.address_id}`}
@@ -403,21 +414,22 @@ export default function Checkout({
                                     onChange={(startsAt) => setData('slot_starts_at', startsAt)}
                                 />
                             ) : (
-                                <p className="text-sm text-muted">Choose an address to see available times.</p>
+                                <p className="text-sm text-muted">{t('Choose an address to see available times.')}</p>
                             )}
                             <InputError message={errors.slot_starts_at} className="mt-2" />
                         </Step>
 
                         {prescriptionRequired && (
-                            <Step number={prescriptionStep} title="Upload your prescription">
+                            <Step number={prescriptionStep} title={t('Upload your prescription')}>
                                 <p className="text-sm text-muted">
-                                    One or more tests in your order need a doctor's prescription. PDF, JPG or PNG, up to
-                                    10 MB.
+                                    {t(
+                                        "One or more tests in your order need a doctor's prescription. PDF, JPG or PNG, up to 10 MB.",
+                                    )}
                                 </p>
                                 <label className="mt-3 flex cursor-pointer items-center gap-3 rounded-control border border-dashed border-border p-4 hover:bg-canvas">
                                     <FileUp className="size-5 text-muted" strokeWidth={1.75} aria-hidden="true" />
                                     <span className="text-sm">
-                                        {data.prescription ? data.prescription.name : 'Choose a file'}
+                                        {data.prescription ? data.prescription.name : t('Choose a file')}
                                     </span>
                                     <input
                                         type="file"
@@ -432,9 +444,9 @@ export default function Checkout({
                         )}
 
                         {onlinePayment && (
-                            <Step number={paymentStep} title="How would you like to pay?">
-                                <div role="radiogroup" aria-label="Payment" className="space-y-2">
-                                    {paymentOptions.map((option) => (
+                            <Step number={paymentStep} title={t('How would you like to pay?')}>
+                                <div role="radiogroup" aria-label={t('Payment')} className="space-y-2">
+                                    {paymentOptions().map((option) => (
                                         <label
                                             key={option.value}
                                             className="flex cursor-pointer gap-3 rounded-control border border-border p-3 has-[:checked]:border-primary-600 has-[:checked]:bg-primary-50"
@@ -461,10 +473,10 @@ export default function Checkout({
                     </div>
 
                     <aside
-                        aria-label="Order summary"
+                        aria-label={t('Order summary')}
                         className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6 lg:sticky lg:top-6"
                     >
-                        <h2 className="text-base font-semibold">Summary</h2>
+                        <h2 className="text-base font-semibold">{t('Summary')}</h2>
                         <ul className="space-y-2 text-sm">
                             {lines.map((line) => {
                                 const count = data.items[line.id]?.length ?? 0;
@@ -481,43 +493,48 @@ export default function Checkout({
                             })}
                         </ul>
                         <div className="space-y-1.5 border-t border-border pt-3">
-                            <SummaryRow label="Tests">
+                            <SummaryRow label={t('Tests')}>
                                 <Price amount={quote.subtotal} />
                             </SummaryRow>
                             {quote.discount > 0 && (
-                                <SummaryRow label={`Code ${appliedCoupon}`}>
+                                <SummaryRow label={t('Code :code', { code: appliedCoupon ?? '' })}>
                                     −<Price amount={quote.discount} />
                                 </SummaryRow>
                             )}
                             {!labVisit && data.address_id && (
-                                <SummaryRow label="Home collection">
-                                    {quote.collection_fee > 0 ? <Price amount={quote.collection_fee} /> : 'Free'}
+                                <SummaryRow label={t('Home collection')}>
+                                    {quote.collection_fee > 0 ? <Price amount={quote.collection_fee} /> : t('Free')}
                                 </SummaryRow>
                             )}
                             {!labVisit && quote.collection_fee > 0 && quote.free_collection_above !== null && (
                                 <p className="text-xs text-muted">
-                                    Free collection on orders of <Price amount={quote.free_collection_above} /> or more.
+                                    {tx('Free collection on orders of :amount or more.', {
+                                        amount: <Price amount={quote.free_collection_above} />,
+                                    })}
                                 </p>
                             )}
                             {taxPercent !== null && !quote.tax_inclusive && (
-                                <SummaryRow label={`Tax (${taxPercent}%)`}>
+                                <SummaryRow label={t('Tax (:rate%)', { rate: taxPercent ?? 0 })}>
                                     <Price amount={quote.tax} />
                                 </SummaryRow>
                             )}
                         </div>
                         <div className="flex items-baseline justify-between border-t border-border pt-3">
-                            <span className="font-semibold">Total</span>
+                            <span className="font-semibold">{t('Total')}</span>
                             <Price amount={quote.total} className="text-lg" />
                         </div>
                         {taxPercent !== null && quote.tax_inclusive && (
                             <p className="text-xs text-muted">
-                                Includes <Price amount={quote.tax} /> tax ({taxPercent}%).
+                                {tx('Includes :amount tax (:rate%).', {
+                                    amount: <Price amount={quote.tax} />,
+                                    rate: taxPercent,
+                                })}
                             </p>
                         )}
 
                         <div className="space-y-1.5 border-t border-border pt-3">
                             <label htmlFor="coupon" className="text-sm font-medium">
-                                Promo code
+                                {t('Promo code')}
                             </label>
                             <div className="flex gap-2">
                                 <Input
@@ -541,12 +558,17 @@ export default function Checkout({
                                     disabled={!couponInput.trim()}
                                     onClick={() => refresh({ coupon: couponInput.trim() })}
                                 >
-                                    Apply
+                                    {t('Apply')}
                                 </Button>
                             </div>
                             {appliedCoupon && (
                                 <p className="text-sm text-success-600" role="status">
-                                    {appliedCoupon} applied{coupon?.description && `: ${coupon.description}`}.{' '}
+                                    {coupon?.description
+                                        ? t(':code applied: :description.', {
+                                              code: appliedCoupon,
+                                              description: coupon.description,
+                                          })
+                                        : t(':code applied.', { code: appliedCoupon })}{' '}
                                     <button
                                         type="button"
                                         className="font-medium text-primary-700 underline"
@@ -555,7 +577,7 @@ export default function Checkout({
                                             refresh({ coupon: '' });
                                         }}
                                     >
-                                        Remove
+                                        {t('Remove')}
                                     </button>
                                 </p>
                             )}
@@ -564,15 +586,17 @@ export default function Checkout({
 
                         {belowMinimum && quote.minimum !== null && (
                             <Alert tone="warning">
-                                The minimum order is <Price amount={quote.minimum} />. Add more tests to continue.
+                                {tx('The minimum order is :amount. Add more tests to continue.', {
+                                    amount: <Price amount={quote.minimum} />,
+                                })}
                             </Alert>
                         )}
                         <p className="text-sm text-muted">
-                            Payment: {payOnline ? 'online, on the next page' : 'pay at collection'}.
+                            {payOnline ? t('Payment: online, on the next page.') : t('Payment: pay at collection.')}
                         </p>
                         {!onlinePayment && <InputError message={errors.payment_method} />}
                         <Button type="submit" className="w-full" processing={processing} disabled={belowMinimum}>
-                            {payOnline ? 'Continue to payment' : 'Place order'}
+                            {payOnline ? t('Continue to payment') : t('Place order')}
                         </Button>
                     </aside>
                 </div>

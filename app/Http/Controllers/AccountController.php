@@ -21,15 +21,26 @@ class AccountController extends Controller
                 'email' => $settings->notifyByEmail(),
                 'phone' => $user->routeNotificationForSms(),
             ] : null,
+            // WhatsApp needs the customer's opt-in (B-31).
+            'whatsapp' => $settings->whatsAppEnabled() ? [
+                'opted_in' => $user->whatsapp_opt_in,
+                'phone' => $user->routeNotificationForSms(),
+            ] : null,
         ]);
     }
 
-    /** Customers can opt out of SMS; order emails are always sent. */
+    /** Customers can opt out of SMS and opt in to WhatsApp; order emails are always sent. */
     public function updateNotifications(Request $request): RedirectResponse
     {
-        $validated = $request->validate(['sms' => ['required', 'boolean']]);
-        $request->user()->forceFill(['sms_opt_out' => ! $validated['sms']])->save();
+        $validated = $request->validate([
+            'sms' => ['required_without:whatsapp', 'boolean'],
+            'whatsapp' => ['required_without:sms', 'boolean'],
+        ]);
+        $request->user()->forceFill(array_filter([
+            'sms_opt_out' => isset($validated['sms']) ? ! $validated['sms'] : null,
+            'whatsapp_opt_in' => $validated['whatsapp'] ?? null,
+        ], fn ($value) => $value !== null))->save();
 
-        return to_route('account')->with('status', 'Notification preferences saved.');
+        return to_route('account')->with('status', __('Notification preferences saved.'));
     }
 }

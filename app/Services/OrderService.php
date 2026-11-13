@@ -59,16 +59,16 @@ class OrderService
     public function place(User $user, Cart $cart, array $patientIdsByCartItem, Address|Branch $place, CarbonImmutable $slotStartsAt, ?UploadedFile $prescription, PaymentMethod $paymentMethod = PaymentMethod::PayAtCollection, ?string $couponCode = null): Order
     {
         $currency = $this->settings->currency()
-            ?? throw ValidationException::withMessages(['order' => 'Ordering is not open yet. Please try again later.']);
+            ?? throw ValidationException::withMessages(['order' => __('Ordering is not open yet. Please try again later.')]);
         $online = $paymentMethod === PaymentMethod::Online;
         if ($online && ! $this->payments->onlineAvailable()) {
-            throw ValidationException::withMessages(['payment_method' => 'Online payment is not available. Please choose pay at collection.']);
+            throw ValidationException::withMessages(['payment_method' => __('Online payment is not available. Please choose pay at collection.')]);
         }
 
         $cartItems = $cart->items()->with(['test', 'package.tests'])->get()
             ->filter(fn (CartItem $item) => ($item->test ?? $item->package)?->is_active);
         if ($cartItems->isEmpty()) {
-            throw ValidationException::withMessages(['items' => 'Your cart has nothing that can be booked.']);
+            throw ValidationException::withMessages(['items' => __('Your cart has nothing that can be booked.')]);
         }
 
         $patients = $user->patients()->get()->keyBy('id');
@@ -76,9 +76,9 @@ class OrderService
         foreach ($cartItems as $item) {
             $ids = $patientIdsByCartItem[$item->id] ?? [];
             if ($ids === []) {
-                $errors["items.{$item->id}"] = 'Choose who this is for.';
+                $errors["items.{$item->id}"] = __('Choose who this is for.');
             } elseif (collect($ids)->contains(fn (int $id) => ! $patients->get($id)?->isComplete())) {
-                $errors["items.{$item->id}"] = 'Choose patients from your list whose details are complete.';
+                $errors["items.{$item->id}"] = __('Choose patients from your list whose details are complete.');
             }
         }
         if ($errors !== []) {
@@ -88,14 +88,14 @@ class OrderService
         $labVisit = $place instanceof Branch;
         $schedule = $labVisit ? $place : $this->areas->coveringArea($place);
         if ($labVisit && (! $place->is_active || ! $place->hasSchedule())) {
-            throw ValidationException::withMessages(['branch_id' => 'This branch is not taking bookings.']);
+            throw ValidationException::withMessages(['branch_id' => __('This branch is not taking bookings.')]);
         }
         if (! $schedule?->hasSchedule()) {
-            throw ValidationException::withMessages(['address_id' => 'We do not collect at this address yet.']);
+            throw ValidationException::withMessages(['address_id' => __('We do not collect at this address yet.')]);
         }
 
         if ($this->prescriptionRequired($cartItems->all()) && ! $prescription) {
-            throw ValidationException::withMessages(['prescription' => 'A prescription is needed for one or more tests.']);
+            throw ValidationException::withMessages(['prescription' => __('A prescription is needed for one or more tests.')]);
         }
 
         $lines = [];
@@ -108,7 +108,7 @@ class OrderService
 
         $minimum = $this->settings->minimumOrderAmount();
         if ($minimum !== null && $subtotal < $minimum) {
-            throw ValidationException::withMessages(['order' => 'The minimum order is '.Money::format($minimum, $currency->value).'.']);
+            throw ValidationException::withMessages(['order' => __('The minimum order is :amount.', ['amount' => Money::format($minimum, $currency->value)])]);
         }
 
         $order = DB::transaction(function () use ($user, $cart, $lines, $subtotal, $place, $labVisit, $schedule, $slotStartsAt, $prescription, $currency, $paymentMethod, $online, $couponCode) {
@@ -193,10 +193,10 @@ class OrderService
     {
         $area = $order->schedule();
         if (! $area) {
-            throw ValidationException::withMessages(['slot_starts_at' => 'This order can no longer be rescheduled online.']);
+            throw ValidationException::withMessages(['slot_starts_at' => __('This order can no longer be rescheduled online.')]);
         }
         if ($slotStartsAt->equalTo($order->slot_starts_at)) {
-            throw ValidationException::withMessages(['slot_starts_at' => 'Choose a different slot.']);
+            throw ValidationException::withMessages(['slot_starts_at' => __('Choose a different slot.')]);
         }
 
         DB::transaction(function () use ($order, $area, $slotStartsAt) {
@@ -239,7 +239,7 @@ class OrderService
         $area->newQuery()->whereKey($area->id)->lockForUpdate()->first();
 
         if (! $this->slots->isBookable($area, $slotStartsAt)) {
-            throw ValidationException::withMessages(['slot_starts_at' => 'That slot is no longer available. Please choose another.']);
+            throw ValidationException::withMessages(['slot_starts_at' => __('That slot is no longer available. Please choose another.')]);
         }
     }
 

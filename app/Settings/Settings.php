@@ -5,6 +5,7 @@ namespace App\Settings;
 use App\Enums\Currency;
 use App\Enums\PaymentGatewayName;
 use App\Enums\SmsDriver;
+use App\Services\WhatsApp\TwilioWhatsAppSender;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -43,6 +44,15 @@ class Settings
     public const REMINDER_HOURS_BEFORE = 'reminder_hours_before';
 
     public const ADMIN_NOTIFICATION_EMAIL = 'admin_notification_email';
+
+    /** Who customers contact about their data (DPDP grievance officer / GDPR contact): name and email. */
+    public const PRIVACY_CONTACT = 'privacy_contact';
+
+    /** Whether order updates also go by WhatsApp (B-31). */
+    public const WHATSAPP_ENABLED = 'whatsapp_enabled';
+
+    /** Home page content (B-28): hero copy and featured packages. */
+    public const HOME = 'home';
 
     // TODO(client): confirm the default reminder time.
     public const DEFAULT_REMINDER_HOURS_BEFORE = 24;
@@ -250,6 +260,67 @@ class Settings
     public function setAdminNotificationEmail(?string $email): void
     {
         $this->set(self::ADMIN_NOTIFICATION_EMAIL, $email);
+    }
+
+    /**
+     * The privacy contact shown on the privacy policy and the account's privacy page (B-27). The email
+     * falls back to the admin alert address. TODO(client): name the grievance officer.
+     *
+     * @return array{name: string|null, email: string|null}
+     */
+    public function privacyContact(): array
+    {
+        $contact = (array) $this->get(self::PRIVACY_CONTACT, []);
+
+        return [
+            'name' => ($contact['name'] ?? null) ?: null,
+            'email' => ($contact['email'] ?? null) ?: $this->adminNotificationEmail(),
+        ];
+    }
+
+    /**
+     * @param  array{name: string|null, email: string|null}  $contact
+     */
+    public function setPrivacyContact(array $contact): void
+    {
+        $this->set(self::PRIVACY_CONTACT, $contact);
+    }
+
+    /** WhatsApp is on: switched on by an admin, and Twilio's WhatsApp keys are set. */
+    public function whatsAppEnabled(): bool
+    {
+        return (bool) $this->get(self::WHATSAPP_ENABLED, false) && TwilioWhatsAppSender::isConfigured();
+    }
+
+    public function setWhatsAppEnabled(bool $enabled): void
+    {
+        $this->set(self::WHATSAPP_ENABLED, $enabled);
+    }
+
+    /**
+     * Home page content: the hero (title, text, button label) and the packages featured below it,
+     * in order. Until an admin edits it, the hero shows the launch copy.
+     *
+     * @return array{hero_title: string, hero_text: string|null, hero_button: string, featured_package_ids: list<int>}
+     */
+    public function home(): array
+    {
+        $home = (array) $this->get(self::HOME, []);
+
+        return [
+            'hero_title' => ($home['hero_title'] ?? null) ?: __('Book lab tests online'),
+            'hero_text' => array_key_exists('hero_text', $home) ? ($home['hero_text'] ?: null) : __('Browse tests, choose home collection or a lab visit, and get your reports online.'),
+            'hero_button' => ($home['hero_button'] ?? null) ?: __('Browse tests'),
+            'featured_package_ids' => array_values(array_map('intval', (array) ($home['featured_package_ids'] ?? []))),
+        ];
+    }
+
+    /**
+     * @param  array{hero_title: string, hero_text: string|null, hero_button: string, featured_package_ids: list<int>}  $home
+     */
+    public function setHome(array $home): void
+    {
+        $this->set(self::HOME, $home);
     }
 
     public function get(string $key, mixed $default = null): mixed

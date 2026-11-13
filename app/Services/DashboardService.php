@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\RefundStatus;
 use App\Models\Branch;
+use App\Models\NotificationLog;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Refund;
@@ -132,6 +133,11 @@ class DashboardService
             ->whereBetween('payment_expires_at', [$now->utc(), $now->utc()->addMinutes(self::EXPIRING_SOON_MINUTES)])->count();
         if ($expiring > 0) {
             $alerts[] = ['tone' => 'warning', 'message' => "{$expiring} unpaid ".str('order')->plural($expiring).' will be cancelled within '.self::EXPIRING_SOON_MINUTES.' minutes.', 'url' => route('admin.orders.index', ['status' => OrderStatus::PendingPayment->value])];
+        }
+
+        $failedMessages = NotificationLog::where('status', NotificationLog::FAILED)->where('created_at', '>=', $now->subDay())->count();
+        if ($failedMessages > 0) {
+            $alerts[] = ['tone' => 'warning', 'message' => "{$failedMessages} ".str('message')->plural($failedMessages).' failed to send in the last 24 hours.', 'url' => route('admin.notifications.history', ['status' => NotificationLog::FAILED])];
         }
 
         if (! $this->settings->adminNotificationEmail()) {

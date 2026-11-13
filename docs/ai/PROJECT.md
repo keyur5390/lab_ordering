@@ -62,8 +62,15 @@ the catalogue, orders, collection schedule and reports from an admin area.
   - [One "Self" profile per account; it can be edited but not deleted, and its relationship is fixed.] `TODO(client)`
   - [Phone accepts 7–20 digits with spaces, dashes and an optional leading +; tighten once the launch country is known.] `TODO(client)`
   - [No limit on the number of profiles per account.] `TODO(client)`
-- **OPEN:** Login method: email + password, phone + OTP, or both? [Email + password, with email verification] `TODO(client)`. *Built with this default in B-03; no 2FA.*
+- **Login method (client, 2026-11-13):** both: email + password with email verification (B-03), and phone + SMS code for confirmed numbers (B-30, see §3a). No 2FA.
 - **OPEN:** Can a guest check out without an account? [No] `TODO(client)`
+- **Account settings:** *Built in B-23.* Customers change their name, email and password under
+  Account → Settings.
+  - A new email address is unverified until confirmed through the emailed link; ordering pages wait for that.
+    [default] `TODO(client)`
+  - Changing the password needs the current one.
+  - The settings page stays open while unverified, so a mistyped address can be corrected.
+  - The "Self" patient profile keeps its own name. [default] `TODO(client)`
 
 ## 3. Catalogue
 
@@ -83,7 +90,7 @@ the catalogue, orders, collection schedule and reports from an admin area.
   - `/tests` searches names and codes, and packages by the names of the tests inside. Filters: category, tests
     or packages, and no fasting or preparation (a package qualifies only if none of its tests needs any).
   - Sort by name or price (low/high). Filters live in the URL, so links can be shared.
-- **OPEN:** Is a package price independent, or derived from its tests minus a discount?
+- **Package price (client, 2026-10-29, B-06):** per package, either a fixed price or its tests' total minus a discount.
 - **OPEN:** Is a catalogue item ever unavailable by city/area?
 
 ## 4. Pricing, fees and discounts ⚙️
@@ -129,7 +136,7 @@ All amounts come from the database or settings. Never from code.
   cart, marked unavailable, and are left out of the total. A test that's also inside a package in the
   cart is flagged, not blocked. [Each item appears once; quantities per patient come with patient
   profiles.] `TODO(client)`
-- **OPEN:** How long guest carts are kept before being cleaned up.
+- **Guest carts (client, 2026-11-13):** deleted after 7 days without changes (adding or removing an item counts), by a daily job. Customers' carts are kept.
 - **Checkout (client, 2026-10-29):** *Built in B-11.*
   - One order can cover several patients: each cart item is booked for one or more of the customer's
     complete patient profiles, and the price is per patient. One address and one slot per order (one
@@ -193,8 +200,13 @@ All amounts come from the database or settings. Never from code.
   Admins can also refund any amount up to what is left, with an optional reason. A cancelled order with
   nothing left to refund becomes `refunded`. [Admin cancellations also refund in full.] `TODO(client)`
   A refund the gateway rejects is recorded as failed, and an admin can retry it.
-- **OPEN:** Tracking refund outcomes after the gateway accepts them (refund webhooks). Refunds still
-  processing are shown as such.
+- **Refund outcomes:** *Built in B-25.* Refunds the gateway accepted but hasn't finished show as
+  "Processing" and count as refunded. The refund webhooks then settle them, on the same signed URLs as
+  payments: Stripe `refund.updated` / `charge.refund.updated`, Razorpay `refund.processed` / `refund.failed`.
+  - Succeeded: the credit note is issued then. Credit notes only exist for money actually returned.
+  - Failed: the amount is refundable again, a fully refunded order goes back to `cancelled`, and admins get
+    the "Refund failed" email and a dashboard alert.
+  - Enable these events on each gateway's webhook.
 
 ### Invoices and credit notes
 
@@ -211,7 +223,8 @@ All amounts come from the database or settings. Never from code.
   invoice. Refunds of payments that were never invoiced (duplicates, late payments) get none.
 - **PDFs** are drawn on demand. The order's customer, lab staff and admins can download them from the order
   page.
-- **OPEN:** attaching the invoice to the payment email; legal invoice wording for the launch country.
+- **Invoice by email (client, 2026-11-13):** the invoice PDF is attached to the payment email: "Payment received" for online orders, and a new "Payment taken at collection" email (and SMS, without the PDF) when a collector or staff record a pay-at-collection payment.
+- **OPEN:** legal invoice wording for the launch country.
 
 ## 8. Order lifecycle
 
@@ -231,7 +244,7 @@ plus `cancelled` and `refunded`.
   N hours before the slot, set in Admin → Settings ⚙️. Until it is set, only admins can. Admins can
   always, before collection.
 - Each order uses one place in its slot's capacity (one home visit, whatever the number of patients).
-- **OPEN:** Is there a reschedule limit ⚙️?
+- **Reschedule limit (client, 2026-11-13):** none; customers may reschedule as often as they like until the cutoff.
 
 ## 9. Reports
 
@@ -263,8 +276,8 @@ plus `cancelled` and `refunded`.
 
 *Built in B-13.*
 
-- **Channels (client, 2026-10-29):** email and SMS. WhatsApp is wanted but deferred, because business-initiated
-  WhatsApp messages need pre-approved templates.
+- **Channels (client, 2026-10-29):** email and SMS; WhatsApp added in B-31 (see WhatsApp below), since
+  business-initiated WhatsApp messages need pre-approved templates.
   - Admins switch customer emails on or off and pick the SMS driver in Admin → Settings ⚙️: off, "log" (testing)
     or Twilio. Twilio's keys go in `.env`, and more SMS providers can be added as drivers.
   - Customers can opt out of SMS on their account page.
@@ -272,7 +285,8 @@ plus `cancelled` and `refunded`.
     [default] `TODO(client)`
 - **Customer events (client, 2026-10-29):**
   - Order confirmed: pay-at-collection orders, when placed.
-  - Payment received: online orders, when paid. This confirms the order, so it is one message, not two.
+  - Payment received: online orders, when paid. This confirms the order, so it is one message, not two. The invoice is attached.
+  - Payment taken at collection: pay-at-collection orders, when the payment is recorded. The invoice is attached.
   - Refund issued: automatic or by an admin.
   - Order cancelled: by the customer or an admin.
   - Payment time ran out.
@@ -287,7 +301,19 @@ plus `cancelled` and `refunded`.
   placeholders such as `{order_number}` and `{slot}`. Each message can be switched off. Default wording is
   added by the migration. [SMS up to 640 characters; over 160 is sent as several messages.] `TODO(client)`
 - Notifications are queued (`QUEUE_CONNECTION=database`; run a queue worker) and sent after the order is saved.
-- **OPEN:** Notification history in the admin.
+- **History:** *Built in B-24.* Every order email and SMS is logged with its event, channel, recipient, time,
+  and whether it was sent or failed (with the error).
+  - Admin → Notifications → History filters by status, channel, message and order. The admin order page lists
+    that order's messages.
+  - A message can be resent on its own channel: customer messages go to the customer's current details;
+    admin alerts go to the address they first went to.
+  - The dashboard flags messages that failed in the last 24 hours.
+
+### WhatsApp (B-31, client 2026-11-13)
+
+- Customer order updates can also go by **WhatsApp through Twilio**. WhatsApp only allows pre-approved templates, so the wording lives in Twilio (Content Template Builder); admins paste each event's template SID (HX…) in **Admin → Notifications → WhatsApp** and list which placeholders fill its variables {{1}}, {{2}}, … in order. An event without a SID isn't sent on WhatsApp. Admin alerts stay email-only.
+- Switched on in ⚙️ Settings → Notifications, once `TWILIO_SID`, `TWILIO_TOKEN` and `TWILIO_WHATSAPP_FROM` are in .env.
+- Goes to the same number as texts, and only to customers who **opt in** on their account page [default: off until they opt in, as WhatsApp requires] `TODO(client)`. Logged in the message history and resendable like email and SMS.
 
 ## 11. Admin settings (⚙️ index)
 
@@ -338,9 +364,36 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 
 ## 12. Compliance & data
 
-- **OPEN:** Applicable regulations (e.g. HIPAA, GDPR, India DPDP Act)? Data residency?
-- **OPEN:** Audit log requirements.
-- **OPEN:** Languages/locales [English only] `TODO(client)`, timezone [single, from settings ⚙️].
+- **Regulations (client, 2026-11-13):** India DPDP Act and GDPR. **OPEN:** data residency.
+- **Consent (B-27):** sign-up needs a ticked "I agree to the terms of service and the privacy policy" box, which covers health information; the time is stored. Accounts created earlier aren't asked again [default] `TODO(client)`.
+- **Privacy policy and terms** are pages written by admins (Admin → Pages, Markdown), linked from every page's footer and the sign-up form. Placeholders until the client supplies the text `TODO(client)`.
+- **Privacy contact** (DPDP grievance officer / GDPR contact): name and email in ⚙️ Settings, shown on the privacy policy and the customer's privacy page; the email falls back to the admin alert address.
+- **Download your data:** Your account → Privacy and data gives one JSON file with the account, patients, addresses, orders (items, payments, refunds, invoice number) and messages sent. Report PDFs are downloaded from each order.
+- **Delete your account (client: anonymise):** needs the password. Removes the name, email, patients, saved addresses, cart, sessions and prescriptions, and closes the account; the email can be used again. Orders, invoices, credit notes and reports stay for the lab's and tax records, with the customer's and patients' names, contact details and street address replaced (city, region and country stay; the patient's date of birth becomes 1 January of the same year, since reference ranges depend on age). Not while an order is in progress [default], and not for staff accounts, which admins disable instead [default] `TODO(client)`. `TODO(client)`: confirm invoices may drop the buyer's name under the tax rules that apply, and that report PDFs, which name the patient, are kept as medical records.
+- **Audit log (B-26):** every change an admin, lab staff member or collector makes (create, update, delete, status steps, uploads, refunds, settings), with who, when, what it was about, the submitted fields and the outcome (done / rejected / not allowed / error); plus staff sign-ins, sign-outs and failed sign-ins. Passwords and tokens are never stored; uploaded files are stored by name only. Customers' own actions and page views aren't logged. Admins only: **Admin → Audit log**, filtered by person, action, outcome and dates. Kept [forever] `TODO(client)`: confirm scope and retention.
+- **Languages (B-32, client 2026-11-13):** customer pages in **English, Spanish and Polish** ("Spanish, Polish, etc"); staff screens (admin, lab, collector) are English only. The language is the visitor's choice (picker in the footer and on sign-in pages, remembered for the session and on the account), else the browser's language, else English. Dates and numbers follow it. Validation, sign-in and password messages are translated too. **Not translated:** what admins write (test and package names and descriptions, pages, FAQs, email/SMS wording) and emails/SMS themselves, which stay in the admins' wording `TODO(client)`. Translations are drafts and **need a native speaker's review** `TODO(client)`. More languages: add to `config/app.php` `locales` plus `lang/{code}.json` and `lang/{code}/*.php`.
+- Timezone [single, from settings ⚙️].
+
+## 3a. Phone sign-in (B-30, client 2026-11-13)
+
+- Alongside email and password, people can sign in with a **mobile number and a 6-digit code by SMS**, once they've added and confirmed the number in Account settings → Mobile number (also by a texted code). Offered only while an SMS driver is on.
+- A number can be on one account only. Removing it stops phone sign-in. A confirmed account number also gets order texts (before the "Self" profile's phone).
+- Codes expire after [10] minutes and stop working after [5] wrong tries; at most [3] codes per number and [10] per IP address per [10] minutes `TODO(client)`. The sign-in form never says whether a number has an account.
+- Staff can sign in by phone too. Deleting an account removes the number.
+
+## 12a. Site content (B-28)
+
+- **Home page:** a heading, an optional line of text and a button to the catalogue, then featured packages in the order an admin picks (unpublished ones are hidden), then the FAQs. Until edited it shows the launch copy. Admin → Pages → Home page.
+- **FAQs:** question + answer (Markdown), in an order admins set (move up/down); shown on the home page and at /faq. Admin → Pages → FAQs.
+- **Pages:** About us, Contact us, Privacy policy and Terms of service, written by admins in Markdown (raw HTML is removed). Admins edit these four; they don't add new ones [default]. Placeholders until the client supplies the text `TODO(client)`.
+- **Footer** on every customer page: About us, Contact, FAQs, Privacy policy, Terms of service.
+
+## 12b. Production (B-33)
+
+- **Hosting (client: no preference):** Docker. One image runs the web app (nginx + PHP-FPM), the queue worker and the scheduler, with MySQL 8 and Redis 7, via `docker-compose.yml`. HTTPS ends at a load balancer or reverse proxy in front (`TRUSTED_PROXIES`). Deploy, update, backup/restore and monitoring steps: `docs/DEPLOY.md`.
+- **Backups:** nightly database dump plus the private files (reports, prescriptions), kept [14] days, to be copied off the server `TODO(client)`: confirm retention and the off-site target.
+- **Security headers** on every page: nosniff, frame-options SAMEORIGIN, referrer and permissions policies, HSTS over HTTPS in production. **OPEN:** Content-Security-Policy once the production payment, map and analytics hosts are known.
+- **Search engines:** `/sitemap.xml` (home, catalogue, FAQ, the written pages, published tests and packages) and `/robots.txt` (keeps account, admin, cart and checkout out). Public pages set a description and Open Graph tags.
 
 ## 13. Out of scope for v1
 
@@ -351,6 +404,17 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-11-13 | Production (B-33): Docker image + compose (app, queue, scheduler, MySQL, Redis), deploy guide, backups, security headers, sitemap/robots/meta | Dev (client: no hosting preference) |
+| 2026-11-13 | Languages (B-32): English, Spanish, Polish on the customer side; staff English; admin content and messages untranslated | Client (scope defaults marked) |
+| 2026-11-13 | WhatsApp (B-31): Twilio Content Templates per customer event, admin enters SID + variables; customer opt-in | Client |
+| 2026-11-13 | Phone sign-in (B-30): SMS code sign-in for confirmed account numbers, alongside email | Client (limits default) |
+| 2026-11-13 | Housekeeping (B-29): guest carts deleted after 7 idle days; no reschedule limit; invoice attached to the payment email (online and at collection) | Client |
+| 2026-11-13 | Site content (B-28): admin-edited home hero, featured packages, FAQs, About/Contact pages, footer | Client |
+| 2026-11-13 | Privacy (B-27): DPDP + GDPR; consent at sign-up; data download; deletion anonymises and keeps orders, invoices and reports; admin-edited privacy policy and terms; privacy contact | Client (defaults marked) |
+| 2026-11-13 | Audit log (B-26): staff changes and staff sign-ins, admin-only page with filters; kept forever pending client | Dev (defaults) |
+| 2026-11-13 | Refund tracking (B-25): refund webhooks settle processing refunds; credit notes only on success | Dev |
+| 2026-11-13 | Notification history (B-24): log of every order email/SMS, filters, per-order list, resend, dashboard alert | Dev |
+| 2026-11-13 | Account settings (B-23): name, email (re-verified) and password self-service | Dev (defaults) |
 | 2026-10-31 | Completion & reports (B-22): completed when all reports are in and paid; My reports page; reports kept forever | Client |
 | 2026-10-31 | Invoices (B-21): issued when paid; seller details from Settings; yearly numbers; credit note per refund | Client |
 | 2026-10-31 | Users (B-20): change roles, disable accounts, invite staff, view customer details; not on yourself | Client |

@@ -5,6 +5,7 @@ import { formatTurnaround } from '@/lib/format';
 import type { LabPackage } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Clock, FlaskConical } from 'lucide-react';
+import { plural, t } from '@/lib/i18n';
 
 /** Package card (DESIGN.md §6). */
 export function PackageCard({ pkg }: { pkg: LabPackage }) {
@@ -20,11 +21,11 @@ export function PackageCard({ pkg }: { pkg: LabPackage }) {
             <div className="mt-3 flex flex-wrap gap-2">
                 <Badge tone="info">
                     <FlaskConical className="size-3.5" aria-hidden="true" />
-                    {pkg.tests_count} tests
+                    {plural(pkg.tests_count, ':count test', ':count tests')}
                 </Badge>
                 <Badge>
                     <Clock className="size-3.5" aria-hidden="true" />
-                    Reports in {formatTurnaround(pkg.turnaround_hours)}
+                    {t('Reports in :time', { time: formatTurnaround(pkg.turnaround_hours) })}
                 </Badge>
             </div>
 

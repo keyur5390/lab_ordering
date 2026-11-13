@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatDate, formatSlot } from '@/lib/format';
 import type { Order } from '@/types';
 import { FileText } from 'lucide-react';
+import { t } from '@/lib/i18n';
 
 const refundTones = { pending: 'warning', succeeded: 'success', failed: 'danger' } as const;
 
@@ -29,11 +30,13 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
     return (
         <div className="space-y-6">
             <dl className="divide-y divide-border rounded-card border border-border bg-surface px-4 md:px-6">
-                <DetailRow label={order.collection_type === 'lab_visit' ? 'Lab visit' : 'Collection'}>
+                <DetailRow label={order.collection_type === 'lab_visit' ? t('Lab visit') : t('Collection')}>
                     {formatSlot(order.slot_starts_at, order.slot_ends_at, order.timezone)}
                 </DetailRow>
-                {order.collector_first_name && <DetailRow label="Collector">{order.collector_first_name}</DetailRow>}
-                <DetailRow label={order.collection_type === 'lab_visit' ? 'Branch' : 'Address'}>
+                {order.collector_first_name && (
+                    <DetailRow label={t('Collector')}>{order.collector_first_name}</DetailRow>
+                )}
+                <DetailRow label={order.collection_type === 'lab_visit' ? t('Branch') : t('Address')}>
                     {order.address.label && <span className="font-medium">{order.address.label}: </span>}
                     {addressText(order.address)}
                     {order.branch && (
@@ -46,7 +49,7 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                                     rel="noreferrer"
                                     className="font-medium text-primary-700 hover:underline"
                                 >
-                                    Map
+                                    {t('Map')}
                                 </a>
                                 {order.branch.phone && (
                                     <a
@@ -60,23 +63,23 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                         </span>
                     )}
                 </DetailRow>
-                <DetailRow label="Payment">
+                <DetailRow label={t('Payment')}>
                     {order.payment_method_label}
                     {order.payment && order.payment.paid > 0 && (
                         <>
-                            {' · paid '}
+                            {` · ${t('paid')} `}
                             <Price amount={order.payment.paid} currencyCode={order.currency} />
                         </>
                     )}
                     {order.payment && order.payment.refunded > 0 && (
                         <>
-                            {' · refunded '}
+                            {` · ${t('refunded')} `}
                             <Price amount={order.payment.refunded} currencyCode={order.currency} />
                         </>
                     )}
                 </DetailRow>
                 {order.invoice && (
-                    <DetailRow label="Invoice">
+                    <DetailRow label={t('Invoice')}>
                         <a
                             href={order.invoice.url}
                             className="inline-flex items-center gap-1.5 font-medium text-primary-700 hover:underline"
@@ -95,21 +98,21 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                                 </a>
                                 <span className="text-muted">
                                     {' '}
-                                    · credit note, <Price amount={note.amount} currencyCode={order.currency} />
+                                    · {t('credit note')}, <Price amount={note.amount} currencyCode={order.currency} />
                                 </span>
                             </span>
                         ))}
                     </DetailRow>
                 )}
                 {order.has_prescription && (
-                    <DetailRow label="Prescription">
+                    <DetailRow label={t('Prescription')}>
                         {prescriptionUrl ? (
                             <a
                                 href={prescriptionUrl}
                                 className="inline-flex items-center gap-1.5 font-medium text-primary-700 hover:underline"
                             >
                                 <FileText className="size-4" aria-hidden="true" />
-                                {order.prescription_name ?? 'Download'}
+                                {order.prescription_name ?? t('Download')}
                             </a>
                         ) : (
                             order.prescription_name
@@ -120,7 +123,7 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
 
             <section aria-labelledby="booked-heading">
                 <h2 id="booked-heading" className="text-lg font-semibold">
-                    Tests booked
+                    {t('Tests booked')}
                 </h2>
                 <ul className="mt-3 space-y-3">
                     {order.patients?.map((patient) => (
@@ -132,7 +135,7 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                                 <span className="font-medium">{patient.name}</span>
                                 <span className="text-muted">
                                     {' '}
-                                    · born{' '}
+                                    · {t('born')}{' '}
                                     {formatDate(patient.date_of_birth, {
                                         day: 'numeric',
                                         month: 'short',
@@ -154,7 +157,7 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                                                     className="mt-1 inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-primary-700 hover:underline sm:min-h-0"
                                                 >
                                                     <FileText className="size-4" aria-hidden="true" />
-                                                    Download report
+                                                    {t('Download report')}
                                                 </a>
                                             )}
                                         </div>
@@ -172,14 +175,14 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
 
                 <dl className="mt-4 space-y-1.5 rounded-card border border-border bg-surface p-4 text-sm">
                     <div className="flex justify-between gap-3">
-                        <dt>Tests</dt>
+                        <dt>{t('Tests')}</dt>
                         <dd>
                             <Price amount={order.subtotal_amount} currencyCode={order.currency} />
                         </dd>
                     </div>
                     {order.discount_amount > 0 && (
                         <div className="flex justify-between gap-3">
-                            <dt>Code {order.coupon_code}</dt>
+                            <dt>{t('Code :code', { code: order.coupon_code ?? '' })}</dt>
                             <dd>
                                 −<Price amount={order.discount_amount} currencyCode={order.currency} />
                             </dd>
@@ -187,34 +190,34 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                     )}
                     {order.collection_type === 'home' && (
                         <div className="flex justify-between gap-3">
-                            <dt>Home collection</dt>
+                            <dt>{t('Home collection')}</dt>
                             <dd>
                                 {order.collection_fee_amount > 0 ? (
                                     <Price amount={order.collection_fee_amount} currencyCode={order.currency} />
                                 ) : (
-                                    'Free'
+                                    t('Free')
                                 )}
                             </dd>
                         </div>
                     )}
                     {order.tax_rate_percent !== null && !order.tax_inclusive && (
                         <div className="flex justify-between gap-3">
-                            <dt>Tax ({order.tax_rate_percent}%)</dt>
+                            <dt>{t('Tax (:rate%)', { rate: order.tax_rate_percent })}</dt>
                             <dd>
                                 <Price amount={order.tax_amount} currencyCode={order.currency} />
                             </dd>
                         </div>
                     )}
                     <div className="flex items-baseline justify-between gap-3 border-t border-border pt-3">
-                        <dt className="text-base font-semibold">Total</dt>
+                        <dt className="text-base font-semibold">{t('Total')}</dt>
                         <dd>
                             <Price amount={order.total_amount} currencyCode={order.currency} className="text-lg" />
                         </dd>
                     </div>
                     {order.tax_rate_percent !== null && order.tax_inclusive && (
                         <p className="text-xs text-muted">
-                            Includes <Price amount={order.tax_amount} currencyCode={order.currency} /> tax (
-                            {order.tax_rate_percent}%).
+                            {t('Includes')} <Price amount={order.tax_amount} currencyCode={order.currency} />{' '}
+                            {t('tax (:rate%).', { rate: order.tax_rate_percent })}
                         </p>
                     )}
                 </dl>
@@ -223,7 +226,7 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
             {order.payment && order.payment.refunds.length > 0 && (
                 <section aria-labelledby="refunds-heading">
                     <h2 id="refunds-heading" className="text-lg font-semibold">
-                        Refunds
+                        {t('Refunds')}
                     </h2>
                     <ul className="mt-3 divide-y divide-border rounded-card border border-border bg-surface">
                         {order.payment.refunds.map((refund) => (
@@ -241,7 +244,7 @@ export function OrderDetails({ order, prescriptionUrl }: OrderDetailsProps) {
                                     </p>
                                     {(refund.reason || refund.by) && (
                                         <p className="text-muted">
-                                            {[refund.reason, refund.by && `by ${refund.by}`]
+                                            {[refund.reason, refund.by && t('by :name', { name: refund.by })]
                                                 .filter(Boolean)
                                                 .join(' · ')}
                                         </p>

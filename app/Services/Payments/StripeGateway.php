@@ -81,6 +81,25 @@ class StripeGateway implements PaymentGateway
         });
     }
 
+    public function refundUpdateFromWebhook(Request $request): ?RefundUpdate
+    {
+        $this->verifySignature($request);
+
+        $event = $request->json()->all();
+        $refund = $event['data']['object'] ?? [];
+        if (! in_array($event['type'] ?? null, ['refund.updated', 'charge.refund.updated'], true) || ! isset($refund['id'])) {
+            return null;
+        }
+
+        $status = match ($refund['status'] ?? null) {
+            'succeeded' => RefundStatus::Succeeded,
+            'failed', 'canceled' => RefundStatus::Failed,
+            default => null,
+        };
+
+        return $status ? new RefundUpdate($refund['id'], $status) : null;
+    }
+
     /**
      * Stripe-Signature: t=<timestamp>,v1=<hex HMAC-SHA256 of "<timestamp>.<body>">[,v1=…]
      */

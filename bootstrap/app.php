@@ -2,6 +2,9 @@
 
 use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RecordStaffActions;
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,7 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
+            SecurityHeaders::class,
+            SetLocale::class,
             EnsureAccountIsActive::class,
+            RecordStaffActions::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
@@ -41,10 +47,14 @@ return Application::configure(basePath: dirname(__DIR__))
                 return $response;
             }
 
-            // Props are passed explicitly: shared props and the session may not exist (e.g. unknown URL).
+            // Props are passed explicitly: shared props and the session may not exist (e.g. unknown URL),
+            // so the language comes from the session when there is one, else the browser (B-32).
+            app()->setLocale(SetLocale::resolve($request));
+
             return Inertia::render('error', [
                 'status' => $status,
                 'name' => config('app.name'),
+                'i18n' => SetLocale::shared($request),
             ])->toResponse($request)->setStatusCode($status);
         });
     })->create();

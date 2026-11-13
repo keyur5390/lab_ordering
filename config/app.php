@@ -82,6 +82,22 @@ return [
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
+    /*
+    | Languages customers can choose (B-32). Staff screens are English only. Each needs lang/{code}.json
+    | and lang/{code}/*.php. TODO(client): translations are drafts and need a native speaker's review.
+    */
+    /*
+    | Proxies in front of the app (B-33), e.g. a load balancer that ends HTTPS: "*" to trust the one in
+    | front, or a comma-separated list of IPs/ranges. Empty trusts none.
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
+    'locales' => [
+        'en' => 'English',
+        'es' => 'Español',
+        'pl' => 'Polski',
+    ],
+
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
     /*

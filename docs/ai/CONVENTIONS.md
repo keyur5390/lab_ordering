@@ -94,6 +94,11 @@ resources/js/
 - Before creating a component, check `components/ui` and `components`.
 - Format money and dates with the `lib` helpers only.
 - Every list handles its empty, loading and error states (see DESIGN.md).
+- **Languages (B-32):** customer-facing text is written in English and wrapped: `t('Text :name', { name })`,
+  `plural(n, ':count test', ':count tests')` and `tx()` (React nodes in placeholders) from `lib/i18n`, and
+  `__()` / `trans_choice()` on the server. Always pass a string literal. Add the Spanish and Polish text to
+  `lang/es.json` and `lang/pl.json` (plurals as `one|other` and `one|few|many`); `LocaleTest` fails on any
+  missing or unused entry. Staff screens (admin, lab, collector) stay English and don't use `t()`.
 
 ## 6. Naming
 

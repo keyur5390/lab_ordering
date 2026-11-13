@@ -27,7 +27,9 @@ interface SettingsProps {
     smsDriver: string | null;
     smsDrivers: { value: string; label: string; configured: boolean; env_keys: string | null }[];
     reminderHoursBefore: number;
+    whatsApp: { enabled: boolean; configured: boolean };
     adminNotificationEmail: string | null;
+    privacyContact: { name: string | null; email: string | null };
 }
 
 export default function Settings({
@@ -48,7 +50,9 @@ export default function Settings({
     smsDriver,
     smsDrivers,
     reminderHoursBefore,
+    whatsApp,
     adminNotificationEmail,
+    privacyContact,
 }: SettingsProps) {
     const { data, setData, put, processing, errors, isDirty } = useForm({
         currency: currency ?? '',
@@ -67,7 +71,10 @@ export default function Settings({
         notify_by_email: notifyByEmail,
         sms_driver: smsDriver ?? '',
         reminder_hours_before: reminderHoursBefore.toString(),
+        whatsapp_enabled: whatsApp.enabled,
         admin_notification_email: adminNotificationEmail ?? '',
+        privacy_contact_name: privacyContact.name ?? '',
+        privacy_contact_email: privacyContact.email ?? '',
     });
     const unconfigured = gateways.filter((gateway) => !gateway.configured);
     const unconfiguredSms = smsDrivers.filter((driver) => !driver.configured);
@@ -345,6 +352,29 @@ export default function Settings({
                             ))}
                         </ul>
                     )}
+                    <div>
+                        <label className="flex min-h-11 items-center gap-3 text-sm">
+                            <Checkbox
+                                checked={data.whatsapp_enabled}
+                                disabled={!whatsApp.configured && !data.whatsapp_enabled}
+                                onChange={(e) => setData('whatsapp_enabled', e.target.checked)}
+                            />
+                            Send WhatsApp messages to customers who opt in (Twilio)
+                        </label>
+                        <p className="text-sm text-muted">
+                            {whatsApp.configured ? (
+                                <>
+                                    Messages use the templates in{' '}
+                                    <TextLink href={route('admin.notifications.whatsapp.edit')}>
+                                        Notifications → WhatsApp
+                                    </TextLink>
+                                    .
+                                </>
+                            ) : (
+                                "To use WhatsApp, add TWILIO_SID, TWILIO_TOKEN and TWILIO_WHATSAPP_FROM to the server's .env file."
+                            )}
+                        </p>
+                    </div>
                     <FormField
                         id="reminder_hours_before"
                         label="Send the collection reminder (hours before the slot)"
@@ -365,6 +395,32 @@ export default function Settings({
                         onChange={(e) => setData('admin_notification_email', e.target.value)}
                         error={errors.admin_notification_email}
                     />
+                </section>
+
+                <section className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6">
+                    <h2 className="text-base font-semibold">Privacy contact</h2>
+                    <p className="text-sm text-muted">
+                        Who customers contact about their personal data (the grievance officer or data protection
+                        contact). Shown on the privacy policy and on each customer's privacy page.
+                    </p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <FormField
+                            id="privacy_contact_name"
+                            label="Name or role (optional)"
+                            value={data.privacy_contact_name}
+                            onChange={(e) => setData('privacy_contact_name', e.target.value)}
+                            error={errors.privacy_contact_name}
+                        />
+                        <FormField
+                            id="privacy_contact_email"
+                            label="Email"
+                            hint="Leave empty to use the admin alerts address."
+                            type="email"
+                            value={data.privacy_contact_email}
+                            onChange={(e) => setData('privacy_contact_email', e.target.value)}
+                            error={errors.privacy_contact_email}
+                        />
+                    </div>
                 </section>
 
                 <Button type="submit" processing={processing} disabled={!isDirty}>

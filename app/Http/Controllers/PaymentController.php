@@ -28,7 +28,7 @@ class PaymentController extends Controller
             return Inertia::location($this->payments->start($order));
         } catch (PaymentGatewayException) {
             return to_route('orders.show', $order)
-                ->withErrors(['payment' => 'We couldn\'t open the payment page. Please try again.']);
+                ->withErrors(['payment' => __('We couldn\'t open the payment page. Please try again.')]);
         }
     }
 
@@ -40,7 +40,7 @@ class PaymentController extends Controller
         $redirect = to_route('orders.show', $order);
 
         return $this->payments->handleReturn($payment, $request)
-            ? $redirect->with('status', 'Thank you! Your payment was received and your order is confirmed.')
-            : $redirect->with('status', 'We\'re waiting for the payment to be confirmed. This page will show it once it is.');
+            ? $redirect->with('status', __('Thank you! Your payment was received and your order is confirmed.'))
+            : $redirect->with('status', __('We\'re waiting for the payment to be confirmed. This page will show it once it is.'));
     }
 }

@@ -45,9 +45,9 @@ class OrderController extends Controller
         Gate::authorize('cancel', $order);
 
         $message = match ($this->orders->cancel($order)) {
-            null => 'Your order has been cancelled.',
-            true => 'Your order has been cancelled. A full refund is on its way to your original payment method.',
-            false => 'Your order has been cancelled. We couldn\'t send your refund automatically; our team will process it.',
+            null => __('Your order has been cancelled.'),
+            true => __('Your order has been cancelled. A full refund is on its way to your original payment method.'),
+            false => __('Your order has been cancelled. We couldn\'t send your refund automatically; our team will process it.'),
         };
 
         return to_route('orders.show', $order)->with('status', $message);
@@ -70,7 +70,7 @@ class OrderController extends Controller
     {
         $this->orders->reschedule($order, $request->slotStartsAt());
 
-        return to_route('orders.show', $order)->with('status', 'Your collection has been rescheduled.');
+        return to_route('orders.show', $order)->with('status', __('Your collection has been rescheduled.'));
     }
 
     /** Prescriptions are private: only the order's customer and admins can download them. */

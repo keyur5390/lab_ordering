@@ -1,3 +1,4 @@
+import { Seo } from '@/components/seo';
 import { CategoryLinks } from '@/components/catalogue/category-links';
 import { DetailRow } from '@/components/catalogue/detail-row';
 import { AddToCartButton } from '@/components/catalogue/add-to-cart-button';
@@ -7,8 +8,8 @@ import { TextLink } from '@/components/ui/text-link';
 import AppLayout from '@/layouts/app-layout';
 import { formatTurnaround } from '@/lib/format';
 import type { LabPackage } from '@/types';
-import { Head } from '@inertiajs/react';
 import { Info } from 'lucide-react';
+import { t } from '@/lib/i18n';
 
 export default function PackageDetail({ package: pkg }: { package: LabPackage }) {
     const tests = pkg.tests ?? [];
@@ -16,11 +17,11 @@ export default function PackageDetail({ package: pkg }: { package: LabPackage })
 
     return (
         <AppLayout>
-            <Head title={pkg.name} />
+            <Seo title={pkg.name} description={pkg.description} />
 
             <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <TextLink href={route('catalogue.index')} className="text-sm">
-                    ← All tests & packages
+                    {t('← All tests & packages')}
                 </TextLink>
 
                 <h1 className="mt-4 text-2xl font-semibold md:text-3xl">{pkg.name}</h1>
@@ -34,16 +35,16 @@ export default function PackageDetail({ package: pkg }: { package: LabPackage })
                 </div>
 
                 <dl className="mt-6 divide-y divide-border rounded-card border border-border bg-surface px-4 md:px-6">
-                    <DetailRow label="Tests included">{tests.length}</DetailRow>
-                    <DetailRow label="Reports in">{formatTurnaround(pkg.turnaround_hours)}</DetailRow>
-                    <DetailRow label="Package code">{pkg.code}</DetailRow>
+                    <DetailRow label={t('Tests included')}>{tests.length}</DetailRow>
+                    <DetailRow label={t('Reports in')}>{formatTurnaround(pkg.turnaround_hours)}</DetailRow>
+                    <DetailRow label={t('Package code')}>{pkg.code}</DetailRow>
                 </dl>
 
                 {withPreparation.length > 0 && (
                     <section className="mt-6 rounded-card border border-warning-600/30 bg-surface p-4 md:p-6">
                         <h2 className="flex items-center gap-2 text-base font-semibold text-warning-600">
                             <Info className="size-5" strokeWidth={1.75} aria-hidden="true" />
-                            Preparation
+                            {t('Preparation')}
                         </h2>
                         <ul className="mt-3 space-y-2 text-sm">
                             {withPreparation.map((test) => (
@@ -58,7 +59,7 @@ export default function PackageDetail({ package: pkg }: { package: LabPackage })
 
                 <section aria-labelledby="included-heading" className="mt-8">
                     <h2 id="included-heading" className="text-lg font-semibold">
-                        What's included
+                        {t("What's included")}
                     </h2>
                     <ul className="mt-4 divide-y divide-border rounded-card border border-border bg-surface">
                         {tests.map((test) => (

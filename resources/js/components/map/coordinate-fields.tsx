@@ -1,4 +1,5 @@
 import { FormField } from '@/components/form-field';
+import { t } from '@/lib/i18n';
 
 interface CoordinateFieldsProps {
     idPrefix: string;
@@ -14,7 +15,7 @@ export function CoordinateFields({ idPrefix, latitude, longitude, onChange, erro
         <div className="grid gap-4 sm:grid-cols-2">
             <FormField
                 id={`${idPrefix}latitude`}
-                label="Latitude"
+                label={t('Latitude')}
                 inputMode="decimal"
                 value={latitude}
                 onChange={(e) => onChange(e.target.value, longitude)}
@@ -22,7 +23,7 @@ export function CoordinateFields({ idPrefix, latitude, longitude, onChange, erro
             />
             <FormField
                 id={`${idPrefix}longitude`}
-                label="Longitude"
+                label={t('Longitude')}
                 inputMode="decimal"
                 value={longitude}
                 onChange={(e) => onChange(latitude, e.target.value)}

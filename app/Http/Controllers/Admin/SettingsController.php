@@ -7,6 +7,7 @@ use App\Enums\PaymentGatewayName;
 use App\Enums\SmsDriver;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateSettingsRequest;
+use App\Services\WhatsApp\TwilioWhatsAppSender;
 use App\Settings\Settings;
 use App\Support\Money;
 use Illuminate\Http\RedirectResponse;
@@ -48,7 +49,11 @@ class SettingsController extends Controller
                 'env_keys' => $driver->envKeys(),
             ], SmsDriver::cases()),
             'reminderHoursBefore' => $settings->reminderHoursBefore(),
+            // Stored switch; WhatsApp only sends once Twilio's WhatsApp keys are set too.
+            'whatsApp' => ['enabled' => (bool) $settings->get(Settings::WHATSAPP_ENABLED, false), 'configured' => TwilioWhatsAppSender::isConfigured()],
             'adminNotificationEmail' => $settings->adminNotificationEmail(),
+            // Stored values only: the email's fallback to the alert address isn't saved.
+            'privacyContact' => (array) $settings->get(Settings::PRIVACY_CONTACT, []) + ['name' => null, 'email' => null],
         ]);
     }
 
@@ -80,8 +85,17 @@ class SettingsController extends Controller
             $settings->setNotifyByEmail($request->boolean('notify_by_email'));
         }
         $settings->setSmsDriver(SmsDriver::tryFrom((string) $request->validated('sms_driver')));
+        if ($request->has('whatsapp_enabled')) {
+            $settings->setWhatsAppEnabled($request->boolean('whatsapp_enabled'));
+        }
         $settings->setReminderHoursBefore($request->filled('reminder_hours_before') ? (int) $request->validated('reminder_hours_before') : null);
         $settings->setAdminNotificationEmail($request->filled('admin_notification_email') ? strtolower($request->validated('admin_notification_email')) : null);
+        if ($request->hasAny(['privacy_contact_name', 'privacy_contact_email'])) {
+            $settings->setPrivacyContact([
+                'name' => $request->validated('privacy_contact_name'),
+                'email' => $request->filled('privacy_contact_email') ? strtolower($request->validated('privacy_contact_email')) : null,
+            ]);
+        }
         $settings->setPaymentHoldMinutes($request->filled('payment_hold_minutes') ? (int) $request->validated('payment_hold_minutes') : null);
 
         return to_route('admin.settings.edit')->with('status', 'Settings saved.');

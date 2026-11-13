@@ -3,12 +3,10 @@ import { cn } from '@/lib/utils';
 import type { SlotDay, SlotStatus } from '@/types';
 import { CalendarX } from 'lucide-react';
 import { useId, useState } from 'react';
+import { t } from '@/lib/i18n';
 
-const unavailableLabel: Record<Exclude<SlotStatus, 'available'>, string> = {
-    full: 'Full',
-    closed: 'Closed',
-    too_soon: 'Too soon',
-};
+const unavailableLabel = (status: Exclude<SlotStatus, 'available'>): string =>
+    ({ full: t('Full'), closed: t('Closed'), too_soon: t('Too soon') })[status];
 
 interface SlotPickerProps {
     days: SlotDay[];
@@ -35,14 +33,14 @@ export function SlotPicker({ days, value = null, onChange, readOnly = false }: S
         return (
             <div className="flex flex-col items-center rounded-card border border-border bg-surface p-6 text-center">
                 <CalendarX className="size-6 text-muted" strokeWidth={1.75} aria-hidden="true" />
-                <p className="mt-2 text-sm text-muted">No collection slots are available.</p>
+                <p className="mt-2 text-sm text-muted">{t('No collection slots are available.')}</p>
             </div>
         );
     }
 
     return (
         <div className="space-y-4">
-            <div role="radiogroup" aria-label="Date" className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+            <div role="radiogroup" aria-label={t('Date')} className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
                 {days.map((d) => {
                     const open = d.slots.filter((slot) => slot.status === 'available').length;
 
@@ -66,7 +64,9 @@ export function SlotPicker({ days, value = null, onChange, readOnly = false }: S
                             <span className="font-semibold whitespace-nowrap">
                                 {formatDate(d.date, { day: 'numeric', month: 'short' })}
                             </span>
-                            <span className="text-xs text-muted">{open > 0 ? `${open} open` : 'None'}</span>
+                            <span className="text-xs text-muted">
+                                {open > 0 ? t(':count open', { count: open }) : t('None')}
+                            </span>
                         </button>
                     );
                 })}
@@ -79,11 +79,11 @@ export function SlotPicker({ days, value = null, onChange, readOnly = false }: S
                     </p>
                     {day.closed_reason ? (
                         <p className="rounded-control border border-border bg-canvas p-3 text-sm text-muted">
-                            Closed: {day.closed_reason}
+                            {t('Closed: :reason', { reason: day.closed_reason })}
                         </p>
                     ) : day.slots.length === 0 ? (
                         <p className="rounded-control border border-border bg-canvas p-3 text-sm text-muted">
-                            No collections on this day.
+                            {t('No collections on this day.')}
                         </p>
                     ) : (
                         <div
@@ -117,7 +117,7 @@ export function SlotPicker({ days, value = null, onChange, readOnly = false }: S
                                         <span className="font-medium">{slot.time}</span>
                                         {!available && (
                                             <span className="text-xs">
-                                                {unavailableLabel[slot.status as Exclude<SlotStatus, 'available'>]}
+                                                {unavailableLabel(slot.status as Exclude<SlotStatus, 'available'>)}
                                             </span>
                                         )}
                                     </button>

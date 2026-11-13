@@ -55,14 +55,14 @@ class PlaceOrderRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'address_id.required' => 'Choose an address for the collection.',
-            'address_id.exists' => 'Choose one of your addresses.',
-            'branch_id.required' => 'Choose a branch to visit.',
-            'branch_id.exists' => 'Choose one of our branches.',
-            'slot_starts_at.required' => 'Choose a collection slot.',
-            'payment_method.required' => 'Choose how you would like to pay.',
-            'prescription.mimes' => 'Upload the prescription as a PDF, JPG or PNG.',
-            'prescription.max' => 'The prescription must be 10 MB or smaller.',
+            'address_id.required' => __('Choose an address for the collection.'),
+            'address_id.exists' => __('Choose one of your addresses.'),
+            'branch_id.required' => __('Choose a branch to visit.'),
+            'branch_id.exists' => __('Choose one of our branches.'),
+            'slot_starts_at.required' => __('Choose a collection slot.'),
+            'payment_method.required' => __('Choose how you would like to pay.'),
+            'prescription.mimes' => __('Upload the prescription as a PDF, JPG or PNG.'),
+            'prescription.max' => __('The prescription must be 10 MB or smaller.'),
         ];
     }
 

@@ -1,3 +1,4 @@
+import { Seo } from '@/components/seo';
 import { PackageCard } from '@/components/catalogue/package-card';
 import { TestCard } from '@/components/catalogue/test-card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -7,9 +8,10 @@ import { Select } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import type { Category, LabPackage, LabTest } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { FlaskConical, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { plural, t } from '@/lib/i18n';
 
 type Sort = 'name' | 'price_asc' | 'price_desc';
 
@@ -70,10 +72,13 @@ export default function Catalogue({ packages, tests, categories, filters }: Cata
 
     return (
         <AppLayout>
-            <Head title="Tests & packages" />
+            <Seo
+                title={t('Tests & packages')}
+                description={t('Book lab tests and health packages online, with prices, preparation and report times.')}
+            />
 
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
-                <h1 className="text-2xl font-semibold md:text-3xl">Tests & packages</h1>
+                <h1 className="text-2xl font-semibold md:text-3xl">{t('Tests & packages')}</h1>
 
                 <div className="mt-6 space-y-4">
                     <div className="relative max-w-xl">
@@ -83,8 +88,8 @@ export default function Catalogue({ packages, tests, categories, filters }: Cata
                         />
                         <Input
                             type="search"
-                            aria-label="Search tests and packages"
-                            placeholder="Search by test name or code"
+                            aria-label={t('Search tests and packages')}
+                            placeholder={t('Search by test name or code')}
                             className="pl-9"
                             value={q}
                             onChange={(e) => setQ(e.target.value)}
@@ -93,10 +98,10 @@ export default function Catalogue({ packages, tests, categories, filters }: Cata
 
                     {categories.length > 0 && (
                         <nav
-                            aria-label="Categories"
+                            aria-label={t('Categories')}
                             className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0"
                         >
-                            {[{ name: 'All', slug: null as string | null }, ...categories].map((category) => {
+                            {[{ name: t('All'), slug: null as string | null }, ...categories].map((category) => {
                                 const active = filters.category === category.slug;
 
                                 return (
@@ -125,29 +130,29 @@ export default function Catalogue({ packages, tests, categories, filters }: Cata
 
                     <div className="grid grid-cols-2 items-end gap-3 sm:flex sm:flex-wrap sm:gap-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="type-filter">Show</Label>
+                            <Label htmlFor="type-filter">{t('Show')}</Label>
                             <Select
                                 id="type-filter"
                                 className="w-full sm:w-52"
                                 value={filters.type ?? ''}
                                 onChange={(e) => apply({ type: (e.target.value || null) as Filters['type'] })}
                             >
-                                <option value="">Everything</option>
-                                <option value="packages">Packages</option>
-                                <option value="tests">Single tests</option>
+                                <option value="">{t('Everything')}</option>
+                                <option value="packages">{t('Packages')}</option>
+                                <option value="tests">{t('Single tests')}</option>
                             </Select>
                         </div>
                         <div className="space-y-1.5">
-                            <Label htmlFor="sort">Sort by</Label>
+                            <Label htmlFor="sort">{t('Sort by')}</Label>
                             <Select
                                 id="sort"
                                 className="w-full sm:w-52"
                                 value={filters.sort}
                                 onChange={(e) => apply({ sort: e.target.value as Sort })}
                             >
-                                <option value="name">Name</option>
-                                <option value="price_asc">Lowest price</option>
-                                <option value="price_desc">Highest price</option>
+                                <option value="name">{t('Name, A–Z')}</option>
+                                <option value="price_asc">{t('Lowest price')}</option>
+                                <option value="price_desc">{t('Highest price')}</option>
                             </Select>
                         </div>
                         <label className="col-span-2 flex min-h-11 items-center gap-2 text-sm">
@@ -155,13 +160,13 @@ export default function Catalogue({ packages, tests, categories, filters }: Cata
                                 checked={filters.no_fasting}
                                 onChange={(e) => apply({ no_fasting: e.target.checked })}
                             />
-                            No fasting or preparation
+                            {t('No fasting or preparation')}
                         </label>
                     </div>
                 </div>
 
                 <p className="mt-6 text-sm text-muted" role="status">
-                    {packages.length + tests.length} {packages.length + tests.length === 1 ? 'result' : 'results'}
+                    {plural(packages.length + tests.length, ':count result', ':count results')}
                 </p>
 
                 {empty && (
@@ -169,8 +174,8 @@ export default function Catalogue({ packages, tests, categories, filters }: Cata
                         <FlaskConical className="size-6 text-muted" strokeWidth={1.75} aria-hidden="true" />
                         <p className="mt-3 text-sm text-muted">
                             {filtered
-                                ? 'Nothing matches your search.'
-                                : 'No tests are available yet. Please check back soon.'}
+                                ? t('Nothing matches your search.')
+                                : t('No tests are available yet. Please check back soon.')}
                         </p>
                         {filtered && (
                             <Link
@@ -178,7 +183,7 @@ export default function Catalogue({ packages, tests, categories, filters }: Cata
                                 onClick={() => setQ('')}
                                 className="mt-3 text-sm font-medium text-primary-700 hover:underline"
                             >
-                                Clear search and filters
+                                {t('Clear search and filters')}
                             </Link>
                         )}
                     </div>
@@ -187,7 +192,7 @@ export default function Catalogue({ packages, tests, categories, filters }: Cata
                 {packages.length > 0 && (
                     <section aria-labelledby="packages-heading" className="mt-6">
                         <h2 id="packages-heading" className="text-lg font-semibold">
-                            Packages
+                            {t('Packages')}
                         </h2>
                         <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {packages.map((pkg) => (
@@ -202,7 +207,7 @@ export default function Catalogue({ packages, tests, categories, filters }: Cata
                 {tests.length > 0 && (
                     <section aria-labelledby="tests-heading" className="mt-10">
                         <h2 id="tests-heading" className="text-lg font-semibold">
-                            Individual tests
+                            {t('Individual tests')}
                         </h2>
                         <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {tests.map((test) => (

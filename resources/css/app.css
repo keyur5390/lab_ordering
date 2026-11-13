@@ -39,3 +39,33 @@
         @apply bg-canvas text-text;
     }
 }
+
+/* Admin-written pages (Markdown rendered on the server). */
+@layer components {
+    .rich-text {
+        @apply text-base leading-7;
+    }
+    .rich-text > * + * {
+        @apply mt-4;
+    }
+    .rich-text h1,
+    .rich-text h2 {
+        @apply mt-8 text-xl font-semibold;
+    }
+    .rich-text h3,
+    .rich-text h4 {
+        @apply mt-6 text-lg font-semibold;
+    }
+    .rich-text ul {
+        @apply list-disc pl-6;
+    }
+    .rich-text ol {
+        @apply list-decimal pl-6;
+    }
+    .rich-text a {
+        @apply text-primary-700 underline underline-offset-2;
+    }
+    .rich-text blockquote {
+        @apply border-l-4 border-border pl-4 text-muted;
+    }
+}
