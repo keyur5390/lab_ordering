@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\OrderStatus;
 use App\Models\Address;
+use App\Models\AuditLog;
 use App\Models\Cart;
 use App\Models\Invoice;
 use App\Models\NotificationLog;
@@ -120,6 +121,12 @@ class PrivacyService
         $prescriptions = [];
 
         DB::transaction(function () use ($user, &$prescriptions) {
+            // Staff actions on this account name it by email in the audit log (B-26): keep the record
+            // of what was done, without the email.
+            $anonymousEmail = "deleted-{$user->id}@deleted.invalid";
+            // A "_" in the email widens the LIKE a little; the replacement itself is exact.
+            AuditLog::query()->where('subject', 'like', '%'.$user->email.'%')
+                ->get()->each(fn (AuditLog $entry) => $entry->update(['subject' => str_replace($user->email, $anonymousEmail, (string) $entry->subject)]));
             $orders = $user->orders()->get();
             $orderIds = $orders->modelKeys();
 
@@ -161,7 +168,7 @@ class PrivacyService
 
             $user->forceFill([
                 'name' => 'Deleted customer',
-                'email' => "deleted-{$user->id}@deleted.invalid",
+                'email' => $anonymousEmail,
                 'email_verified_at' => null,
                 'phone' => null,
                 'phone_verified_at' => null,

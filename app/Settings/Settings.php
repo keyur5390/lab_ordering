@@ -308,9 +308,9 @@ class Settings
         $home = (array) $this->get(self::HOME, []);
 
         return [
-            'hero_title' => ($home['hero_title'] ?? null) ?: 'Book lab tests online',
-            'hero_text' => array_key_exists('hero_text', $home) ? ($home['hero_text'] ?: null) : 'Browse tests, choose home collection or a lab visit, and get your reports online.',
-            'hero_button' => ($home['hero_button'] ?? null) ?: 'Browse tests',
+            'hero_title' => ($home['hero_title'] ?? null) ?: __('Book lab tests online'),
+            'hero_text' => array_key_exists('hero_text', $home) ? ($home['hero_text'] ?: null) : __('Browse tests, choose home collection or a lab visit, and get your reports online.'),
+            'hero_button' => ($home['hero_button'] ?? null) ?: __('Browse tests'),
             'featured_package_ids' => array_values(array_map('intval', (array) ($home['featured_package_ids'] ?? []))),
         ];
     }

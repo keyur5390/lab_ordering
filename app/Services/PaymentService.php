@@ -162,8 +162,15 @@ class PaymentService
         }
 
         DB::transaction(function () use ($refund, $update) {
+            // Locked (order first, as refund() does) so a repeated or parallel delivery, e.g. Stripe's
+            // refund.updated and charge.refund.updated, applies the outcome once.
+            $order = Order::whereKey($refund->payment->order_id)->lockForUpdate()->firstOrFail();
+            $refund = Refund::whereKey($refund->id)->lockForUpdate()->firstOrFail();
+            if ($refund->status !== RefundStatus::Pending) {
+                return;
+            }
+
             $refund->update(['status' => $update->status]);
-            $order = $refund->payment->order;
 
             if ($update->status === RefundStatus::Succeeded) {
                 $this->invoices->creditNoteFor($refund);
@@ -171,7 +178,7 @@ class PaymentService
                 return;
             }
 
-            if ($order->status === OrderStatus::Refunded && $this->amounts($order->unsetRelation('payments'))['refundable'] > 0) {
+            if ($order->status === OrderStatus::Refunded && $this->amounts($order)['refundable'] > 0) {
                 $order->update(['status' => OrderStatus::Cancelled]);
             }
             $this->notifier->refunded($order, $refund);

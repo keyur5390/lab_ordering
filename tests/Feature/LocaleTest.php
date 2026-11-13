@@ -117,6 +117,11 @@ describe('translated server text', function () {
         $as->get(route('orders.show', $order))->assertInertia(fn (Assert $page) => $page->where('order.status_label', 'Confirmado'));
     });
 
+    it('translates the home page\'s launch copy until an admin writes their own', function () {
+        $this->withHeader('Accept-Language', 'es')->get(route('home'))
+            ->assertInertia(fn (Assert $page) => $page->where('hero.title', 'Reserva pruebas de laboratorio en línea')->where('hero.button', 'Ver pruebas'));
+    });
+
     it('translates the sign-in failure in Polish', function () {
         $this->withSession(['locale' => 'pl'])->post(route('login.store'), ['email' => 'nobody@example.com', 'password' => 'x'])
             ->assertSessionHasErrors(['email' => 'Nieprawidłowy e-mail lub hasło.']);

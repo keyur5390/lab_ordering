@@ -141,6 +141,24 @@ describe('delete your account', function () {
         $this->assertGuest();
     });
 
+    it('removes the email from the audit log of staff actions on the account', function () {
+        $admin = User::factory()->admin()->create();
+        $other = User::factory()->create(['email' => 'someone@example.com']);
+        $this->actingAs($admin)->post(route('admin.users.disable', $this->customer));
+        $this->actingAs($admin)->post(route('admin.users.enable', $this->customer));
+        $this->actingAs($admin)->post(route('admin.users.disable', $other));
+        auth()->guard('web')->logout();
+
+        deleteAccount();
+
+        $subjects = AuditLog::where('action', 'like', 'admin.users.%')->orderBy('id')->pluck('subject')->all();
+        expect($subjects)->toBe([
+            "deleted-{$this->customer->id}@deleted.invalid",
+            "deleted-{$this->customer->id}@deleted.invalid",
+            'someone@example.com',
+        ]);
+    });
+
     it('frees the email for a new account', function () {
         deleteAccount();
 

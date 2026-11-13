@@ -4,7 +4,11 @@ name: lab-ordering
 
 x-app: &app
   image: ${APP_IMAGE:-lab-ordering:latest}
-  build: .
+  build:
+    context: .
+    args:
+      # Baked into the frontend at build time (page titles).
+      VITE_APP_NAME: ${APP_NAME:-Lab Ordering}
   env_file: .env
   restart: unless-stopped
   volumes:

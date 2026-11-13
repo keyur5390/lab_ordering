@@ -7,9 +7,16 @@ use App\Models\User;
 use App\Services\PhoneCodeService;
 use App\Services\PrivacyService;
 use App\Services\Sms\LogSmsSender;
+use App\Services\Sms\SmsException;
 use App\Services\Sms\SmsSender;
 use App\Settings\Settings;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Http\Request;
+use Illuminate\Support\Defer\DeferredCallbackCollection;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
 
 /** Collects texts instead of sending them. */
@@ -126,7 +133,45 @@ describe('signing in with a phone', function () {
         phoneLogin()->assertSessionHasErrors('phone');
         expect($this->sms->sent)->toBe([]);
     });
+
+    it('answers as usual, without a server error, when the text cannot be sent', function () {
+        Exceptions::fake();
+        app()->instance(LogSmsSender::class, failingSms());
+
+        // A sign-in error here would show the number has an account, so the answer is the usual one.
+        phoneLogin()->assertRedirect(route('login'))->assertSessionHasNoErrors()->assertSessionHas('status');
+        expect(PhoneCode::count())->toBe(0);
+        // The failure is reported for us, and nothing else goes wrong after the response.
+        Exceptions::assertReported(SmsException::class);
+        Exceptions::assertNotReported(ValidationException::class);
+    });
+
+    it('sends the code after the response, so known numbers answer no slower than unknown ones', function () {
+        // Handle the request without the after-response step: no code is made or texted yet.
+        $request = Request::create(route('login.phone.send'), 'POST', ['phone' => '+919800000001']);
+        $request->setLaravelSession($this->app['session.store']);
+        $this->withoutMiddleware(ValidateCsrfToken::class);
+        $response = $this->app->make(Kernel::class)->handle($request);
+
+        expect($response->isRedirect())->toBeTrue()
+            ->and(PhoneCode::count())->toBe(0)
+            ->and($this->sms->sent)->toBe([]);
+
+        app(DeferredCallbackCollection::class)->invoke();
+        expect(PhoneCode::count())->toBe(1)->and($this->sms->sent)->toHaveCount(1);
+    });
 });
+
+function failingSms(): SmsSender
+{
+    return new class implements SmsSender
+    {
+        public function send(string $to, string $message): void
+        {
+            throw new SmsException('Twilio request failed.');
+        }
+    };
+}
 
 describe('adding a number to the account', function () {
     beforeEach(function () {
@@ -147,6 +192,13 @@ describe('adding a number to the account', function () {
             ->and($customer->phone_verified_at)->not->toBeNull()
             ->and($customer->routeNotificationForSms())->toBe('+447700900123');
         $this->actingAs($customer)->get(route('account.settings'))->assertInertia(fn (Assert $page) => $page->where('phone.number', '+447700900123')->where('phone.pending', null));
+    });
+
+    it('shows a form error, not a server error, when the confirmation text cannot be sent', function () {
+        app()->instance(LogSmsSender::class, failingSms());
+
+        $this->actingAs($this->customer)->post(route('account.phone.send'), ['phone' => '+44 7700 900123'])->assertSessionHasErrors('phone');
+        expect(PhoneCode::count())->toBe(0);
     });
 
     it('does not take a number that is on another account', function () {

@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\SmsDriver;
 use App\Models\PhoneCode;
 use App\Models\User;
+use App\Services\Sms\SmsException;
 use App\Settings\Settings;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
@@ -57,9 +59,27 @@ class PhoneCodeService
             return;
         }
 
+        // Sign-in: create and send the code after the response, so a number with an account answers as
+        // fast as one without (no timing hint), and a provider failure can't reveal it either.
+        if ($purpose === self::LOGIN) {
+            defer(fn () => $this->deliver($driver, $phone, $purpose, $user, quietly: true));
+
+            return;
+        }
+
+        $this->deliver($driver, $phone, $purpose, $user, quietly: false, field: $field);
+    }
+
+    /**
+     * Stores a new code (replacing any earlier one) and texts it.
+     *
+     * @throws ValidationException when the text can't be sent and the caller should be told
+     */
+    private function deliver(SmsDriver $driver, string $phone, string $purpose, User $user, bool $quietly, string $field = 'phone'): void
+    {
         $code = (string) random_int(100000, 999999);
         PhoneCode::where('phone', $phone)->where('purpose', $purpose)->delete();
-        PhoneCode::create([
+        $record = PhoneCode::create([
             'phone' => $phone,
             'purpose' => $purpose,
             'user_id' => $user->id,
@@ -68,9 +88,18 @@ class PhoneCodeService
         ]);
 
         $values = ['site' => config('app.name'), 'code' => $code, 'minutes' => self::TTL_MINUTES];
-        $driver->sender()->send($phone, $purpose === self::LOGIN
-            ? __(':site: your sign-in code is :code. It expires in :minutes minutes. Never share it.', $values)
-            : __(':site: your code to confirm this number is :code. It expires in :minutes minutes.', $values));
+        try {
+            $driver->sender()->send($phone, $purpose === self::LOGIN
+                ? __(':site: your sign-in code is :code. It expires in :minutes minutes. Never share it.', $values)
+                : __(':site: your code to confirm this number is :code. It expires in :minutes minutes.', $values));
+        } catch (SmsException $e) {
+            // The provider refused the number or is down: a form error, not a server error page.
+            report($e);
+            $record->delete();
+            if (! $quietly) {
+                throw ValidationException::withMessages([$field => __('We couldn\'t send a text to that number. Please check it and try again.')]);
+            }
+        }
     }
 
     /**
@@ -83,15 +112,20 @@ class PhoneCodeService
         $record = PhoneCode::where('phone', $phone)->where('purpose', $purpose)->latest('id')->first();
         $wrong = fn () => ValidationException::withMessages([$field => __('That code is wrong or has expired. Please ask for a new one.')]);
 
-        if (! $record || $record->expires_at->isPast() || $record->attempts >= self::MAX_ATTEMPTS) {
+        if (! $record || $record->expires_at->isPast()) {
             throw $wrong();
         }
-        if (! Hash::check($code, $record->code)) {
-            $record->increment('attempts');
+        // Count the try before checking it, in one conditional update, so parallel guesses can't get
+        // past MAX_ATTEMPTS.
+        $counted = PhoneCode::whereKey($record->id)->where('attempts', '<', self::MAX_ATTEMPTS)->increment('attempts');
+        if (! $counted || ! Hash::check($code, $record->code)) {
             throw $wrong();
         }
 
-        $record->delete();
+        // Only the request that removes the code gets to use it.
+        if (! PhoneCode::whereKey($record->id)->delete()) {
+            throw $wrong();
+        }
 
         return $record->user;
     }

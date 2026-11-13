@@ -89,7 +89,7 @@ function SmsPreference({ sms }: { sms: NonNullable<AccountProps['sms']> }) {
             </label>
             <p className="text-sm text-muted">
                 {sms.phone ? (
-                    <>{t('Texts go to :phone, the phone on your own profile.', { phone: sms.phone })}</>
+                    <>{t('Texts go to :phone.', { phone: sms.phone })}</>
                 ) : (
                     tx('To get texts, add a mobile number with the country code (e.g. +91…) to :profile.', {
                         profile: <TextLink href={route('patients.index')}>{t('your own profile')}</TextLink>,

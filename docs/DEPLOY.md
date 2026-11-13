@@ -97,7 +97,7 @@ Test a restore on a spare machine now and then.
 - `GET /up` returns 200 when the app is running. Point your uptime monitor at it.
 - Logs from all containers: `docker compose logs -f app queue scheduler`.
 - **Admin → Dashboard** warns about missing settings and failed messages; **Admin → Notifications →
-  History** lists every message sent and lets admins resend failed ones.
+  History** lists every message sent and lets admins resend any message, for example a failed one or one a customer says never arrived.
 
 ## Search engines
 

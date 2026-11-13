@@ -16,6 +16,9 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY . .
+# .env isn't in the build context, so Vite gets the site name (used in page titles) as a build argument.
+ARG VITE_APP_NAME="Lab Ordering"
+ENV VITE_APP_NAME=${VITE_APP_NAME}
 RUN npm run build
 
 # --- Runtime ----------------------------------------------------------------------------------
@@ -50,6 +53,7 @@ COPY --chown=www-data:www-data --from=assets /app/public/build ./public/build
 RUN rm -rf docker tests node_modules .env \
     && chmod +x /usr/local/bin/entrypoint \
     && runuser -u www-data -- php artisan package:discover --ansi \
+    && runuser -u www-data -- php artisan storage:link \
     && mkdir -p storage/app/private storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 

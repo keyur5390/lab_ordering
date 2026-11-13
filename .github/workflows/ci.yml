@@ -128,6 +128,10 @@ jobs:
                   curl -fsS http://127.0.0.1:8080/up >/dev/null
                   curl -fsS http://127.0.0.1:8080/robots.txt | grep -q 'Disallow: /admin'
                   curl -fsSI http://127.0.0.1:8080/robots.txt | grep -qi 'x-content-type-options: nosniff'
+                  # Public uploads (branch photos) are served through this link.
+                  docker exec app test -L /var/www/html/public/storage
+                  # The site name is baked into the frontend build.
+                  docker exec app sh -c 'grep -rq "Lab Ordering" /var/www/html/public/build/assets/'
 
             - name: Logs on failure
               if: failure()
