@@ -5,6 +5,7 @@ namespace App\Settings;
 use App\Enums\Currency;
 use App\Enums\PaymentGatewayName;
 use App\Enums\SmsDriver;
+use App\Services\WhatsApp\TwilioWhatsAppSender;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -46,6 +47,9 @@ class Settings
 
     /** Who customers contact about their data (DPDP grievance officer / GDPR contact): name and email. */
     public const PRIVACY_CONTACT = 'privacy_contact';
+
+    /** Whether order updates also go by WhatsApp (B-31). */
+    public const WHATSAPP_ENABLED = 'whatsapp_enabled';
 
     /** Home page content (B-28): hero copy and featured packages. */
     public const HOME = 'home';
@@ -280,6 +284,17 @@ class Settings
     public function setPrivacyContact(array $contact): void
     {
         $this->set(self::PRIVACY_CONTACT, $contact);
+    }
+
+    /** WhatsApp is on: switched on by an admin, and Twilio's WhatsApp keys are set. */
+    public function whatsAppEnabled(): bool
+    {
+        return (bool) $this->get(self::WHATSAPP_ENABLED, false) && TwilioWhatsAppSender::isConfigured();
+    }
+
+    public function setWhatsAppEnabled(bool $enabled): void
+    {
+        $this->set(self::WHATSAPP_ENABLED, $enabled);
     }
 
     /**

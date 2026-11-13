@@ -276,8 +276,8 @@ plus `cancelled` and `refunded`.
 
 *Built in B-13.*
 
-- **Channels (client, 2026-10-29):** email and SMS. WhatsApp is wanted but deferred, because business-initiated
-  WhatsApp messages need pre-approved templates.
+- **Channels (client, 2026-10-29):** email and SMS; WhatsApp added in B-31 (see WhatsApp below), since
+  business-initiated WhatsApp messages need pre-approved templates.
   - Admins switch customer emails on or off and pick the SMS driver in Admin → Settings ⚙️: off, "log" (testing)
     or Twilio. Twilio's keys go in `.env`, and more SMS providers can be added as drivers.
   - Customers can opt out of SMS on their account page.
@@ -308,6 +308,12 @@ plus `cancelled` and `refunded`.
   - A message can be resent on its own channel: customer messages go to the customer's current details;
     admin alerts go to the address they first went to.
   - The dashboard flags messages that failed in the last 24 hours.
+
+### WhatsApp (B-31, client 2026-11-13)
+
+- Customer order updates can also go by **WhatsApp through Twilio**. WhatsApp only allows pre-approved templates, so the wording lives in Twilio (Content Template Builder); admins paste each event's template SID (HX…) in **Admin → Notifications → WhatsApp** and list which placeholders fill its variables {{1}}, {{2}}, … in order. An event without a SID isn't sent on WhatsApp. Admin alerts stay email-only.
+- Switched on in ⚙️ Settings → Notifications, once `TWILIO_SID`, `TWILIO_TOKEN` and `TWILIO_WHATSAPP_FROM` are in .env.
+- Goes to the same number as texts, and only to customers who **opt in** on their account page [default: off until they opt in, as WhatsApp requires] `TODO(client)`. Logged in the message history and resendable like email and SMS.
 
 ## 11. Admin settings (⚙️ index)
 
@@ -390,6 +396,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-11-13 | WhatsApp (B-31): Twilio Content Templates per customer event, admin enters SID + variables; customer opt-in | Client |
 | 2026-11-13 | Phone sign-in (B-30): SMS code sign-in for confirmed account numbers, alongside email | Client (limits default) |
 | 2026-11-13 | Housekeeping (B-29): guest carts deleted after 7 idle days; no reschedule limit; invoice attached to the payment email (online and at collection) | Client |
 | 2026-11-13 | Site content (B-28): admin-edited home hero, featured packages, FAQs, About/Contact pages, footer | Client |

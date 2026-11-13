@@ -40,6 +40,7 @@ class AuditLogger
         'admin.users.enable' => 'Enabled an account',
         'admin.users.store' => 'Invited a staff member',
         'admin.settings.update' => 'Changed settings',
+        'admin.notifications.whatsapp.update' => 'Changed WhatsApp templates',
         'admin.pages.update' => 'Edited a page',
         'admin.pages.home.update' => 'Edited the home page',
         'admin.pages.faqs.store' => 'Added a question',

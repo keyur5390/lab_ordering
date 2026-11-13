@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\ServiceAreaController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\WhatsAppTemplateController;
 use App\Http\Controllers\Auth\PhoneLoginController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogueController;
@@ -179,6 +180,8 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
         Route::get('/notifications', [NotificationTemplateController::class, 'index'])->name('notifications.index');
         Route::get('/notifications/history', [NotificationLogController::class, 'index'])->name('notifications.history');
         Route::post('/notifications/history/{log}/resend', [NotificationLogController::class, 'resend'])->name('notifications.resend');
+        Route::get('/notifications/whatsapp', [WhatsAppTemplateController::class, 'edit'])->name('notifications.whatsapp.edit');
+        Route::put('/notifications/whatsapp', [WhatsAppTemplateController::class, 'update'])->name('notifications.whatsapp.update');
         Route::get('/notifications/{template}/edit', [NotificationTemplateController::class, 'edit'])->name('notifications.edit');
         Route::put('/notifications/{template}', [NotificationTemplateController::class, 'update'])->name('notifications.update');
 

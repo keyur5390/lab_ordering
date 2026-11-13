@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
 use App\Notifications\Channels\SmsChannel;
+use App\Notifications\Channels\WhatsAppChannel;
 use App\Services\InvoiceService;
 use App\Services\LabService;
 use App\Services\NotificationLogger;
@@ -67,6 +68,13 @@ class OrderNotification extends Notification implements ShouldQueue
             $channels[] = SmsChannel::class;
         }
 
+        if ($notifiable instanceof User
+            && $settings->whatsAppEnabled()
+            && $notifiable->routeNotificationForWhatsApp()
+            && $this->toWhatsApp($notifiable)) {
+            $channels[] = WhatsAppChannel::class;
+        }
+
         return $this->only
             ? array_values(array_filter($channels, fn (string $channel) => NotificationLogger::channel($channel) === $this->only))
             : $channels;
@@ -94,6 +102,14 @@ class OrderNotification extends Notification implements ShouldQueue
         return $mail->action('View order', $notifiable instanceof AnonymousNotifiable
             ? route('admin.orders.show', $this->order)
             : route('orders.show', $this->order));
+    }
+
+    /**
+     * @return array{content_sid: string, variables: array<string, string>}|null
+     */
+    public function toWhatsApp(object $notifiable): ?array
+    {
+        return app(NotificationTemplateService::class)->whatsApp($this->event, $this->order, $this->amount);
     }
 
     public function toSms(object $notifiable): ?string

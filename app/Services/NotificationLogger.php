@@ -5,13 +5,14 @@ namespace App\Services;
 use App\Enums\NotificationChannel;
 use App\Models\NotificationLog;
 use App\Notifications\Channels\SmsChannel;
+use App\Notifications\Channels\WhatsAppChannel;
 use App\Notifications\OrderNotification;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Str;
 use Throwable;
 
 /**
- * Records every order email and SMS (B-24): sent ones from Laravel's NotificationSent event, failed
+ * Records every order email, SMS and WhatsApp message (B-24, B-31): sent ones from Laravel's NotificationSent event, failed
  * ones from the queue's failed-job hook. Queued notifications run one job per channel, so each entry
  * is one message on one channel.
  */
@@ -33,6 +34,7 @@ class NotificationLogger
         return match ($channel) {
             'mail' => NotificationChannel::Mail,
             SmsChannel::class => NotificationChannel::Sms,
+            WhatsAppChannel::class => NotificationChannel::WhatsApp,
             default => null,
         };
     }
@@ -64,6 +66,7 @@ class NotificationLogger
         return match ($channel) {
             NotificationChannel::Mail => $notifiable->routeNotificationFor('mail', $notification),
             NotificationChannel::Sms => $notifiable->routeNotificationFor('sms', $notification),
+            NotificationChannel::WhatsApp => $notifiable->routeNotificationFor('whatsapp', $notification),
         } ?: null;
     }
 }

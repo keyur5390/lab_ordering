@@ -10,7 +10,7 @@ export interface MessageRow {
     order_number: string | null;
     event: string;
     event_label: string;
-    channel: 'mail' | 'sms';
+    channel: 'mail' | 'sms' | 'whatsapp';
     channel_label: string;
     recipient: string | null;
     status: 'sent' | 'failed';

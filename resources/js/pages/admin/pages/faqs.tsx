@@ -1,13 +1,11 @@
 import { DeleteButton } from '@/components/delete-button';
 import { Field } from '@/components/field';
 import { FormField } from '@/components/form-field';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { TextLink } from '@/components/ui/text-link';
 import AdminLayout from '@/layouts/admin-layout';
-import type { SharedData } from '@/types';
-import { router, useForm, usePage } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { ArrowDown, ArrowUp, CircleHelp } from 'lucide-react';
 import type { FormEvent } from 'react';
 
@@ -86,7 +84,6 @@ function FaqItem({ faq, first, last }: { faq: FaqRow; first: boolean; last: bool
 }
 
 export default function Faqs({ faqs }: { faqs: FaqRow[] }) {
-    const { status } = usePage<SharedData>().props;
     const { data, setData, post, processing, errors, reset } = useForm({ question: '', answer: '' });
 
     const submit = (e: FormEvent) => {
@@ -103,11 +100,6 @@ export default function Faqs({ faqs }: { faqs: FaqRow[] }) {
             <p className="mt-4 mb-4 max-w-3xl text-sm text-muted">
                 Shown on the home page and the FAQ page, in this order.
             </p>
-            {status && (
-                <Alert tone="success" className="mb-4 max-w-3xl">
-                    {status}
-                </Alert>
-            )}
 
             {faqs.length === 0 ? (
                 <div className="mb-6 flex max-w-3xl flex-col items-center rounded-card border border-border bg-surface p-8 text-center">

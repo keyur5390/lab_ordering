@@ -29,6 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $attributes = [
         'role' => UserRole::Customer->value,
         'sms_opt_out' => false,
+        'whatsapp_opt_in' => false,
     ];
 
     /**
@@ -65,6 +66,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'role' => UserRole::class,
             'sms_opt_out' => 'boolean',
+            'whatsapp_opt_in' => 'boolean',
             'disabled_at' => 'datetime',
             'privacy_accepted_at' => 'datetime',
             'anonymised_at' => 'datetime',
@@ -85,6 +87,12 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return Phone::normalize($this->patients()->where('relationship', PatientRelationship::Self)->value('phone'));
+    }
+
+    /** WhatsApp goes to the same number as texts, once the customer has opted in (B-31). */
+    public function routeNotificationForWhatsApp(): ?string
+    {
+        return $this->whatsapp_opt_in ? $this->routeNotificationForSms() : null;
     }
 
     /**

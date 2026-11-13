@@ -1,8 +1,6 @@
-import { Alert } from '@/components/ui/alert';
 import { TextLink } from '@/components/ui/text-link';
 import AdminLayout from '@/layouts/admin-layout';
-import type { SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { ChevronRight } from 'lucide-react';
 
 interface PagesProps {
@@ -10,19 +8,12 @@ interface PagesProps {
 }
 
 export default function Pages({ pages }: PagesProps) {
-    const { status } = usePage<SharedData>().props;
-
     return (
         <AdminLayout title="Pages">
             <p className="mb-4 max-w-3xl text-sm text-muted">
                 What customers read on the site. The pages are linked from the footer of every page, and the privacy
                 policy and terms from the sign-up form.
             </p>
-            {status && (
-                <Alert tone="success" className="mb-4">
-                    {status}
-                </Alert>
-            )}
             <ul className="divide-y divide-border rounded-card border border-border bg-surface">
                 {[
                     {

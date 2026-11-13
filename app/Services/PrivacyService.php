@@ -69,6 +69,7 @@ class PrivacyService
                 'created_at' => $user->created_at?->toIso8601String(),
                 'privacy_accepted_at' => $user->privacy_accepted_at?->toIso8601String(),
                 'text_messages' => ! $user->sms_opt_out,
+                'whatsapp_messages' => $user->whatsapp_opt_in,
             ],
             'patients' => $user->patients->map(fn (Patient $patient) => $patient->only([
                 'name', 'relationship', 'date_of_birth', 'sex', 'phone', 'email',
@@ -166,6 +167,7 @@ class PrivacyService
                 'password' => Str::random(64),
                 'remember_token' => null,
                 'sms_opt_out' => true,
+                'whatsapp_opt_in' => false,
                 'disabled_at' => now(),
                 'anonymised_at' => now(),
             ])->save();

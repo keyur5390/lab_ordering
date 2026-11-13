@@ -53,6 +53,7 @@ class UpdateSettingsRequest extends FormRequest
             'reminder_hours_before' => ['nullable', 'integer', 'min:0', 'max:168'],
             // Empty turns admin alerts off.
             'admin_notification_email' => ['nullable', 'email', 'max:255'],
+            'whatsapp_enabled' => ['sometimes', 'boolean'],
             'privacy_contact_name' => ['nullable', 'string', 'max:255'],
             'privacy_contact_email' => ['nullable', 'email', 'max:255'],
         ];

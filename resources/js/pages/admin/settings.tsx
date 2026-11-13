@@ -27,6 +27,7 @@ interface SettingsProps {
     smsDriver: string | null;
     smsDrivers: { value: string; label: string; configured: boolean; env_keys: string | null }[];
     reminderHoursBefore: number;
+    whatsApp: { enabled: boolean; configured: boolean };
     adminNotificationEmail: string | null;
     privacyContact: { name: string | null; email: string | null };
 }
@@ -49,6 +50,7 @@ export default function Settings({
     smsDriver,
     smsDrivers,
     reminderHoursBefore,
+    whatsApp,
     adminNotificationEmail,
     privacyContact,
 }: SettingsProps) {
@@ -69,6 +71,7 @@ export default function Settings({
         notify_by_email: notifyByEmail,
         sms_driver: smsDriver ?? '',
         reminder_hours_before: reminderHoursBefore.toString(),
+        whatsapp_enabled: whatsApp.enabled,
         admin_notification_email: adminNotificationEmail ?? '',
         privacy_contact_name: privacyContact.name ?? '',
         privacy_contact_email: privacyContact.email ?? '',
@@ -349,6 +352,29 @@ export default function Settings({
                             ))}
                         </ul>
                     )}
+                    <div>
+                        <label className="flex min-h-11 items-center gap-3 text-sm">
+                            <Checkbox
+                                checked={data.whatsapp_enabled}
+                                disabled={!whatsApp.configured && !data.whatsapp_enabled}
+                                onChange={(e) => setData('whatsapp_enabled', e.target.checked)}
+                            />
+                            Send WhatsApp messages to customers who opt in (Twilio)
+                        </label>
+                        <p className="text-sm text-muted">
+                            {whatsApp.configured ? (
+                                <>
+                                    Messages use the templates in{' '}
+                                    <TextLink href={route('admin.notifications.whatsapp.edit')}>
+                                        Notifications → WhatsApp
+                                    </TextLink>
+                                    .
+                                </>
+                            ) : (
+                                "To use WhatsApp, add TWILIO_SID, TWILIO_TOKEN and TWILIO_WHATSAPP_FROM to the server's .env file."
+                            )}
+                        </p>
+                    </div>
                     <FormField
                         id="reminder_hours_before"
                         label="Send the collection reminder (hours before the slot)"

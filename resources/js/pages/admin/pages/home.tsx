@@ -1,14 +1,12 @@
 import { Field } from '@/components/field';
 import { FormField } from '@/components/form-field';
-import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { InputError } from '@/components/ui/input-error';
 import { Textarea } from '@/components/ui/textarea';
 import { TextLink } from '@/components/ui/text-link';
 import AdminLayout from '@/layouts/admin-layout';
-import type { SharedData } from '@/types';
-import { useForm, usePage } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import type { FormEvent } from 'react';
 
@@ -18,7 +16,6 @@ interface HomeContentProps {
 }
 
 export default function HomeContent({ home, packages }: HomeContentProps) {
-    const { status } = usePage<SharedData>().props;
     const { data, setData, put, processing, errors, isDirty } = useForm({
         hero_title: home.hero_title,
         hero_text: home.hero_text ?? '',
@@ -51,8 +48,6 @@ export default function HomeContent({ home, packages }: HomeContentProps) {
             </div>
 
             <form onSubmit={submit} noValidate className="mt-4 max-w-3xl space-y-6">
-                {status && <Alert tone="success">{status}</Alert>}
-
                 <section className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6">
                     <h2 className="text-base font-semibold">Top of the page</h2>
                     <FormField

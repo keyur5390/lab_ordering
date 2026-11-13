@@ -68,6 +68,7 @@ export default function NotificationHistory({ logs, filters, events, timezone }:
                         <option value="">All</option>
                         <option value="mail">Email</option>
                         <option value="sms">SMS</option>
+                        <option value="whatsapp">WhatsApp</option>
                     </Select>
                 </div>
                 <div className="col-span-2 space-y-1.5 sm:col-span-1">

@@ -10,6 +10,51 @@ import { ChevronRight, ClipboardList, FileText, MapPin, ShieldCheck, Users, type
 interface AccountProps {
     /** Present when SMS is switched on for the site. */
     sms: { opted_out: boolean; email: boolean; phone: string | null } | null;
+    /** Present when WhatsApp is switched on for the site. */
+    whatsapp: { opted_in: boolean; phone: string | null } | null;
+}
+
+function WhatsAppPreference({ whatsapp }: { whatsapp: NonNullable<AccountProps['whatsapp']> }) {
+    const [saving, setSaving] = useState(false);
+
+    return (
+        <section
+            aria-labelledby="whatsapp-heading"
+            className="mt-4 rounded-card border border-border bg-surface p-4 md:p-6"
+        >
+            <h2 id="whatsapp-heading" className="font-medium">
+                WhatsApp
+            </h2>
+            <label className="mt-3 flex min-h-11 items-center gap-3 text-sm">
+                <Checkbox
+                    checked={whatsapp.opted_in}
+                    disabled={saving}
+                    onChange={(e) =>
+                        router.put(
+                            route('account.notifications.update'),
+                            { whatsapp: e.target.checked },
+                            {
+                                preserveScroll: true,
+                                onStart: () => setSaving(true),
+                                onFinish: () => setSaving(false),
+                            },
+                        )
+                    }
+                />
+                Send me order updates on WhatsApp
+            </label>
+            <p className="text-sm text-muted">
+                {whatsapp.phone ? (
+                    <>Messages go to {whatsapp.phone}.</>
+                ) : (
+                    <>
+                        Add a mobile number in <TextLink href={route('account.settings')}>account settings</TextLink> to
+                        get WhatsApp messages.
+                    </>
+                )}
+            </p>
+        </section>
+    );
 }
 
 function SmsPreference({ sms }: { sms: NonNullable<AccountProps['sms']> }) {
@@ -56,7 +101,7 @@ function SmsPreference({ sms }: { sms: NonNullable<AccountProps['sms']> }) {
     );
 }
 
-export default function Account({ sms }: AccountProps) {
+export default function Account({ sms, whatsapp }: AccountProps) {
     const { auth, status } = usePage<SharedData>().props;
 
     const links: { href: string; label: string; description: string; icon: LucideIcon }[] = [
@@ -115,6 +160,7 @@ export default function Account({ sms }: AccountProps) {
                 )}
 
                 {sms && <SmsPreference sms={sms} />}
+                {whatsapp && <WhatsAppPreference whatsapp={whatsapp} />}
 
                 <ul className="mt-4 space-y-3">
                     {links.map(({ href, label, description, icon: Icon }) => (

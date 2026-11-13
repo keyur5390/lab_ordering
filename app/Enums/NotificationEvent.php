@@ -58,11 +58,14 @@ enum NotificationEvent: string
     }
 
     /**
+     * Channels with wording edited in Admin → Notifications. Customer events can also go by
+     * WhatsApp, whose wording is a Twilio template (B-31).
+     *
      * @return list<NotificationChannel>
      */
     public function channels(): array
     {
-        return $this->forAdmins() ? [NotificationChannel::Mail] : NotificationChannel::cases();
+        return $this->forAdmins() ? [NotificationChannel::Mail] : [NotificationChannel::Mail, NotificationChannel::Sms];
     }
 
     /**
