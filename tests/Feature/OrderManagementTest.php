@@ -4,6 +4,7 @@ use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\ServiceArea;
 use App\Models\User;
+use App\Services\SlotService;
 use App\Settings\Settings;
 use Carbon\CarbonImmutable;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -131,4 +132,20 @@ it('saves the cancellation cutoff in settings', function () {
         ->put(route('admin.settings.update'), ['currency' => 'INR', 'timezone' => 'Asia/Kolkata', 'cancellation_cutoff_hours' => ''])
         ->assertSessionHasNoErrors();
     expect(app(Settings::class)->cancellationCutoffHours())->toBeNull();
+});
+
+it('has no limit on how often a customer reschedules (client, 2026-11-13)', function () {
+    app(Settings::class)->setCancellationCutoffHours(2);
+    $slots = [];
+    $this->actingAs($this->user)->get(route('orders.reschedule.edit', $this->order))
+        ->assertInertia(function (Assert $page) use (&$slots) {
+            $slots = collect($page->toArray()['props']['slots'])->flatMap(fn (array $day) => $day['slots'])
+                ->where('status', SlotService::AVAILABLE)->pluck('starts_at')->all();
+        });
+
+    expect(count($slots))->toBeGreaterThan(4);
+    foreach (array_slice($slots, 1, 4) as $slot) {
+        $this->actingAs($this->user)->put(route('orders.reschedule', $this->order), ['slot_starts_at' => $slot])->assertSessionHasNoErrors();
+        expect($this->order->fresh()->slot_starts_at->toIso8601String())->toBe(CarbonImmutable::parse($slot)->utc()->toIso8601String());
+    }
 });

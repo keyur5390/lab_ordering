@@ -35,6 +35,12 @@ class OrderNotifier
         $this->send(NotificationEvent::AdminNewOrder, $order);
     }
 
+    /** Pay-at-collection orders: the payment is recorded, and the invoice goes by email. */
+    public function paymentCollected(Order $order, int $amount): void
+    {
+        $this->send(NotificationEvent::PaymentCollected, $order, $amount);
+    }
+
     public function refunded(Order $order, Refund $refund): void
     {
         $refund->status->counts()

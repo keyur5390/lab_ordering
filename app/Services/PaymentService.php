@@ -344,6 +344,7 @@ class PaymentService
 
         $order->update(['payment_collected_at' => now(), 'payment_collected_method' => $method]);
         $this->invoices->issue($order);
+        $this->notifier->paymentCollected($order, $order->total_amount);
         $this->lab->completeIfDone($order);
     }
 

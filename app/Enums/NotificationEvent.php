@@ -12,6 +12,8 @@ enum NotificationEvent: string
     case OrderConfirmed = 'order_confirmed';
     /** An online payment arrives and confirms the order. */
     case PaymentReceived = 'payment_received';
+    /** A pay-at-collection order's payment is recorded; the email carries the invoice. */
+    case PaymentCollected = 'payment_collected';
     case RefundIssued = 'refund_issued';
     /** Cancelled by the customer or an admin. */
     case OrderCancelled = 'order_cancelled';
@@ -34,6 +36,7 @@ enum NotificationEvent: string
         return match ($this) {
             self::OrderConfirmed => 'Order confirmed (pay at collection)',
             self::PaymentReceived => 'Payment received (order confirmed)',
+            self::PaymentCollected => 'Payment taken at collection',
             self::RefundIssued => 'Refund issued',
             self::OrderCancelled => 'Order cancelled',
             self::PaymentExpired => 'Payment time ran out',
@@ -72,7 +75,7 @@ enum NotificationEvent: string
         $common = ['site_name', 'customer_name', 'order_number', 'slot', 'address', 'total', 'order_url'];
 
         return match ($this) {
-            self::PaymentReceived, self::RefundIssued, self::AdminRefundFailed => [...$common, 'amount'],
+            self::PaymentReceived, self::PaymentCollected, self::RefundIssued, self::AdminRefundFailed => [...$common, 'amount'],
             self::CollectorAssigned => [...$common, 'collector_name'],
             self::AdminVisitFailed => [...$common, 'collector_name', 'reason'],
             default => $common,

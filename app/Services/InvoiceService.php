@@ -12,6 +12,7 @@ use App\Models\Payment;
 use App\Models\Refund;
 use App\Settings\Settings;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Barryvdh\DomPDF\PDF as DomPdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -102,10 +103,21 @@ class InvoiceService
 
     public function invoicePdf(Invoice $invoice): Response
     {
+        return $this->invoiceDocument($invoice)->download("{$invoice->number}.pdf");
+    }
+
+    /** The invoice PDF's bytes, e.g. to attach to an email. */
+    public function invoicePdfContent(Invoice $invoice): string
+    {
+        return $this->invoiceDocument($invoice)->output();
+    }
+
+    private function invoiceDocument(Invoice $invoice): DomPdf
+    {
         return Pdf::loadView('pdf.invoice', [
             'invoice' => $invoice,
             'timezone' => $this->settings->timezone(),
-        ])->download("{$invoice->number}.pdf");
+        ]);
     }
 
     public function creditNotePdf(CreditNote $note): Response

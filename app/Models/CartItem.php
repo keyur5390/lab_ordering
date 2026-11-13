@@ -22,6 +22,9 @@ class CartItem extends Model
      */
     protected $fillable = ['lab_test_id', 'lab_package_id'];
 
+    /** Adding or removing an item keeps the cart from being pruned as idle. */
+    protected $touches = ['cart'];
+
     /**
      * @return BelongsTo<Cart, $this>
      */

@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
 use App\Notifications\Channels\SmsChannel;
+use App\Services\InvoiceService;
 use App\Services\LabService;
 use App\Services\NotificationLogger;
 use App\Services\NotificationTemplateService;
@@ -83,6 +84,11 @@ class OrderNotification extends Notification implements ShouldQueue
 
         if ($this->event === NotificationEvent::ReportReady) {
             $this->attachReports($mail);
+        }
+        // The invoice goes with the payment email (client, 2026-11-13).
+        if (in_array($this->event, [NotificationEvent::PaymentReceived, NotificationEvent::PaymentCollected], true)
+            && ($invoice = $this->order->invoice()->first())) {
+            $mail->attachData(app(InvoiceService::class)->invoicePdfContent($invoice), "{$invoice->number}.pdf", ['mime' => 'application/pdf']);
         }
 
         return $mail->action('View order', $notifiable instanceof AnonymousNotifiable

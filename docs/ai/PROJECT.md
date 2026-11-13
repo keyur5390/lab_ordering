@@ -136,7 +136,7 @@ All amounts come from the database or settings. Never from code.
   cart, marked unavailable, and are left out of the total. A test that's also inside a package in the
   cart is flagged, not blocked. [Each item appears once; quantities per patient come with patient
   profiles.] `TODO(client)`
-- **OPEN:** How long guest carts are kept before being cleaned up.
+- **Guest carts (client, 2026-11-13):** deleted after 7 days without changes (adding or removing an item counts), by a daily job. Customers' carts are kept.
 - **Checkout (client, 2026-10-29):** *Built in B-11.*
   - One order can cover several patients: each cart item is booked for one or more of the customer's
     complete patient profiles, and the price is per patient. One address and one slot per order (one
@@ -223,7 +223,8 @@ All amounts come from the database or settings. Never from code.
   invoice. Refunds of payments that were never invoiced (duplicates, late payments) get none.
 - **PDFs** are drawn on demand. The order's customer, lab staff and admins can download them from the order
   page.
-- **OPEN:** attaching the invoice to the payment email; legal invoice wording for the launch country.
+- **Invoice by email (client, 2026-11-13):** the invoice PDF is attached to the payment email: "Payment received" for online orders, and a new "Payment taken at collection" email (and SMS, without the PDF) when a collector or staff record a pay-at-collection payment.
+- **OPEN:** legal invoice wording for the launch country.
 
 ## 8. Order lifecycle
 
@@ -243,7 +244,7 @@ plus `cancelled` and `refunded`.
   N hours before the slot, set in Admin → Settings ⚙️. Until it is set, only admins can. Admins can
   always, before collection.
 - Each order uses one place in its slot's capacity (one home visit, whatever the number of patients).
-- **OPEN:** Is there a reschedule limit ⚙️?
+- **Reschedule limit (client, 2026-11-13):** none; customers may reschedule as often as they like until the cutoff.
 
 ## 9. Reports
 
@@ -284,7 +285,8 @@ plus `cancelled` and `refunded`.
     [default] `TODO(client)`
 - **Customer events (client, 2026-10-29):**
   - Order confirmed: pay-at-collection orders, when placed.
-  - Payment received: online orders, when paid. This confirms the order, so it is one message, not two.
+  - Payment received: online orders, when paid. This confirms the order, so it is one message, not two. The invoice is attached.
+  - Payment taken at collection: pay-at-collection orders, when the payment is recorded. The invoice is attached.
   - Refund issued: automatic or by an admin.
   - Order cancelled: by the customer or an admin.
   - Payment time ran out.
@@ -381,6 +383,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-11-13 | Housekeeping (B-29): guest carts deleted after 7 idle days; no reschedule limit; invoice attached to the payment email (online and at collection) | Client |
 | 2026-11-13 | Site content (B-28): admin-edited home hero, featured packages, FAQs, About/Contact pages, footer | Client |
 | 2026-11-13 | Privacy (B-27): DPDP + GDPR; consent at sign-up; data download; deletion anonymises and keeps orders, invoices and reports; admin-edited privacy policy and terms; privacy contact | Client (defaults marked) |
 | 2026-11-13 | Audit log (B-26): staff changes and staff sign-ins, admin-only page with filters; kept forever pending client | Dev (defaults) |
