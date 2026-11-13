@@ -56,7 +56,8 @@ export default function NotificationsIndex({ events }: { events: EventRow[] }) {
             <div className="max-w-3xl space-y-8">
                 <p className="text-sm text-muted">
                     Edit what customers and admins are sent. Channels, the reminder time and the admin address are in{' '}
-                    <TextLink href={route('admin.settings.edit')}>Settings</TextLink>.
+                    <TextLink href={route('admin.settings.edit')}>Settings</TextLink>. See what was sent, and resend
+                    failed messages, in <TextLink href={route('admin.notifications.history')}>History</TextLink>.
                 </p>
                 <EventList
                     title="To customers"

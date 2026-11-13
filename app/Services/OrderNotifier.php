@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\NotificationEvent;
 use App\Enums\OrderStatus;
+use App\Models\NotificationLog;
 use App\Models\Order;
 use App\Models\Refund;
 use App\Notifications\OrderNotification;
@@ -97,6 +98,19 @@ class OrderNotifier
         }
 
         return $orders->count();
+    }
+
+    /**
+     * Sends a logged message again on the same channel (B-24). Admin alerts go to the address they
+     * went to; customer messages go to the customer as they are now.
+     */
+    public function resend(NotificationLog $log): void
+    {
+        $notification = new OrderNotification($log->event, $log->order, $log->amount, $log->channel);
+
+        $log->event->forAdmins()
+            ? Notification::route('mail', $log->recipient)->notify($notification)
+            : $log->order->user->notify($notification);
     }
 
     private function send(NotificationEvent $event, Order $order, ?int $amount = null): void

@@ -1,3 +1,4 @@
+import { MessageList, type MessageRow } from '@/components/admin/message-list';
 import { CollectorCard, type CollectorInfo } from '@/components/collector-card';
 import { OrderActions } from '@/components/order-actions';
 import { OrderDetails } from '@/components/order-details';
@@ -20,7 +21,15 @@ const labStatuses: Order['status'][] = [
     'completed',
 ];
 
-export default function AdminOrderShow({ order, collector }: { order: Order; collector: CollectorInfo }) {
+export default function AdminOrderShow({
+    order,
+    collector,
+    messages,
+}: {
+    order: Order;
+    collector: CollectorInfo;
+    messages: MessageRow[];
+}) {
     const { errors } = usePage<SharedData & { errors: Record<string, string> }>().props;
 
     return (
@@ -62,6 +71,16 @@ export default function AdminOrderShow({ order, collector }: { order: Order; col
                     <CollectorCard key={collector.assigned?.id ?? 'none'} order={order} collector={collector} />
                 )}
                 <OrderDetails order={order} prescriptionUrl={route('orders.prescription', order.number)} />
+                {messages.length > 0 && (
+                    <section aria-labelledby="messages-heading">
+                        <h2 id="messages-heading" className="text-lg font-semibold">
+                            Messages
+                        </h2>
+                        <div className="mt-3">
+                            <MessageList messages={messages} timezone={order.timezone} />
+                        </div>
+                    </section>
+                )}
             </div>
         </AdminLayout>
     );

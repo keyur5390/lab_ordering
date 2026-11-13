@@ -9,6 +9,7 @@ use App\Models\OrderItem;
 use App\Models\User;
 use App\Notifications\Channels\SmsChannel;
 use App\Services\LabService;
+use App\Services\NotificationLogger;
 use App\Services\NotificationTemplateService;
 use App\Settings\Settings;
 use Illuminate\Bus\Queueable;
@@ -38,6 +39,8 @@ class OrderNotification extends Notification implements ShouldQueue
         public Order $order,
         /** Payment or refund amount, in minor units. */
         public ?int $amount = null,
+        /** Send on this channel only, e.g. when an admin resends a failed message (B-24). */
+        public ?NotificationChannel $only = null,
     ) {
         $this->afterCommit();
     }
@@ -63,7 +66,9 @@ class OrderNotification extends Notification implements ShouldQueue
             $channels[] = SmsChannel::class;
         }
 
-        return $channels;
+        return $this->only
+            ? array_values(array_filter($channels, fn (string $channel) => NotificationLogger::channel($channel) === $this->only))
+            : $channels;
     }
 
     public function toMail(object $notifiable): MailMessage

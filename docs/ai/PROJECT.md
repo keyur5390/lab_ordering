@@ -294,7 +294,13 @@ plus `cancelled` and `refunded`.
   placeholders such as `{order_number}` and `{slot}`. Each message can be switched off. Default wording is
   added by the migration. [SMS up to 640 characters; over 160 is sent as several messages.] `TODO(client)`
 - Notifications are queued (`QUEUE_CONNECTION=database`; run a queue worker) and sent after the order is saved.
-- **OPEN:** Notification history in the admin.
+- **History:** *Built in B-24.* Every order email and SMS is logged with its event, channel, recipient, time,
+  and whether it was sent or failed (with the error).
+  - Admin → Notifications → History filters by status, channel, message and order. The admin order page lists
+    that order's messages.
+  - A message can be resent on its own channel: customer messages go to the customer's current details;
+    admin alerts go to the address they first went to.
+  - The dashboard flags messages that failed in the last 24 hours.
 
 ## 11. Admin settings (⚙️ index)
 
@@ -358,6 +364,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-11-13 | Notification history (B-24): log of every order email/SMS, filters, per-order list, resend, dashboard alert | Dev |
 | 2026-11-13 | Account settings (B-23): name, email (re-verified) and password self-service | Dev (defaults) |
 | 2026-10-31 | Completion & reports (B-22): completed when all reports are in and paid; My reports page; reports kept forever | Client |
 | 2026-10-31 | Invoices (B-21): issued when paid; seller details from Settings; yearly numbers; credit note per refund | Client |

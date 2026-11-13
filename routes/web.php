@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LabPackageController;
 use App\Http\Controllers\Admin\LabTestController;
+use App\Http\Controllers\Admin\NotificationLogController;
 use App\Http\Controllers\Admin\NotificationTemplateController;
 use App\Http\Controllers\Admin\OrderCollectorController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
@@ -144,6 +145,8 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
         Route::put('/collectors/{collector}', [CollectorController::class, 'update'])->name('collectors.update');
 
         Route::get('/notifications', [NotificationTemplateController::class, 'index'])->name('notifications.index');
+        Route::get('/notifications/history', [NotificationLogController::class, 'index'])->name('notifications.history');
+        Route::post('/notifications/history/{log}/resend', [NotificationLogController::class, 'resend'])->name('notifications.resend');
         Route::get('/notifications/{template}/edit', [NotificationTemplateController::class, 'edit'])->name('notifications.edit');
         Route::put('/notifications/{template}', [NotificationTemplateController::class, 'update'])->name('notifications.update');
 
