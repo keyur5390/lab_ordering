@@ -47,6 +47,9 @@ class Settings
     /** Who customers contact about their data (DPDP grievance officer / GDPR contact): name and email. */
     public const PRIVACY_CONTACT = 'privacy_contact';
 
+    /** Home page content (B-28): hero copy and featured packages. */
+    public const HOME = 'home';
+
     // TODO(client): confirm the default reminder time.
     public const DEFAULT_REMINDER_HOURS_BEFORE = 24;
 
@@ -277,6 +280,32 @@ class Settings
     public function setPrivacyContact(array $contact): void
     {
         $this->set(self::PRIVACY_CONTACT, $contact);
+    }
+
+    /**
+     * Home page content: the hero (title, text, button label) and the packages featured below it,
+     * in order. Until an admin edits it, the hero shows the launch copy.
+     *
+     * @return array{hero_title: string, hero_text: string|null, hero_button: string, featured_package_ids: list<int>}
+     */
+    public function home(): array
+    {
+        $home = (array) $this->get(self::HOME, []);
+
+        return [
+            'hero_title' => ($home['hero_title'] ?? null) ?: 'Book lab tests online',
+            'hero_text' => array_key_exists('hero_text', $home) ? ($home['hero_text'] ?: null) : 'Browse tests, choose home collection or a lab visit, and get your reports online.',
+            'hero_button' => ($home['hero_button'] ?? null) ?: 'Browse tests',
+            'featured_package_ids' => array_values(array_map('intval', (array) ($home['featured_package_ids'] ?? []))),
+        ];
+    }
+
+    /**
+     * @param  array{hero_title: string, hero_text: string|null, hero_button: string, featured_package_ids: list<int>}  $home
+     */
+    public function setHome(array $home): void
+    {
+        $this->set(self::HOME, $home);
     }
 
     public function get(string $key, mixed $default = null): mixed

@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\ClosureController;
 use App\Http\Controllers\Admin\CollectorController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\FaqController;
+use App\Http\Controllers\Admin\HomeContentController;
 use App\Http\Controllers\Admin\LabPackageController;
 use App\Http\Controllers\Admin\LabTestController;
 use App\Http\Controllers\Admin\NotificationLogController;
@@ -27,6 +29,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogueController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\Collector\VisitController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Lab\OrderController as LabOrderController;
 use App\Http\Controllers\OrderController;
@@ -36,9 +39,10 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportHistoryController;
+use App\Models\Page;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'home')->name('home');
+Route::get('/', [HomeController::class, 'show'])->name('home');
 
 Route::controller(CatalogueController::class)->name('catalogue.')->group(function () {
     Route::get('/tests', 'index')->name('index');
@@ -55,7 +59,8 @@ Route::controller(CartController::class)->prefix('cart')->name('cart.')->group(f
 
 // Name, email and password (B-23). Signed in but not necessarily verified, so someone who mistyped a
 // new email can still correct it. The forms post to Fortify's routes.
-Route::get('/{slug}', [PageController::class, 'show'])->whereIn('slug', ['privacy', 'terms'])->name('pages.show');
+Route::get('/{slug}', [PageController::class, 'show'])->whereIn('slug', Page::SLUGS)->name('pages.show');
+Route::get('/faq', [HomeController::class, 'faq'])->name('faq');
 
 Route::middleware('auth')->group(function () {
     Route::get('/account/privacy', [AccountPrivacyController::class, 'show'])->name('account.privacy');
@@ -163,6 +168,13 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
         Route::put('/notifications/{template}', [NotificationTemplateController::class, 'update'])->name('notifications.update');
 
         Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
+        Route::get('/pages/home', [HomeContentController::class, 'edit'])->name('pages.home.edit');
+        Route::put('/pages/home', [HomeContentController::class, 'update'])->name('pages.home.update');
+        Route::get('/pages/faqs', [FaqController::class, 'index'])->name('pages.faqs.index');
+        Route::post('/pages/faqs', [FaqController::class, 'store'])->name('pages.faqs.store');
+        Route::put('/pages/faqs/{faq}', [FaqController::class, 'update'])->name('pages.faqs.update');
+        Route::post('/pages/faqs/{faq}/move', [FaqController::class, 'move'])->name('pages.faqs.move');
+        Route::delete('/pages/faqs/{faq}', [FaqController::class, 'destroy'])->name('pages.faqs.destroy');
         Route::get('/pages/{page}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
         Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
 

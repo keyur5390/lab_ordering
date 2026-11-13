@@ -64,7 +64,7 @@ describe('consent and pages', function () {
         $admin = User::factory()->admin()->create();
         $page = Page::where('slug', 'terms')->first();
 
-        $this->actingAs($admin)->get(route('admin.pages.index'))->assertInertia(fn (Assert $p) => $p->component('admin/pages/index')->has('pages', 2));
+        $this->actingAs($admin)->get(route('admin.pages.index'))->assertInertia(fn (Assert $p) => $p->component('admin/pages/index')->has('pages', 4));
         $this->actingAs($admin)->put(route('admin.pages.update', $page), ['title' => 'Terms', 'body' => ''])->assertSessionHasErrors('body');
         $this->actingAs($admin)->put(route('admin.pages.update', $page), ['title' => 'Terms', 'body' => 'New terms'])->assertRedirect(route('admin.pages.index'));
         expect($page->fresh()->body)->toBe('New terms');

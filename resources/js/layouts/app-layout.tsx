@@ -141,6 +141,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                     <span>
                         © {new Date().getFullYear()} {name}
                     </span>
+                    <Link href={route('pages.show', 'about')} className="hover:text-text">
+                        About us
+                    </Link>
+                    <Link href={route('pages.show', 'contact')} className="hover:text-text">
+                        Contact
+                    </Link>
+                    <Link href={route('faq')} className="hover:text-text">
+                        FAQs
+                    </Link>
                     <Link href={route('pages.show', 'privacy')} className="hover:text-text">
                         Privacy policy
                     </Link>

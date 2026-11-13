@@ -365,6 +365,13 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 - **Audit log (B-26):** every change an admin, lab staff member or collector makes (create, update, delete, status steps, uploads, refunds, settings), with who, when, what it was about, the submitted fields and the outcome (done / rejected / not allowed / error); plus staff sign-ins, sign-outs and failed sign-ins. Passwords and tokens are never stored; uploaded files are stored by name only. Customers' own actions and page views aren't logged. Admins only: **Admin → Audit log**, filtered by person, action, outcome and dates. Kept [forever] `TODO(client)`: confirm scope and retention.
 - **OPEN:** Languages/locales [English only] `TODO(client)`, timezone [single, from settings ⚙️].
 
+## 12a. Site content (B-28)
+
+- **Home page:** a heading, an optional line of text and a button to the catalogue, then featured packages in the order an admin picks (unpublished ones are hidden), then the FAQs. Until edited it shows the launch copy. Admin → Pages → Home page.
+- **FAQs:** question + answer (Markdown), in an order admins set (move up/down); shown on the home page and at /faq. Admin → Pages → FAQs.
+- **Pages:** About us, Contact us, Privacy policy and Terms of service, written by admins in Markdown (raw HTML is removed). Admins edit these four; they don't add new ones [default]. Placeholders until the client supplies the text `TODO(client)`.
+- **Footer** on every customer page: About us, Contact, FAQs, Privacy policy, Terms of service.
+
 ## 13. Out of scope for v1
 
 - **OPEN:** confirm with client.
@@ -374,6 +381,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-11-13 | Site content (B-28): admin-edited home hero, featured packages, FAQs, About/Contact pages, footer | Client |
 | 2026-11-13 | Privacy (B-27): DPDP + GDPR; consent at sign-up; data download; deletion anonymises and keeps orders, invoices and reports; admin-edited privacy policy and terms; privacy contact | Client (defaults marked) |
 | 2026-11-13 | Audit log (B-26): staff changes and staff sign-ins, admin-only page with filters; kept forever pending client | Dev (defaults) |
 | 2026-11-13 | Refund tracking (B-25): refund webhooks settle processing refunds; credit notes only on success | Dev |
