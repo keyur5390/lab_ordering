@@ -4,8 +4,12 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Notifications\OrderNotification;
+use App\Services\AuditLogger;
 use App\Services\NotificationLogger;
 use App\Settings\Settings;
+use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Notifications\SendQueuedNotifications;
@@ -14,6 +18,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -38,6 +43,19 @@ class AppServiceProvider extends ServiceProvider
 
         // Inertia props get the resource itself, not {data: ...}. Paginated collections keep data/links/meta.
         JsonResource::withoutWrapping();
+
+        // Audit log (B-26): staff sign-ins.
+        Event::listen(fn (Login $event) => app(AuditLogger::class)->auth('auth.login', $event->user, request()));
+        Event::listen(fn (Logout $event) => $event->user && app(AuditLogger::class)->auth('auth.logout', $event->user, request()));
+        Event::listen(function (Failed $event) {
+            // Only for accounts that exist and are staff: no record of guesses at customer emails.
+            // Our sign-in check (FortifyServiceProvider) doesn't pass the user along, so look it up.
+            $email = $event->credentials['email'] ?? null;
+            $user = $event->user ?? (is_string($email) ? User::where('email', Str::lower($email))->first() : null);
+            if ($user instanceof User) {
+                app(AuditLogger::class)->auth('auth.failed', $user, request());
+            }
+        });
 
         // Notification history (B-24): sent messages, and queued ones that finally failed.
         Event::listen(function (NotificationSent $event) {

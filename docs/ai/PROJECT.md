@@ -357,7 +357,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 ## 12. Compliance & data
 
 - **OPEN:** Applicable regulations (e.g. HIPAA, GDPR, India DPDP Act)? Data residency?
-- **OPEN:** Audit log requirements.
+- **Audit log (B-26):** every change an admin, lab staff member or collector makes (create, update, delete, status steps, uploads, refunds, settings), with who, when, what it was about, the submitted fields and the outcome (done / rejected / not allowed / error); plus staff sign-ins, sign-outs and failed sign-ins. Passwords and tokens are never stored; uploaded files are stored by name only. Customers' own actions and page views aren't logged. Admins only: **Admin → Audit log**, filtered by person, action, outcome and dates. Kept [forever] `TODO(client)`: confirm scope and retention.
 - **OPEN:** Languages/locales [English only] `TODO(client)`, timezone [single, from settings ⚙️].
 
 ## 13. Out of scope for v1
@@ -369,6 +369,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-11-13 | Audit log (B-26): staff changes and staff sign-ins, admin-only page with filters; kept forever pending client | Dev (defaults) |
 | 2026-11-13 | Refund tracking (B-25): refund webhooks settle processing refunds; credit notes only on success | Dev |
 | 2026-11-13 | Notification history (B-24): log of every order email/SMS, filters, per-order list, resend, dashboard alert | Dev |
 | 2026-11-13 | Account settings (B-23): name, email (re-verified) and password self-service | Dev (defaults) |

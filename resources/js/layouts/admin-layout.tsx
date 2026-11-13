@@ -14,6 +14,7 @@ import {
     MapPinned,
     Menu,
     Package,
+    ScrollText,
     Settings,
     Tags,
     TicketPercent,
@@ -65,6 +66,7 @@ const navItems: NavItem[] = [
         activePattern: 'admin.notifications.*',
         icon: Bell,
     },
+    { label: 'Audit log', routeName: 'admin.audit-log', activePattern: 'admin.audit-log', icon: ScrollText },
     { label: 'Settings', routeName: 'admin.settings.edit', activePattern: 'admin.settings.*', icon: Settings },
 ];
 

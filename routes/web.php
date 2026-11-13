@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ClosureController;
@@ -149,6 +150,8 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
         Route::post('/notifications/history/{log}/resend', [NotificationLogController::class, 'resend'])->name('notifications.resend');
         Route::get('/notifications/{template}/edit', [NotificationTemplateController::class, 'edit'])->name('notifications.edit');
         Route::put('/notifications/{template}', [NotificationTemplateController::class, 'update'])->name('notifications.update');
+
+        Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log');
 
         Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
