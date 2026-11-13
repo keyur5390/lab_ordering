@@ -10,6 +10,7 @@ use App\Settings\Settings;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Notifications\SendQueuedNotifications;
@@ -43,6 +44,11 @@ class AppServiceProvider extends ServiceProvider
 
         // Inertia props get the resource itself, not {data: ...}. Paginated collections keep data/links/meta.
         JsonResource::withoutWrapping();
+
+        // Behind a proxy that ends HTTPS, trust its forwarded headers so URLs and cookies are secure (B-33).
+        if ($proxies = config('app.trusted_proxies')) {
+            TrustProxies::at($proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
+        }
 
         // Audit log (B-26): staff sign-ins.
         Event::listen(fn (Login $event) => app(AuditLogger::class)->auth('auth.login', $event->user, request()));

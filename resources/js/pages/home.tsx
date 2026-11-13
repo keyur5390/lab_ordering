@@ -1,10 +1,11 @@
+import { Seo } from '@/components/seo';
 import { PackageCard } from '@/components/catalogue/package-card';
 import { FaqList, type FaqItem } from '@/components/faq-list';
 import { Alert } from '@/components/ui/alert';
 import { TextLink } from '@/components/ui/text-link';
 import AppLayout from '@/layouts/app-layout';
 import type { LabPackage, SharedData } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { t } from '@/lib/i18n';
 
 interface HomeProps {
@@ -18,7 +19,7 @@ export default function Home({ hero, featured, faqs }: HomeProps) {
 
     return (
         <AppLayout>
-            <Head title={t('Home')} />
+            <Seo title={t('Home')} description={hero.text ?? hero.title} />
 
             <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-20 lg:px-8">
                 {status && (

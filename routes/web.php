@@ -44,6 +44,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportHistoryController;
+use App\Http\Controllers\SeoController;
 use App\Models\Page;
 use Illuminate\Support\Facades\Route;
 
@@ -67,6 +68,8 @@ Route::controller(CartController::class)->prefix('cart')->name('cart.')->group(f
 Route::get('/{slug}', [PageController::class, 'show'])->whereIn('slug', Page::SLUGS)->name('pages.show');
 Route::get('/faq', [HomeController::class, 'faq'])->name('faq');
 Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
 
 Route::middleware('auth')->group(function () {
     Route::get('/account/privacy', [AccountPrivacyController::class, 'show'])->name('account.privacy');

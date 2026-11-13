@@ -1,3 +1,4 @@
+import { Seo } from '@/components/seo';
 import { PackageCard } from '@/components/catalogue/package-card';
 import { TestCard } from '@/components/catalogue/test-card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -7,7 +8,7 @@ import { Select } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import type { Category, LabPackage, LabTest } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { FlaskConical, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { plural, t } from '@/lib/i18n';
@@ -71,7 +72,10 @@ export default function Catalogue({ packages, tests, categories, filters }: Cata
 
     return (
         <AppLayout>
-            <Head title={t('Tests & packages')} />
+            <Seo
+                title={t('Tests & packages')}
+                description={t('Book lab tests and health packages online, with prices, preparation and report times.')}
+            />
 
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <h1 className="text-2xl font-semibold md:text-3xl">{t('Tests & packages')}</h1>

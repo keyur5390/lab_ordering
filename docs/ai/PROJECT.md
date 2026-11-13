@@ -388,6 +388,13 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 - **Pages:** About us, Contact us, Privacy policy and Terms of service, written by admins in Markdown (raw HTML is removed). Admins edit these four; they don't add new ones [default]. Placeholders until the client supplies the text `TODO(client)`.
 - **Footer** on every customer page: About us, Contact, FAQs, Privacy policy, Terms of service.
 
+## 12b. Production (B-33)
+
+- **Hosting (client: no preference):** Docker. One image runs the web app (nginx + PHP-FPM), the queue worker and the scheduler, with MySQL 8 and Redis 7, via `docker-compose.yml`. HTTPS ends at a load balancer or reverse proxy in front (`TRUSTED_PROXIES`). Deploy, update, backup/restore and monitoring steps: `docs/DEPLOY.md`.
+- **Backups:** nightly database dump plus the private files (reports, prescriptions), kept [14] days, to be copied off the server `TODO(client)`: confirm retention and the off-site target.
+- **Security headers** on every page: nosniff, frame-options SAMEORIGIN, referrer and permissions policies, HSTS over HTTPS in production. **OPEN:** Content-Security-Policy once the production payment, map and analytics hosts are known.
+- **Search engines:** `/sitemap.xml` (home, catalogue, FAQ, the written pages, published tests and packages) and `/robots.txt` (keeps account, admin, cart and checkout out). Public pages set a description and Open Graph tags.
+
 ## 13. Out of scope for v1
 
 - **OPEN:** confirm with client.
@@ -397,6 +404,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-11-13 | Production (B-33): Docker image + compose (app, queue, scheduler, MySQL, Redis), deploy guide, backups, security headers, sitemap/robots/meta | Dev (client: no hosting preference) |
 | 2026-11-13 | Languages (B-32): English, Spanish, Polish on the customer side; staff English; admin content and messages untranslated | Client (scope defaults marked) |
 | 2026-11-13 | WhatsApp (B-31): Twilio Content Templates per customer event, admin enters SID + variables; customer opt-in | Client |
 | 2026-11-13 | Phone sign-in (B-30): SMS code sign-in for confirmed account numbers, alongside email | Client (limits default) |

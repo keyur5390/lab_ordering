@@ -1,17 +1,17 @@
+import { Seo } from '@/components/seo';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate } from '@/lib/format';
-import { Head } from '@inertiajs/react';
 import { t } from '@/lib/i18n';
 
 interface PageProps {
-    page: { slug: string; title: string; html: string; updated_on: string | null };
+    page: { slug: string; title: string; html: string; summary: string; updated_on: string | null };
     privacyContact: { name: string | null; email: string | null } | null;
 }
 
 export default function Page({ page, privacyContact }: PageProps) {
     return (
         <AppLayout>
-            <Head title={page.title} />
+            <Seo title={page.title} description={page.summary} />
 
             <article className="mx-auto max-w-3xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <h1 className="text-2xl font-semibold md:text-3xl">{page.title}</h1>

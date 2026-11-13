@@ -1,3 +1,4 @@
+import { Seo } from '@/components/seo';
 import { CategoryLinks } from '@/components/catalogue/category-links';
 import { DetailRow } from '@/components/catalogue/detail-row';
 import { AddToCartButton } from '@/components/catalogue/add-to-cart-button';
@@ -7,7 +8,6 @@ import { TextLink } from '@/components/ui/text-link';
 import AppLayout from '@/layouts/app-layout';
 import { formatTurnaround } from '@/lib/format';
 import type { LabPackage } from '@/types';
-import { Head } from '@inertiajs/react';
 import { Info } from 'lucide-react';
 import { t } from '@/lib/i18n';
 
@@ -17,7 +17,7 @@ export default function PackageDetail({ package: pkg }: { package: LabPackage })
 
     return (
         <AppLayout>
-            <Head title={pkg.name} />
+            <Seo title={pkg.name} description={pkg.description} />
 
             <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <TextLink href={route('catalogue.index')} className="text-sm">

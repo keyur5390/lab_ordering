@@ -1,3 +1,4 @@
+import { Seo } from '@/components/seo';
 import { CategoryLinks } from '@/components/catalogue/category-links';
 import { DetailRow } from '@/components/catalogue/detail-row';
 import { AddToCartButton } from '@/components/catalogue/add-to-cart-button';
@@ -6,13 +7,12 @@ import { TextLink } from '@/components/ui/text-link';
 import AppLayout from '@/layouts/app-layout';
 import { formatTurnaround } from '@/lib/format';
 import type { LabTest } from '@/types';
-import { Head } from '@inertiajs/react';
 import { t } from '@/lib/i18n';
 
 export default function TestDetail({ test }: { test: LabTest }) {
     return (
         <AppLayout>
-            <Head title={test.name} />
+            <Seo title={test.name} description={test.description} />
 
             <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <TextLink href={route('catalogue.index')} className="text-sm">
