@@ -1,12 +1,21 @@
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link } from '@inertiajs/react';
+import { Alert } from '@/components/ui/alert';
+import type { SharedData } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 export default function Home() {
+    const { status } = usePage<SharedData>().props;
+
     return (
         <AppLayout>
             <Head title="Home" />
 
             <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-20 lg:px-8">
+                {status && (
+                    <Alert tone="success" className="mb-6">
+                        {status}
+                    </Alert>
+                )}
                 {/* TODO(client): final homepage copy */}
                 <h1 className="text-2xl font-semibold md:text-3xl">Book lab tests online</h1>
                 <p className="mt-3 max-w-2xl text-base text-muted">

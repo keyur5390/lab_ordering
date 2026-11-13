@@ -32,12 +32,17 @@ class CreateNewUser implements CreatesNewUsers
                 Rule::unique(User::class),
             ],
             'password' => $this->passwordRules(),
-        ])->validate();
+            // Consent to the privacy policy and terms (B-27).
+            'terms' => ['accepted'],
+        ], ['terms.accepted' => 'Please agree to the terms and privacy policy to create an account.'])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
         ]);
+        $user->forceFill(['privacy_accepted_at' => now()])->save();
+
+        return $user;
     }
 }

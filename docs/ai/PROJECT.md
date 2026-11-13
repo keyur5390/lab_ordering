@@ -356,7 +356,12 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 
 ## 12. Compliance & data
 
-- **OPEN:** Applicable regulations (e.g. HIPAA, GDPR, India DPDP Act)? Data residency?
+- **Regulations (client, 2026-11-13):** India DPDP Act and GDPR. **OPEN:** data residency.
+- **Consent (B-27):** sign-up needs a ticked "I agree to the terms of service and the privacy policy" box, which covers health information; the time is stored. Accounts created earlier aren't asked again [default] `TODO(client)`.
+- **Privacy policy and terms** are pages written by admins (Admin → Pages, Markdown), linked from every page's footer and the sign-up form. Placeholders until the client supplies the text `TODO(client)`.
+- **Privacy contact** (DPDP grievance officer / GDPR contact): name and email in ⚙️ Settings, shown on the privacy policy and the customer's privacy page; the email falls back to the admin alert address.
+- **Download your data:** Your account → Privacy and data gives one JSON file with the account, patients, addresses, orders (items, payments, refunds, invoice number) and messages sent. Report PDFs are downloaded from each order.
+- **Delete your account (client: anonymise):** needs the password. Removes the name, email, patients, saved addresses, cart, sessions and prescriptions, and closes the account; the email can be used again. Orders, invoices, credit notes and reports stay for the lab's and tax records, with the customer's and patients' names, contact details and street address replaced (city, region and country stay; the patient's date of birth becomes 1 January of the same year, since reference ranges depend on age). Not while an order is in progress [default], and not for staff accounts, which admins disable instead [default] `TODO(client)`. `TODO(client)`: confirm invoices may drop the buyer's name under the tax rules that apply, and that report PDFs, which name the patient, are kept as medical records.
 - **Audit log (B-26):** every change an admin, lab staff member or collector makes (create, update, delete, status steps, uploads, refunds, settings), with who, when, what it was about, the submitted fields and the outcome (done / rejected / not allowed / error); plus staff sign-ins, sign-outs and failed sign-ins. Passwords and tokens are never stored; uploaded files are stored by name only. Customers' own actions and page views aren't logged. Admins only: **Admin → Audit log**, filtered by person, action, outcome and dates. Kept [forever] `TODO(client)`: confirm scope and retention.
 - **OPEN:** Languages/locales [English only] `TODO(client)`, timezone [single, from settings ⚙️].
 
@@ -369,6 +374,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-11-13 | Privacy (B-27): DPDP + GDPR; consent at sign-up; data download; deletion anonymises and keeps orders, invoices and reports; admin-edited privacy policy and terms; privacy contact | Client (defaults marked) |
 | 2026-11-13 | Audit log (B-26): staff changes and staff sign-ins, admin-only page with filters; kept forever pending client | Dev (defaults) |
 | 2026-11-13 | Refund tracking (B-25): refund webhooks settle processing refunds; credit notes only on success | Dev |
 | 2026-11-13 | Notification history (B-24): log of every order email/SMS, filters, per-order list, resend, dashboard alert | Dev |

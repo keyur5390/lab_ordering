@@ -44,6 +44,9 @@ class Settings
 
     public const ADMIN_NOTIFICATION_EMAIL = 'admin_notification_email';
 
+    /** Who customers contact about their data (DPDP grievance officer / GDPR contact): name and email. */
+    public const PRIVACY_CONTACT = 'privacy_contact';
+
     // TODO(client): confirm the default reminder time.
     public const DEFAULT_REMINDER_HOURS_BEFORE = 24;
 
@@ -250,6 +253,30 @@ class Settings
     public function setAdminNotificationEmail(?string $email): void
     {
         $this->set(self::ADMIN_NOTIFICATION_EMAIL, $email);
+    }
+
+    /**
+     * The privacy contact shown on the privacy policy and the account's privacy page (B-27). The email
+     * falls back to the admin alert address. TODO(client): name the grievance officer.
+     *
+     * @return array{name: string|null, email: string|null}
+     */
+    public function privacyContact(): array
+    {
+        $contact = (array) $this->get(self::PRIVACY_CONTACT, []);
+
+        return [
+            'name' => ($contact['name'] ?? null) ?: null,
+            'email' => ($contact['email'] ?? null) ?: $this->adminNotificationEmail(),
+        ];
+    }
+
+    /**
+     * @param  array{name: string|null, email: string|null}  $contact
+     */
+    public function setPrivacyContact(array $contact): void
+    {
+        $this->set(self::PRIVACY_CONTACT, $contact);
     }
 
     public function get(string $key, mixed $default = null): mixed

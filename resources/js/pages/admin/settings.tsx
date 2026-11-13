@@ -28,6 +28,7 @@ interface SettingsProps {
     smsDrivers: { value: string; label: string; configured: boolean; env_keys: string | null }[];
     reminderHoursBefore: number;
     adminNotificationEmail: string | null;
+    privacyContact: { name: string | null; email: string | null };
 }
 
 export default function Settings({
@@ -49,6 +50,7 @@ export default function Settings({
     smsDrivers,
     reminderHoursBefore,
     adminNotificationEmail,
+    privacyContact,
 }: SettingsProps) {
     const { data, setData, put, processing, errors, isDirty } = useForm({
         currency: currency ?? '',
@@ -68,6 +70,8 @@ export default function Settings({
         sms_driver: smsDriver ?? '',
         reminder_hours_before: reminderHoursBefore.toString(),
         admin_notification_email: adminNotificationEmail ?? '',
+        privacy_contact_name: privacyContact.name ?? '',
+        privacy_contact_email: privacyContact.email ?? '',
     });
     const unconfigured = gateways.filter((gateway) => !gateway.configured);
     const unconfiguredSms = smsDrivers.filter((driver) => !driver.configured);
@@ -365,6 +369,32 @@ export default function Settings({
                         onChange={(e) => setData('admin_notification_email', e.target.value)}
                         error={errors.admin_notification_email}
                     />
+                </section>
+
+                <section className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6">
+                    <h2 className="text-base font-semibold">Privacy contact</h2>
+                    <p className="text-sm text-muted">
+                        Who customers contact about their personal data (the grievance officer or data protection
+                        contact). Shown on the privacy policy and on each customer's privacy page.
+                    </p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <FormField
+                            id="privacy_contact_name"
+                            label="Name or role (optional)"
+                            value={data.privacy_contact_name}
+                            onChange={(e) => setData('privacy_contact_name', e.target.value)}
+                            error={errors.privacy_contact_name}
+                        />
+                        <FormField
+                            id="privacy_contact_email"
+                            label="Email"
+                            hint="Leave empty to use the admin alerts address."
+                            type="email"
+                            value={data.privacy_contact_email}
+                            onChange={(e) => setData('privacy_contact_email', e.target.value)}
+                            error={errors.privacy_contact_email}
+                        />
+                    </div>
                 </section>
 
                 <Button type="submit" processing={processing} disabled={!isDirty}>

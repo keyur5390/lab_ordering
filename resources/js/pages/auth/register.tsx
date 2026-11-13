@@ -1,5 +1,7 @@
 import { FormField } from '@/components/form-field';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { InputError } from '@/components/ui/input-error';
 import { TextLink } from '@/components/ui/text-link';
 import GuestLayout from '@/layouts/guest-layout';
 import { useForm } from '@inertiajs/react';
@@ -11,6 +13,7 @@ export default function Register() {
         email: '',
         password: '',
         password_confirmation: '',
+        terms: false,
     });
 
     const submit = (e: FormEvent) => {
@@ -64,6 +67,41 @@ export default function Register() {
                     onChange={(e) => setData('password_confirmation', e.target.value)}
                     error={errors.password_confirmation}
                 />
+
+                <div>
+                    <label className="flex min-h-11 items-start gap-3 py-2 text-sm">
+                        <Checkbox
+                            id="terms"
+                            className="mt-0.5"
+                            checked={data.terms}
+                            onChange={(e) => setData('terms', e.target.checked)}
+                            aria-invalid={errors.terms ? true : undefined}
+                            aria-describedby={errors.terms ? 'terms-error' : undefined}
+                        />
+                        <span>
+                            I agree to the{' '}
+                            <a
+                                href={route('pages.show', 'terms')}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="font-medium text-primary-700 underline-offset-4 hover:underline"
+                            >
+                                terms of service
+                            </a>{' '}
+                            and the{' '}
+                            <a
+                                href={route('pages.show', 'privacy')}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="font-medium text-primary-700 underline-offset-4 hover:underline"
+                            >
+                                privacy policy
+                            </a>
+                            , including the use of my and my family's health information to provide tests and reports.
+                        </span>
+                    </label>
+                    <InputError id="terms-error" message={errors.terms} />
+                </div>
 
                 <Button type="submit" className="w-full" processing={processing}>
                     Create account

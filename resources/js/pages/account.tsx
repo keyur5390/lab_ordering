@@ -5,7 +5,7 @@ import AppLayout from '@/layouts/app-layout';
 import type { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { ChevronRight, ClipboardList, FileText, MapPin, Users, type LucideIcon } from 'lucide-react';
+import { ChevronRight, ClipboardList, FileText, MapPin, ShieldCheck, Users, type LucideIcon } from 'lucide-react';
 
 interface AccountProps {
     /** Present when SMS is switched on for the site. */
@@ -83,6 +83,12 @@ export default function Account({ sms }: AccountProps) {
             label: 'Addresses',
             description: 'Where we collect samples from you',
             icon: MapPin,
+        },
+        {
+            href: route('account.privacy'),
+            label: 'Privacy and data',
+            description: 'Download your data or delete your account',
+            icon: ShieldCheck,
         },
     ];
 

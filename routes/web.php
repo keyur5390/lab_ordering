@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AccountPrivacyController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\BranchController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Admin\NotificationTemplateController;
 use App\Http\Controllers\Admin\OrderCollectorController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\OrderPaymentController;
+use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\RefundController;
 use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\ServiceAreaController;
@@ -28,6 +30,7 @@ use App\Http\Controllers\Collector\VisitController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Lab\OrderController as LabOrderController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentWebhookController;
@@ -52,6 +55,14 @@ Route::controller(CartController::class)->prefix('cart')->name('cart.')->group(f
 
 // Name, email and password (B-23). Signed in but not necessarily verified, so someone who mistyped a
 // new email can still correct it. The forms post to Fortify's routes.
+Route::get('/{slug}', [PageController::class, 'show'])->whereIn('slug', ['privacy', 'terms'])->name('pages.show');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/account/privacy', [AccountPrivacyController::class, 'show'])->name('account.privacy');
+    Route::get('/account/privacy/export', [AccountPrivacyController::class, 'export'])->name('account.privacy.export');
+    Route::delete('/account', [AccountPrivacyController::class, 'destroy'])->name('account.destroy');
+});
+
 Route::inertia('/account/settings', 'account-settings')->middleware('auth')->name('account.settings');
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -150,6 +161,10 @@ Route::middleware(['auth', 'verified', 'can:access-admin'])
         Route::post('/notifications/history/{log}/resend', [NotificationLogController::class, 'resend'])->name('notifications.resend');
         Route::get('/notifications/{template}/edit', [NotificationTemplateController::class, 'edit'])->name('notifications.edit');
         Route::put('/notifications/{template}', [NotificationTemplateController::class, 'update'])->name('notifications.update');
+
+        Route::get('/pages', [AdminPageController::class, 'index'])->name('pages.index');
+        Route::get('/pages/{page}/edit', [AdminPageController::class, 'edit'])->name('pages.edit');
+        Route::put('/pages/{page}', [AdminPageController::class, 'update'])->name('pages.update');
 
         Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log');
 

@@ -49,6 +49,8 @@ class SettingsController extends Controller
             ], SmsDriver::cases()),
             'reminderHoursBefore' => $settings->reminderHoursBefore(),
             'adminNotificationEmail' => $settings->adminNotificationEmail(),
+            // Stored values only: the email's fallback to the alert address isn't saved.
+            'privacyContact' => (array) $settings->get(Settings::PRIVACY_CONTACT, []) + ['name' => null, 'email' => null],
         ]);
     }
 
@@ -82,6 +84,12 @@ class SettingsController extends Controller
         $settings->setSmsDriver(SmsDriver::tryFrom((string) $request->validated('sms_driver')));
         $settings->setReminderHoursBefore($request->filled('reminder_hours_before') ? (int) $request->validated('reminder_hours_before') : null);
         $settings->setAdminNotificationEmail($request->filled('admin_notification_email') ? strtolower($request->validated('admin_notification_email')) : null);
+        if ($request->hasAny(['privacy_contact_name', 'privacy_contact_email'])) {
+            $settings->setPrivacyContact([
+                'name' => $request->validated('privacy_contact_name'),
+                'email' => $request->filled('privacy_contact_email') ? strtolower($request->validated('privacy_contact_email')) : null,
+            ]);
+        }
         $settings->setPaymentHoldMinutes($request->filled('payment_hold_minutes') ? (int) $request->validated('payment_hold_minutes') : null);
 
         return to_route('admin.settings.edit')->with('status', 'Settings saved.');

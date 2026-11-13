@@ -65,6 +65,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'role' => UserRole::class,
             'sms_opt_out' => 'boolean',
             'disabled_at' => 'datetime',
+            'privacy_accepted_at' => 'datetime',
+            'anonymised_at' => 'datetime',
         ];
     }
 

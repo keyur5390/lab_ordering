@@ -132,6 +132,23 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             </header>
 
             <main className="flex-1">{children}</main>
+
+            <footer className="border-t border-border bg-surface">
+                <nav
+                    aria-label="Footer"
+                    className="mx-auto flex max-w-7xl flex-wrap gap-x-6 gap-y-2 px-4 py-6 text-sm text-muted sm:px-6 lg:px-8"
+                >
+                    <span>
+                        © {new Date().getFullYear()} {name}
+                    </span>
+                    <Link href={route('pages.show', 'privacy')} className="hover:text-text">
+                        Privacy policy
+                    </Link>
+                    <Link href={route('pages.show', 'terms')} className="hover:text-text">
+                        Terms of service
+                    </Link>
+                </nav>
+            </footer>
         </div>
     );
 }
