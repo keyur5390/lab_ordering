@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Patient;
 use App\Models\Payment;
+use App\Models\PhoneCode;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -63,6 +64,8 @@ class PrivacyService
                 'name' => $user->name,
                 'email' => $user->email,
                 'email_verified_at' => $user->email_verified_at?->toIso8601String(),
+                'phone' => $user->phone,
+                'phone_verified_at' => $user->phone_verified_at?->toIso8601String(),
                 'created_at' => $user->created_at?->toIso8601String(),
                 'privacy_accepted_at' => $user->privacy_accepted_at?->toIso8601String(),
                 'text_messages' => ! $user->sms_opt_out,
@@ -150,6 +153,7 @@ class PrivacyService
             Patient::query()->where('user_id', $user->id)->delete();
             Address::query()->where('user_id', $user->id)->delete();
             Cart::query()->where('user_id', $user->id)->delete();
+            PhoneCode::query()->where('user_id', $user->id)->delete();
             DB::table('sessions')->where('user_id', $user->id)->delete();
             DB::table('password_reset_tokens')->where('email', $user->email)->delete();
 
@@ -157,6 +161,8 @@ class PrivacyService
                 'name' => 'Deleted customer',
                 'email' => "deleted-{$user->id}@deleted.invalid",
                 'email_verified_at' => null,
+                'phone' => null,
+                'phone_verified_at' => null,
                 'password' => Str::random(64),
                 'remember_token' => null,
                 'sms_opt_out' => true,

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\PatientRelationship;
 use App\Enums\UserRole;
 use App\Observers\UserObserver;
+use App\Support\Phone;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -67,19 +68,23 @@ class User extends Authenticatable implements MustVerifyEmail
             'disabled_at' => 'datetime',
             'privacy_accepted_at' => 'datetime',
             'anonymised_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
         ];
     }
 
     /**
-     * Mobile number for SMS: the phone on the customer's "Self" profile, when it is in international
-     * format (+ and country code). TODO(client): confirm using the Self profile's phone.
+     * Mobile number for SMS: the confirmed number on the account (B-30), else the phone on the
+     * customer's "Self" profile when it is in international format (+ and country code).
+     * TODO(client): confirm using the Self profile's phone.
      */
     public function routeNotificationForSms(): ?string
     {
-        $phone = $this->patients()->where('relationship', PatientRelationship::Self)->value('phone');
-        $phone = preg_replace('/[\s\-]/', '', (string) $phone);
+        // The confirmed account number first (B-30).
+        if ($this->phone && $this->phone_verified_at) {
+            return $this->phone;
+        }
 
-        return preg_match('/^\+[1-9][0-9]{6,14}$/', $phone) ? $phone : null;
+        return Phone::normalize($this->patients()->where('relationship', PatientRelationship::Self)->value('phone'));
     }
 
     /**

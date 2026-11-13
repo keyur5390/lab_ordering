@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AccountPhoneController;
 use App\Http\Controllers\AccountPrivacyController;
+use App\Http\Controllers\AccountSettingsController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\BranchController;
@@ -25,6 +27,7 @@ use App\Http\Controllers\Admin\ScheduleController;
 use App\Http\Controllers\Admin\ServiceAreaController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Auth\PhoneLoginController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CatalogueController;
 use App\Http\Controllers\CheckoutController;
@@ -68,7 +71,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/account', [AccountPrivacyController::class, 'destroy'])->name('account.destroy');
 });
 
-Route::inertia('/account/settings', 'account-settings')->middleware('auth')->name('account.settings');
+Route::middleware('auth')->group(function () {
+    Route::get('/account/settings', [AccountSettingsController::class, 'show'])->name('account.settings');
+    Route::post('/account/phone', [AccountPhoneController::class, 'send'])->name('account.phone.send');
+    Route::post('/account/phone/verify', [AccountPhoneController::class, 'verify'])->middleware('throttle:10,1')->name('account.phone.verify');
+    Route::delete('/account/phone', [AccountPhoneController::class, 'destroy'])->name('account.phone.destroy');
+});
+
+// Phone sign-in (B-30), next to Fortify's email sign-in.
+Route::middleware('guest')->group(function () {
+    Route::post('/login/phone', [PhoneLoginController::class, 'send'])->name('login.phone.send');
+    Route::post('/login/phone/verify', [PhoneLoginController::class, 'verify'])->middleware('throttle:10,1')->name('login.phone.verify');
+    Route::post('/login/phone/reset', [PhoneLoginController::class, 'reset'])->name('login.phone.reset');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/account', [AccountController::class, 'show'])->name('account');

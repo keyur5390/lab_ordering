@@ -117,7 +117,119 @@ function PasswordForm() {
     );
 }
 
-export default function AccountSettings() {
+interface PhoneSettings {
+    /** Whether texts can be sent (an SMS driver is on). */
+    available: boolean;
+    /** The confirmed number. */
+    number: string | null;
+    /** A number waiting for its code. */
+    pending: string | null;
+}
+
+function PhoneForm({ phone }: { phone: PhoneSettings }) {
+    const { status } = usePage<SharedData>().props;
+    const send = useForm({ phone: '' });
+    const verify = useForm({ code: '' });
+    const remove = useForm({});
+
+    const messages: Record<string, string> = {
+        'phone-verified': 'Your mobile number is confirmed. You can now sign in with it.',
+        'phone-removed': 'Your mobile number is removed.',
+    };
+
+    if (phone.pending) {
+        return (
+            <form
+                noValidate
+                className="space-y-4"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    verify.post(route('account.phone.verify'), {
+                        preserveScroll: true,
+                        onFinish: () => verify.reset(),
+                    });
+                }}
+            >
+                <p className="text-sm">
+                    We've texted a 6-digit code to <span className="font-medium">{phone.pending}</span>.
+                </p>
+                <FormField
+                    id="phone_code"
+                    label="Code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={verify.data.code}
+                    onChange={(e) => verify.setData('code', e.target.value.replace(/\D/g, ''))}
+                    error={verify.errors.code}
+                />
+                <div className="flex flex-wrap gap-2">
+                    <Button type="submit" processing={verify.processing}>
+                        Confirm number
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => remove.delete(route('account.phone.destroy'), { preserveScroll: true })}
+                    >
+                        Use a different number
+                    </Button>
+                </div>
+            </form>
+        );
+    }
+
+    return (
+        <div className="space-y-4">
+            {status && messages[status] && <Alert tone="success">{messages[status]}</Alert>}
+            {phone.number && (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm">
+                        <span className="font-medium">{phone.number}</span>{' '}
+                        <span className="text-muted">· confirmed, used to sign in and for order texts</span>
+                    </p>
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        processing={remove.processing}
+                        onClick={() => remove.delete(route('account.phone.destroy'), { preserveScroll: true })}
+                    >
+                        Remove
+                    </Button>
+                </div>
+            )}
+            {phone.available ? (
+                <form
+                    noValidate
+                    className="space-y-4"
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        send.post(route('account.phone.send'), { preserveScroll: true });
+                    }}
+                >
+                    <FormField
+                        id="phone"
+                        label={phone.number ? 'Change to' : 'Mobile number'}
+                        type="tel"
+                        autoComplete="tel"
+                        placeholder="+91 98000 00001"
+                        hint="With the country code. We'll text you a code to confirm it."
+                        value={send.data.phone}
+                        onChange={(e) => send.setData('phone', e.target.value)}
+                        error={send.errors.phone}
+                    />
+                    <Button type="submit" processing={send.processing} disabled={send.data.phone.trim() === ''}>
+                        Send code
+                    </Button>
+                </form>
+            ) : (
+                !phone.number && <p className="text-sm text-muted">Adding a mobile number isn't available right now.</p>
+            )}
+        </div>
+    );
+}
+
+export default function AccountSettings({ phone }: { phone: PhoneSettings }) {
     return (
         <AppLayout>
             <Head title="Account settings" />
@@ -136,6 +248,10 @@ export default function AccountSettings() {
 
                 <Section id="password-heading" title="Password">
                     <PasswordForm />
+                </Section>
+
+                <Section id="phone-heading" title="Mobile number">
+                    <PhoneForm phone={phone} />
                 </Section>
             </div>
         </AppLayout>

@@ -6,7 +6,10 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Http\Controllers\Auth\PhoneLoginController;
 use App\Models\User;
+use App\Services\PhoneCodeService;
+use App\Support\Phone;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -60,8 +63,11 @@ class FortifyServiceProvider extends ServiceProvider
      */
     private function configureViews(): void
     {
-        Fortify::loginView(fn () => Inertia::render('auth/login', [
+        Fortify::loginView(fn (Request $request) => Inertia::render('auth/login', [
             'canResetPassword' => Features::enabled(Features::resetPasswords()),
+            // Phone sign-in (B-30): offered while SMS is on; `phonePending` is the number a code went to.
+            'phoneLogin' => app(PhoneCodeService::class)->available(),
+            'phonePending' => ($phone = $request->session()->get(PhoneLoginController::SESSION_KEY)) ? Phone::mask($phone) : null,
         ]));
 
         Fortify::registerView(fn () => Inertia::render('auth/register'));

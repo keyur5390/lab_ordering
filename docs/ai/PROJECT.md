@@ -367,6 +367,13 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 - **Audit log (B-26):** every change an admin, lab staff member or collector makes (create, update, delete, status steps, uploads, refunds, settings), with who, when, what it was about, the submitted fields and the outcome (done / rejected / not allowed / error); plus staff sign-ins, sign-outs and failed sign-ins. Passwords and tokens are never stored; uploaded files are stored by name only. Customers' own actions and page views aren't logged. Admins only: **Admin → Audit log**, filtered by person, action, outcome and dates. Kept [forever] `TODO(client)`: confirm scope and retention.
 - **OPEN:** Languages/locales [English only] `TODO(client)`, timezone [single, from settings ⚙️].
 
+## 3a. Phone sign-in (B-30, client 2026-11-13)
+
+- Alongside email and password, people can sign in with a **mobile number and a 6-digit code by SMS**, once they've added and confirmed the number in Account settings → Mobile number (also by a texted code). Offered only while an SMS driver is on.
+- A number can be on one account only. Removing it stops phone sign-in. A confirmed account number also gets order texts (before the "Self" profile's phone).
+- Codes expire after [10] minutes and stop working after [5] wrong tries; at most [3] codes per number and [10] per IP address per [10] minutes `TODO(client)`. The sign-in form never says whether a number has an account.
+- Staff can sign in by phone too. Deleting an account removes the number.
+
 ## 12a. Site content (B-28)
 
 - **Home page:** a heading, an optional line of text and a button to the catalogue, then featured packages in the order an admin picks (unpublished ones are hidden), then the FAQs. Until edited it shows the launch copy. Admin → Pages → Home page.
@@ -383,6 +390,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-11-13 | Phone sign-in (B-30): SMS code sign-in for confirmed account numbers, alongside email | Client (limits default) |
 | 2026-11-13 | Housekeeping (B-29): guest carts deleted after 7 idle days; no reschedule limit; invoice attached to the payment email (online and at collection) | Client |
 | 2026-11-13 | Site content (B-28): admin-edited home hero, featured packages, FAQs, About/Contact pages, footer | Client |
 | 2026-11-13 | Privacy (B-27): DPDP + GDPR; consent at sign-up; data download; deletion anonymises and keeps orders, invoices and reports; admin-edited privacy policy and terms; privacy contact | Client (defaults marked) |
