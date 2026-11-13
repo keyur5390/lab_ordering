@@ -26,7 +26,7 @@ class UpdateUserPassword implements UpdatesUserPasswords
             'current_password' => ['required', 'string', 'current_password:web'],
             'password' => $this->passwordRules(),
         ], [
-            'current_password.current_password' => 'That is not your current password.',
+            'current_password.current_password' => __('That is not your current password.'),
         ])->validateWithBag('updatePassword');
 
         $user->forceFill([

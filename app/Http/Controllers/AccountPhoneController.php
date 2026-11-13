@@ -23,9 +23,9 @@ class AccountPhoneController extends Controller
     public function send(Request $request): RedirectResponse
     {
         $phone = Phone::normalize($request->validate(['phone' => ['required', 'string', 'max:30']])['phone'])
-            ?? throw ValidationException::withMessages(['phone' => 'Enter the number with the country code, e.g. +91 98000 00001.']);
+            ?? throw ValidationException::withMessages(['phone' => __('Enter the number with the country code, e.g. +91 98000 00001.')]);
         if (User::where('phone', $phone)->whereKeyNot($request->user()->id)->exists()) {
-            throw ValidationException::withMessages(['phone' => 'This number is already on another account.']);
+            throw ValidationException::withMessages(['phone' => __('This number is already on another account.')]);
         }
 
         $this->codes->send($phone, PhoneCodeService::VERIFY, $request->user(), (string) $request->ip());
@@ -44,10 +44,10 @@ class AccountPhoneController extends Controller
 
         $user = $this->codes->check($phone, PhoneCodeService::VERIFY, $code);
         if (! $user->is($request->user())) {
-            throw ValidationException::withMessages(['code' => 'That code is wrong or has expired. Please ask for a new one.']);
+            throw ValidationException::withMessages(['code' => __('That code is wrong or has expired. Please ask for a new one.')]);
         }
         if (User::where('phone', $phone)->whereKeyNot($user->id)->exists()) {
-            throw ValidationException::withMessages(['code' => 'This number is already on another account.']);
+            throw ValidationException::withMessages(['code' => __('This number is already on another account.')]);
         }
 
         $user->forceFill(['phone' => $phone, 'phone_verified_at' => now()])->save();

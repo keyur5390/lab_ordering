@@ -2,6 +2,7 @@ import { formatMoney } from '@/lib/money';
 import { cn } from '@/lib/utils';
 import type { SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
+import { t } from '@/lib/i18n';
 
 interface PriceProps {
     /** What the customer pays, in minor units. */
@@ -30,7 +31,7 @@ export function Price({ amount, originalAmount, className, currencyCode }: Price
             <span className="font-semibold tabular-nums">{formatMoney(amount, currency)}</span>
             {discounted && (
                 <s className="text-sm text-muted tabular-nums">
-                    <span className="sr-only">Was </span>
+                    <span className="sr-only">{t('Was')} </span>
                     {formatMoney(originalAmount, currency)}
                 </s>
             )}

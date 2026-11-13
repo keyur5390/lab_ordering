@@ -55,18 +55,10 @@ class SavePatientRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'relationship.enum' => 'Choose how this person is related to you.',
-            'date_of_birth.before_or_equal' => 'The date of birth cannot be in the future.',
-            'phone.regex' => 'Enter a phone number using digits, spaces, dashes and an optional leading +.',
+            'relationship.enum' => __('Choose how this person is related to you.'),
+            'date_of_birth.before_or_equal' => __('The date of birth cannot be in the future.'),
+            'phone.regex' => __('Enter a phone number using digits, spaces, dashes and an optional leading +.'),
         ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    public function attributes(): array
-    {
-        return ['date_of_birth' => 'date of birth'];
     }
 
     private function editingSelf(): bool

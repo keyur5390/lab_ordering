@@ -37,13 +37,13 @@ class PrivacyService
     public function cannotDeleteReason(User $user): ?string
     {
         if ($user->anonymised_at) {
-            return 'This account has already been deleted.';
+            return __('This account has already been deleted.');
         }
         if (AuditLogger::isStaff($user)) {
-            return 'Staff accounts are closed by an admin. Please ask an admin to disable yours.';
+            return __('Staff accounts are closed by an admin. Please ask an admin to disable yours.');
         }
         if ($user->orders()->whereNotIn('status', self::FINISHED)->exists()) {
-            return 'You have an order in progress. You can delete your account once it is completed or cancelled.';
+            return __('You have an order in progress. You can delete your account once it is completed or cancelled.');
         }
 
         return null;
@@ -70,6 +70,7 @@ class PrivacyService
                 'privacy_accepted_at' => $user->privacy_accepted_at?->toIso8601String(),
                 'text_messages' => ! $user->sms_opt_out,
                 'whatsapp_messages' => $user->whatsapp_opt_in,
+                'language' => $user->locale,
             ],
             'patients' => $user->patients->map(fn (Patient $patient) => $patient->only([
                 'name', 'relationship', 'date_of_birth', 'sex', 'phone', 'email',
@@ -168,6 +169,7 @@ class PrivacyService
                 'remember_token' => null,
                 'sms_opt_out' => true,
                 'whatsapp_opt_in' => false,
+                'locale' => null,
                 'disabled_at' => now(),
                 'anonymised_at' => now(),
             ])->save();

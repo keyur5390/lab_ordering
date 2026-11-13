@@ -5,6 +5,7 @@ import { formatTurnaround } from '@/lib/format';
 import type { LabTest } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Clock, Droplet, Info } from 'lucide-react';
+import { t } from '@/lib/i18n';
 
 /** Test card (DESIGN.md §6). */
 export function TestCard({ test }: { test: LabTest }) {
@@ -24,13 +25,13 @@ export function TestCard({ test }: { test: LabTest }) {
                 </Badge>
                 <Badge>
                     <Clock className="size-3.5" aria-hidden="true" />
-                    Reports in {formatTurnaround(test.turnaround_hours)}
+                    {t('Reports in :time', { time: formatTurnaround(test.turnaround_hours) })}
                 </Badge>
-                {test.requires_prescription && <Badge tone="warning">Prescription needed</Badge>}
+                {test.requires_prescription && <Badge tone="warning">{t('Prescription needed')}</Badge>}
                 {test.preparation && (
                     <Badge tone="warning">
                         <Info className="size-3.5" aria-hidden="true" />
-                        Preparation needed
+                        {t('Preparation needed')}
                     </Badge>
                 )}
             </div>

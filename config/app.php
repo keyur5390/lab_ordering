@@ -82,6 +82,16 @@ return [
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
+    /*
+    | Languages customers can choose (B-32). Staff screens are English only. Each needs lang/{code}.json
+    | and lang/{code}/*.php. TODO(client): translations are drafts and need a native speaker's review.
+    */
+    'locales' => [
+        'en' => 'English',
+        'es' => 'Español',
+        'pl' => 'Polski',
+    ],
+
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
     /*

@@ -1,4 +1,6 @@
 import { Button } from '@/components/ui/button';
+import { LanguageSwitcher } from '@/components/language-switcher';
+import { plural, t } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import type { SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
@@ -18,44 +20,44 @@ function NavLinks({ stacked }: { stacked?: boolean }) {
     return (
         <>
             <Link href={route('catalogue.index')} className={linkClass}>
-                Tests
+                {t('Tests')}
             </Link>
             {auth.user ? (
                 <>
                     {auth.user.can_access_collector && (
                         <Link href={route('collector.index')} className={linkClass}>
-                            My visits
+                            {t('My visits')}
                         </Link>
                     )}
                     {auth.user.can_access_admin ? (
                         <Link href={route('admin.dashboard')} className={linkClass}>
-                            Admin
+                            {t('Admin')}
                         </Link>
                     ) : (
                         auth.user.can_access_lab && (
                             <Link href={route('admin.lab.index')} className={linkClass}>
-                                Lab
+                                {t('Lab')}
                             </Link>
                         )
                     )}
                     <Link href={route('account')} className={linkClass}>
-                        Account
+                        {t('Account')}
                     </Link>
                     <Button
                         variant="ghost"
                         className={cn('px-3', stacked && 'w-full justify-start')}
                         onClick={() => router.post(route('logout'))}
                     >
-                        Log out
+                        {t('Log out')}
                     </Button>
                 </>
             ) : (
                 <>
                     <Link href={route('login')} className={linkClass}>
-                        Log in
+                        {t('Log in')}
                     </Link>
                     <Link href={route('register')} className={cn(registerLinkClass, stacked && 'mt-2 w-full')}>
-                        Register
+                        {t('Register')}
                     </Link>
                 </>
             )}
@@ -70,7 +72,7 @@ function CartLink() {
         <Link
             href={route('cart.show')}
             className={cn(headerLinkClass, 'relative')}
-            aria-label={`Cart, ${cart.count} ${cart.count === 1 ? 'item' : 'items'}`}
+            aria-label={plural(cart.count, 'Cart, :count item', 'Cart, :count items')}
         >
             <ShoppingCart className="size-5" strokeWidth={1.75} aria-hidden="true" />
             {cart.count > 0 && (
@@ -102,7 +104,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                         {name}
                     </Link>
 
-                    <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
+                    <nav className="hidden items-center gap-1 md:flex" aria-label={t('Main')}>
                         <NavLinks />
                         <CartLink />
                     </nav>
@@ -112,7 +114,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                         <Button
                             variant="ghost"
                             className="w-11 px-0"
-                            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+                            aria-label={menuOpen ? t('Close menu') : t('Open menu')}
                             aria-expanded={menuOpen}
                             aria-controls="main-mobile-nav"
                             onClick={() => setMenuOpen((open) => !open)}
@@ -123,7 +125,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                 </div>
 
                 {menuOpen && (
-                    <nav id="main-mobile-nav" aria-label="Main" className="border-t border-border px-4 py-3 md:hidden">
+                    <nav
+                        id="main-mobile-nav"
+                        aria-label={t('Main')}
+                        className="border-t border-border px-4 py-3 md:hidden"
+                    >
                         <div className="flex flex-col">
                             <NavLinks stacked />
                         </div>
@@ -135,27 +141,28 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
             <footer className="border-t border-border bg-surface">
                 <nav
-                    aria-label="Footer"
+                    aria-label={t('Footer')}
                     className="mx-auto flex max-w-7xl flex-wrap gap-x-6 gap-y-2 px-4 py-6 text-sm text-muted sm:px-6 lg:px-8"
                 >
                     <span>
                         © {new Date().getFullYear()} {name}
                     </span>
                     <Link href={route('pages.show', 'about')} className="hover:text-text">
-                        About us
+                        {t('About us')}
                     </Link>
                     <Link href={route('pages.show', 'contact')} className="hover:text-text">
-                        Contact
+                        {t('Contact')}
                     </Link>
                     <Link href={route('faq')} className="hover:text-text">
-                        FAQs
+                        {t('FAQs')}
                     </Link>
                     <Link href={route('pages.show', 'privacy')} className="hover:text-text">
-                        Privacy policy
+                        {t('Privacy policy')}
                     </Link>
                     <Link href={route('pages.show', 'terms')} className="hover:text-text">
-                        Terms of service
+                        {t('Terms of service')}
                     </Link>
+                    <LanguageSwitcher className="sm:ml-auto" />
                 </nav>
             </footer>
         </div>

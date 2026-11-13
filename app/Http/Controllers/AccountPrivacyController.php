@@ -48,6 +48,6 @@ class AccountPrivacyController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return to_route('home')->with('status', 'Your account has been deleted.');
+        return to_route('home')->with('status', __('Your account has been deleted.'));
     }
 }

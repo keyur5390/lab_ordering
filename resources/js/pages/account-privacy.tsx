@@ -8,6 +8,7 @@ import { formatDateTime } from '@/lib/format';
 import { Head, useForm } from '@inertiajs/react';
 import { Download } from 'lucide-react';
 import { useState, type FormEvent, type ReactNode } from 'react';
+import { t, tx } from '@/lib/i18n';
 
 interface AccountPrivacyProps {
     privacyAcceptedAt: string | null;
@@ -53,7 +54,7 @@ function DeleteAccount({ cannotDelete }: { cannotDelete: string | null }) {
         <form onSubmit={submit} noValidate className="space-y-3">
             <FormField
                 id="password"
-                label="Your password"
+                label={t('Your password')}
                 type="password"
                 autoComplete="current-password"
                 value={data.password}
@@ -61,17 +62,17 @@ function DeleteAccount({ cannotDelete }: { cannotDelete: string | null }) {
                 error={errors.password}
             />
             <Button type="submit" variant="danger" disabled={data.password === ''}>
-                Delete my account
+                {t('Delete my account')}
             </Button>
             <ConfirmDialog
                 open={confirming}
-                title="Delete your account?"
-                confirmLabel="Delete my account"
+                title={t('Delete your account?')}
+                confirmLabel={t('Delete my account')}
                 processing={processing}
                 onConfirm={confirm}
                 onClose={() => setConfirming(false)}
             >
-                This can't be undone. You'll be signed out and won't be able to see your orders or reports again.
+                {t("This can't be undone. You'll be signed out and won't be able to see your orders or reports again.")}
             </ConfirmDialog>
         </form>
     );
@@ -85,44 +86,48 @@ export default function AccountPrivacy({
 }: AccountPrivacyProps) {
     return (
         <AppLayout>
-            <Head title="Privacy and data" />
+            <Head title={t('Privacy and data')} />
 
             <section className="mx-auto max-w-3xl space-y-4 px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <TextLink href={route('account')} className="text-sm">
-                    ← Your account
+                    {t('← Your account')}
                 </TextLink>
-                <h1 className="text-2xl font-semibold md:text-3xl">Privacy and data</h1>
+                <h1 className="text-2xl font-semibold md:text-3xl">{t('Privacy and data')}</h1>
                 <p className="text-sm text-muted">
-                    How we use your data is set out in our{' '}
-                    <TextLink href={route('pages.show', 'privacy')}>privacy policy</TextLink>.
-                    {privacyAcceptedAt && <> You agreed to it on {formatDateTime(privacyAcceptedAt, timezone)}.</>}
+                    {tx('How we use your data is set out in our :policy.', {
+                        policy: <TextLink href={route('pages.show', 'privacy')}>{t('privacy policy')}</TextLink>,
+                    })}
+                    {privacyAcceptedAt && (
+                        <> {t('You agreed to it on :date.', { date: formatDateTime(privacyAcceptedAt, timezone) })}</>
+                    )}
                 </p>
 
-                <Section id="export-heading" title="Download your data">
+                <Section id="export-heading" title={t('Download your data')}>
                     <p className="text-muted">
-                        One file with your account, patients, addresses, orders, payments and the messages we sent you.
-                        Reports are downloaded from each order.
+                        {t(
+                            'One file with your account, patients, addresses, orders, payments and the messages we sent you. Reports are downloaded from each order.',
+                        )}
                     </p>
                     <a
                         href={route('account.privacy.export')}
                         className="inline-flex min-h-11 items-center gap-2 rounded-control border border-border px-4 font-medium hover:bg-canvas"
                     >
                         <Download className="size-4" aria-hidden="true" />
-                        Download my data
+                        {t('Download my data')}
                     </a>
                 </Section>
 
-                <Section id="delete-heading" title="Delete your account">
+                <Section id="delete-heading" title={t('Delete your account')}>
                     <p className="text-muted">
-                        We remove your name, email, patients and addresses, and you're signed out for good. Orders,
-                        invoices and lab results are kept for our medical and tax records, without your name or contact
-                        details.
+                        {t(
+                            "We remove your name, email, patients and addresses, and you're signed out for good. Orders, invoices and lab results are kept for our medical and tax records, without your name or contact details.",
+                        )}
                     </p>
                     <DeleteAccount cannotDelete={cannotDelete} />
                 </Section>
 
                 {privacyContact.email && (
-                    <Section id="contact-heading" title="Questions or complaints">
+                    <Section id="contact-heading" title={t('Questions or complaints')}>
                         <p>
                             {privacyContact.name && <>{privacyContact.name} · </>}
                             <a

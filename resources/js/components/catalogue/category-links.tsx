@@ -1,5 +1,6 @@
 import type { Category } from '@/types';
 import { Link } from '@inertiajs/react';
+import { t } from '@/lib/i18n';
 
 /** The categories an item is in, each linking to the filtered catalogue (B-19). */
 export function CategoryLinks({ categories }: { categories?: Category[] }) {
@@ -8,7 +9,7 @@ export function CategoryLinks({ categories }: { categories?: Category[] }) {
     }
 
     return (
-        <ul aria-label="Categories" className="flex flex-wrap gap-2">
+        <ul aria-label={t('Categories')} className="flex flex-wrap gap-2">
             {categories.map((category) => (
                 <li key={category.slug}>
                     <Link

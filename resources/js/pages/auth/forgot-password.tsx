@@ -4,6 +4,7 @@ import { TextLink } from '@/components/ui/text-link';
 import GuestLayout from '@/layouts/guest-layout';
 import { useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
+import { t } from '@/lib/i18n';
 
 export default function ForgotPassword() {
     const { data, setData, post, processing, errors } = useForm({ email: '' });
@@ -14,11 +15,14 @@ export default function ForgotPassword() {
     };
 
     return (
-        <GuestLayout title="Forgot your password?" description="Enter your email and we'll send you a reset link.">
+        <GuestLayout
+            title={t('Forgot your password?')}
+            description={t("Enter your email and we'll send you a reset link.")}
+        >
             <form onSubmit={submit} className="space-y-4" noValidate>
                 <FormField
                     id="email"
-                    label="Email"
+                    label={t('Email')}
                     type="email"
                     autoComplete="email"
                     autoFocus
@@ -29,12 +33,12 @@ export default function ForgotPassword() {
                 />
 
                 <Button type="submit" className="w-full" processing={processing}>
-                    Email reset link
+                    {t('Email reset link')}
                 </Button>
             </form>
 
             <p className="mt-6 text-center text-sm text-muted">
-                Remembered it? <TextLink href={route('login')}>Back to log in</TextLink>
+                {t('Remembered it?')} <TextLink href={route('login')}>{t('Back to log in')}</TextLink>
             </p>
         </GuestLayout>
     );

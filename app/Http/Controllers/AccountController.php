@@ -41,6 +41,6 @@ class AccountController extends Controller
             'whatsapp_opt_in' => $validated['whatsapp'] ?? null,
         ], fn ($value) => $value !== null))->save();
 
-        return to_route('account')->with('status', 'Notification preferences saved.');
+        return to_route('account')->with('status', __('Notification preferences saved.'));
     }
 }

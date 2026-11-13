@@ -54,8 +54,8 @@ class SaveAddressRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'postcode.regex' => 'Use letters, numbers, spaces and dashes only.',
-            'country.in' => 'Choose a country from the list.',
+            'postcode.regex' => __('Use letters, numbers, spaces and dashes only.'),
+            'country.in' => __('Choose a country from the list.'),
         ];
     }
 
@@ -64,6 +64,6 @@ class SaveAddressRequest extends FormRequest
      */
     public function attributes(): array
     {
-        return ['line1' => 'address line 1', 'line2' => 'address line 2'];
+        return ['line1' => __('address line 1'), 'line2' => __('address line 2')];
     }
 }

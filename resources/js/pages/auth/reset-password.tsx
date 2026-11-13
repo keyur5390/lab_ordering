@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import GuestLayout from '@/layouts/guest-layout';
 import { useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
+import { t } from '@/lib/i18n';
 
 export default function ResetPassword({ token, email }: { token: string; email: string }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -18,11 +19,11 @@ export default function ResetPassword({ token, email }: { token: string; email: 
     };
 
     return (
-        <GuestLayout title="Choose a new password">
+        <GuestLayout title={t('Choose a new password')}>
             <form onSubmit={submit} className="space-y-4" noValidate>
                 <FormField
                     id="email"
-                    label="Email"
+                    label={t('Email')}
                     type="email"
                     autoComplete="email"
                     readOnly
@@ -33,7 +34,7 @@ export default function ResetPassword({ token, email }: { token: string; email: 
 
                 <FormField
                     id="password"
-                    label="New password"
+                    label={t('New password')}
                     type="password"
                     autoComplete="new-password"
                     autoFocus
@@ -45,7 +46,7 @@ export default function ResetPassword({ token, email }: { token: string; email: 
 
                 <FormField
                     id="password_confirmation"
-                    label="Confirm new password"
+                    label={t('Confirm new password')}
                     type="password"
                     autoComplete="new-password"
                     required
@@ -55,7 +56,7 @@ export default function ResetPassword({ token, email }: { token: string; email: 
                 />
 
                 <Button type="submit" className="w-full" processing={processing}>
-                    Reset password
+                    {t('Reset password')}
                 </Button>
             </form>
         </GuestLayout>

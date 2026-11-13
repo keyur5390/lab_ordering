@@ -50,7 +50,7 @@ class PhoneCodeService
     {
         $driver = $this->settings->smsDriver();
         if (! $driver) {
-            throw ValidationException::withMessages([$field => 'Text messages are switched off. Please use your email instead.']);
+            throw ValidationException::withMessages([$field => __('Text messages are switched off. Please use your email instead.')]);
         }
         $this->throttle(["phone-code:{$phone}" => self::SENDS_PER_PHONE, "phone-code-ip:{$ip}" => self::SENDS_PER_IP], $field);
         if (! $user) {
@@ -67,10 +67,10 @@ class PhoneCodeService
             'expires_at' => now()->addMinutes(self::TTL_MINUTES),
         ]);
 
-        $site = config('app.name');
+        $values = ['site' => config('app.name'), 'code' => $code, 'minutes' => self::TTL_MINUTES];
         $driver->sender()->send($phone, $purpose === self::LOGIN
-            ? "{$site}: your sign-in code is {$code}. It expires in ".self::TTL_MINUTES.' minutes. Never share it.'
-            : "{$site}: your code to confirm this number is {$code}. It expires in ".self::TTL_MINUTES.' minutes.');
+            ? __(':site: your sign-in code is :code. It expires in :minutes minutes. Never share it.', $values)
+            : __(':site: your code to confirm this number is :code. It expires in :minutes minutes.', $values));
     }
 
     /**
@@ -81,7 +81,7 @@ class PhoneCodeService
     public function check(string $phone, string $purpose, string $code, string $field = 'code'): User
     {
         $record = PhoneCode::where('phone', $phone)->where('purpose', $purpose)->latest('id')->first();
-        $wrong = fn () => ValidationException::withMessages([$field => 'That code is wrong or has expired. Please ask for a new one.']);
+        $wrong = fn () => ValidationException::withMessages([$field => __('That code is wrong or has expired. Please ask for a new one.')]);
 
         if (! $record || $record->expires_at->isPast() || $record->attempts >= self::MAX_ATTEMPTS) {
             throw $wrong();
@@ -106,7 +106,10 @@ class PhoneCodeService
         foreach ($limits as $key => $max) {
             if (RateLimiter::tooManyAttempts($key, $max)) {
                 $minutes = (int) ceil(RateLimiter::availableIn($key) / 60);
-                throw ValidationException::withMessages([$field => "Too many codes sent. Please try again in {$minutes} ".($minutes === 1 ? 'minute' : 'minutes').'.']);
+                throw ValidationException::withMessages([$field => trans_choice(
+                    'Too many codes sent. Please try again in :count minute.|Too many codes sent. Please try again in :count minutes.',
+                    $minutes,
+                )]);
             }
         }
         foreach (array_keys($limits) as $key) {

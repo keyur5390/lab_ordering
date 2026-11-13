@@ -36,6 +36,7 @@ use App\Http\Controllers\Collector\VisitController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Lab\OrderController as LabOrderController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PatientController;
@@ -65,6 +66,7 @@ Route::controller(CartController::class)->prefix('cart')->name('cart.')->group(f
 // new email can still correct it. The forms post to Fortify's routes.
 Route::get('/{slug}', [PageController::class, 'show'])->whereIn('slug', Page::SLUGS)->name('pages.show');
 Route::get('/faq', [HomeController::class, 'faq'])->name('faq');
+Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::middleware('auth')->group(function () {
     Route::get('/account/privacy', [AccountPrivacyController::class, 'show'])->name('account.privacy');

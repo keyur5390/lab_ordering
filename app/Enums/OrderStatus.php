@@ -22,15 +22,15 @@ enum OrderStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::PendingPayment => 'Pending payment',
-            self::Confirmed => 'Confirmed',
-            self::CollectorAssigned => 'Collector assigned',
-            self::SampleCollected => 'Sample collected',
-            self::ReceivedAtLab => 'Received at lab',
-            self::ReportReady => 'Report ready',
-            self::Completed => 'Completed',
-            self::Cancelled => 'Cancelled',
-            self::Refunded => 'Refunded',
+            self::PendingPayment => __('Pending payment'),
+            self::Confirmed => __('Confirmed'),
+            self::CollectorAssigned => __('Collector assigned'),
+            self::SampleCollected => __('Sample collected'),
+            self::ReceivedAtLab => __('Received at lab'),
+            self::ReportReady => __('Report ready'),
+            self::Completed => __('Completed'),
+            self::Cancelled => __('Cancelled'),
+            self::Refunded => __('Refunded'),
         };
     }
 

@@ -6,6 +6,7 @@ import AppLayout from '@/layouts/app-layout';
 import type { SharedData } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import type { FormEvent, ReactNode } from 'react';
+import { t, tx } from '@/lib/i18n';
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
     return (
@@ -31,16 +32,16 @@ function ProfileForm() {
 
     return (
         <form onSubmit={submit} noValidate className="space-y-4">
-            {status === 'profile-information-updated' && <Alert tone="success">Your details are saved.</Alert>}
+            {status === 'profile-information-updated' && <Alert tone="success">{t('Your details are saved.')}</Alert>}
             {!user.email_verified && (
                 <Alert tone="warning">
-                    Please confirm {user.email}: we've emailed you a link.{' '}
-                    <TextLink href={route('verification.notice')}>Resend the link</TextLink>
+                    {t("Please confirm :email: we've emailed you a link.", { email: user.email })}{' '}
+                    <TextLink href={route('verification.notice')}>{t('Resend the link')}</TextLink>
                 </Alert>
             )}
             <FormField
                 id="name"
-                label="Name"
+                label={t('Name')}
                 autoComplete="name"
                 value={data.name}
                 onChange={(e) => setData('name', e.target.value)}
@@ -48,16 +49,16 @@ function ProfileForm() {
             />
             <FormField
                 id="email"
-                label="Email"
+                label={t('Email')}
                 type="email"
                 autoComplete="email"
-                hint={emailChanged ? "We'll email the new address a link to confirm it." : undefined}
+                hint={emailChanged ? t("We'll email the new address a link to confirm it.") : undefined}
                 value={data.email}
                 onChange={(e) => setData('email', e.target.value)}
                 error={errors.email}
             />
             <Button type="submit" processing={processing} disabled={!isDirty}>
-                Save details
+                {t('Save details')}
             </Button>
         </form>
     );
@@ -82,10 +83,10 @@ function PasswordForm() {
 
     return (
         <form onSubmit={submit} noValidate className="space-y-4">
-            {status === 'password-updated' && <Alert tone="success">Your password is changed.</Alert>}
+            {status === 'password-updated' && <Alert tone="success">{t('Your password is changed.')}</Alert>}
             <FormField
                 id="current_password"
-                label="Current password"
+                label={t('Current password')}
                 type="password"
                 autoComplete="current-password"
                 value={data.current_password}
@@ -94,7 +95,7 @@ function PasswordForm() {
             />
             <FormField
                 id="password"
-                label="New password"
+                label={t('New password')}
                 type="password"
                 autoComplete="new-password"
                 value={data.password}
@@ -103,7 +104,7 @@ function PasswordForm() {
             />
             <FormField
                 id="password_confirmation"
-                label="Confirm new password"
+                label={t('Confirm new password')}
                 type="password"
                 autoComplete="new-password"
                 value={data.password_confirmation}
@@ -111,7 +112,7 @@ function PasswordForm() {
                 error={errors.password_confirmation}
             />
             <Button type="submit" processing={processing}>
-                Change password
+                {t('Change password')}
             </Button>
         </form>
     );
@@ -133,8 +134,8 @@ function PhoneForm({ phone }: { phone: PhoneSettings }) {
     const remove = useForm({});
 
     const messages: Record<string, string> = {
-        'phone-verified': 'Your mobile number is confirmed. You can now sign in with it.',
-        'phone-removed': 'Your mobile number is removed.',
+        'phone-verified': t('Your mobile number is confirmed. You can now sign in with it.'),
+        'phone-removed': t('Your mobile number is removed.'),
     };
 
     if (phone.pending) {
@@ -151,11 +152,13 @@ function PhoneForm({ phone }: { phone: PhoneSettings }) {
                 }}
             >
                 <p className="text-sm">
-                    We've texted a 6-digit code to <span className="font-medium">{phone.pending}</span>.
+                    {tx("We've texted a 6-digit code to :phone.", {
+                        phone: <span className="font-medium">{phone.pending}</span>,
+                    })}
                 </p>
                 <FormField
                     id="phone_code"
-                    label="Code"
+                    label={t('Code')}
                     inputMode="numeric"
                     autoComplete="one-time-code"
                     maxLength={6}
@@ -165,14 +168,14 @@ function PhoneForm({ phone }: { phone: PhoneSettings }) {
                 />
                 <div className="flex flex-wrap gap-2">
                     <Button type="submit" processing={verify.processing}>
-                        Confirm number
+                        {t('Confirm number')}
                     </Button>
                     <Button
                         type="button"
                         variant="ghost"
                         onClick={() => remove.delete(route('account.phone.destroy'), { preserveScroll: true })}
                     >
-                        Use a different number
+                        {t('Use a different number')}
                     </Button>
                 </div>
             </form>
@@ -186,7 +189,7 @@ function PhoneForm({ phone }: { phone: PhoneSettings }) {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm">
                         <span className="font-medium">{phone.number}</span>{' '}
-                        <span className="text-muted">· confirmed, used to sign in and for order texts</span>
+                        <span className="text-muted">· {t('confirmed, used to sign in and for order texts')}</span>
                     </p>
                     <Button
                         type="button"
@@ -194,7 +197,7 @@ function PhoneForm({ phone }: { phone: PhoneSettings }) {
                         processing={remove.processing}
                         onClick={() => remove.delete(route('account.phone.destroy'), { preserveScroll: true })}
                     >
-                        Remove
+                        {t('Remove')}
                     </Button>
                 </div>
             )}
@@ -209,21 +212,23 @@ function PhoneForm({ phone }: { phone: PhoneSettings }) {
                 >
                     <FormField
                         id="phone"
-                        label={phone.number ? 'Change to' : 'Mobile number'}
+                        label={phone.number ? t('Change to') : t('Mobile number')}
                         type="tel"
                         autoComplete="tel"
                         placeholder="+91 98000 00001"
-                        hint="With the country code. We'll text you a code to confirm it."
+                        hint={t("With the country code. We'll text you a code to confirm it.")}
                         value={send.data.phone}
                         onChange={(e) => send.setData('phone', e.target.value)}
                         error={send.errors.phone}
                     />
                     <Button type="submit" processing={send.processing} disabled={send.data.phone.trim() === ''}>
-                        Send code
+                        {t('Send code')}
                     </Button>
                 </form>
             ) : (
-                !phone.number && <p className="text-sm text-muted">Adding a mobile number isn't available right now.</p>
+                !phone.number && (
+                    <p className="text-sm text-muted">{t("Adding a mobile number isn't available right now.")}</p>
+                )
             )}
         </div>
     );
@@ -232,25 +237,25 @@ function PhoneForm({ phone }: { phone: PhoneSettings }) {
 export default function AccountSettings({ phone }: { phone: PhoneSettings }) {
     return (
         <AppLayout>
-            <Head title="Account settings" />
+            <Head title={t('Account settings')} />
 
             <div className="mx-auto max-w-xl space-y-6 px-4 py-8 sm:px-6 md:py-12">
                 <div>
                     <TextLink href={route('account')} className="text-sm">
-                        ← Account
+                        {t('← Account')}
                     </TextLink>
-                    <h1 className="mt-4 text-2xl font-semibold md:text-3xl">Account settings</h1>
+                    <h1 className="mt-4 text-2xl font-semibold md:text-3xl">{t('Account settings')}</h1>
                 </div>
 
-                <Section id="details-heading" title="Your details">
+                <Section id="details-heading" title={t('Your details')}>
                     <ProfileForm />
                 </Section>
 
-                <Section id="password-heading" title="Password">
+                <Section id="password-heading" title={t('Password')}>
                     <PasswordForm />
                 </Section>
 
-                <Section id="phone-heading" title="Mobile number">
+                <Section id="phone-heading" title={t('Mobile number')}>
                     <PhoneForm phone={phone} />
                 </Section>
             </div>

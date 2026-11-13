@@ -7,6 +7,7 @@ import AppLayout from '@/layouts/app-layout';
 import type { Address, SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { MapPin } from 'lucide-react';
+import { t } from '@/lib/i18n';
 
 const primaryLinkClass =
     'inline-flex h-11 items-center justify-center rounded-control bg-primary-600 px-4 text-sm font-medium whitespace-nowrap text-white hover:bg-primary-700';
@@ -16,20 +17,20 @@ export default function AddressesIndex({ addresses }: { addresses: Address[] }) 
 
     return (
         <AppLayout>
-            <Head title="Addresses" />
+            <Head title={t('Addresses')} />
 
             <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <TextLink href={route('account')} className="text-sm">
-                    ← Your account
+                    {t('← Your account')}
                 </TextLink>
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-semibold md:text-3xl">Addresses</h1>
-                        <p className="mt-1 text-sm text-muted">Where we can collect samples from you.</p>
+                        <h1 className="text-2xl font-semibold md:text-3xl">{t('Addresses')}</h1>
+                        <p className="mt-1 text-sm text-muted">{t('Where we can collect samples from you.')}</p>
                     </div>
                     <Link href={route('addresses.create')} className={primaryLinkClass}>
-                        Add address
+                        {t('Add address')}
                     </Link>
                 </div>
 
@@ -42,9 +43,9 @@ export default function AddressesIndex({ addresses }: { addresses: Address[] }) 
                 {addresses.length === 0 ? (
                     <div className="mt-6 flex flex-col items-center rounded-card border border-border bg-surface p-8 text-center">
                         <MapPin className="size-6 text-muted" strokeWidth={1.75} aria-hidden="true" />
-                        <p className="mt-3 text-sm text-muted">No addresses yet.</p>
+                        <p className="mt-3 text-sm text-muted">{t('No addresses yet.')}</p>
                         <Link href={route('addresses.create')} className={`${primaryLinkClass} mt-4`}>
-                            Add your first address
+                            {t('Add your first address')}
                         </Link>
                     </div>
                 ) : (
@@ -55,9 +56,9 @@ export default function AddressesIndex({ addresses }: { addresses: Address[] }) 
                                     <div className="flex flex-wrap items-center gap-2">
                                         {address.label && <span className="font-medium">{address.label}</span>}
                                         {address.serviceable ? (
-                                            <Badge tone="success">Home collection available</Badge>
+                                            <Badge tone="success">{t('Home collection available')}</Badge>
                                         ) : (
-                                            <Badge tone="warning">Outside our collection area</Badge>
+                                            <Badge tone="warning">{t('Outside our collection area')}</Badge>
                                         )}
                                     </div>
                                     <address className="mt-1 text-sm text-muted not-italic">
@@ -72,15 +73,17 @@ export default function AddressesIndex({ addresses }: { addresses: Address[] }) 
                                     <Link
                                         href={route('addresses.edit', address.id)}
                                         className="inline-flex h-11 items-center rounded-control px-3 text-sm font-medium text-primary-700 hover:bg-canvas sm:h-9"
-                                        aria-label={`Edit ${address.label ?? address.line1}`}
+                                        aria-label={t('Edit :name', { name: address.label ?? address.line1 })}
                                     >
-                                        Edit
+                                        {t('Edit')}
                                     </Link>
                                     <DeleteButton
                                         href={route('addresses.destroy', address.id)}
                                         itemName={address.label ?? address.line1}
                                         itemType="address"
-                                        verb="Remove"
+                                        verb={t('Remove')}
+                                        title={t('Remove this address?')}
+                                        confirmLabel={t('Remove address')}
                                     />
                                 </div>
                             </li>

@@ -13,9 +13,9 @@ enum RefundStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Pending => 'Processing',
-            self::Succeeded => 'Refunded',
-            self::Failed => 'Failed',
+            self::Pending => __('Processing'),
+            self::Succeeded => __('Refunded'),
+            self::Failed => __('Failed'),
         };
     }
 

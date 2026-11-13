@@ -48,7 +48,7 @@ class FortifyServiceProvider extends ServiceProvider
                 return null;
             }
             if ($user->isDisabled()) {
-                throw ValidationException::withMessages([Fortify::username() => 'This account has been disabled. Please contact us.']);
+                throw ValidationException::withMessages([Fortify::username() => __('This account has been disabled. Please contact us.')]);
             }
 
             return $user;

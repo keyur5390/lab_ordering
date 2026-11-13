@@ -5,6 +5,7 @@ import { TextLink } from '@/components/ui/text-link';
 import AppLayout from '@/layouts/app-layout';
 import type { LabPackage, SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
+import { t } from '@/lib/i18n';
 
 interface HomeProps {
     hero: { title: string; text: string | null; button: string };
@@ -17,7 +18,7 @@ export default function Home({ hero, featured, faqs }: HomeProps) {
 
     return (
         <AppLayout>
-            <Head title="Home" />
+            <Head title={t('Home')} />
 
             <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 md:py-20 lg:px-8">
                 {status && (
@@ -42,10 +43,10 @@ export default function Home({ hero, featured, faqs }: HomeProps) {
                 >
                     <div className="flex items-baseline justify-between gap-4">
                         <h2 id="featured-heading" className="text-xl font-semibold">
-                            Popular packages
+                            {t('Popular packages')}
                         </h2>
                         <TextLink href={route('catalogue.index', { type: 'packages' })} className="text-sm">
-                            All packages
+                            {t('All packages')}
                         </TextLink>
                     </div>
                     <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -64,7 +65,7 @@ export default function Home({ hero, featured, faqs }: HomeProps) {
                     className="mx-auto max-w-3xl px-4 pb-12 sm:px-6 md:pb-20 lg:px-8"
                 >
                     <h2 id="faq-heading" className="text-xl font-semibold">
-                        Frequently asked questions
+                        {t('Frequently asked questions')}
                     </h2>
                     <div className="mt-4">
                         <FaqList faqs={faqs} />

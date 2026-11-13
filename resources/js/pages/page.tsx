@@ -1,6 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { formatDate } from '@/lib/format';
 import { Head } from '@inertiajs/react';
+import { t } from '@/lib/i18n';
 
 interface PageProps {
     page: { slug: string; title: string; html: string; updated_on: string | null };
@@ -16,7 +17,9 @@ export default function Page({ page, privacyContact }: PageProps) {
                 <h1 className="text-2xl font-semibold md:text-3xl">{page.title}</h1>
                 {page.updated_on && (
                     <p className="mt-1 text-sm text-muted">
-                        Last updated {formatDate(page.updated_on, { day: 'numeric', month: 'long', year: 'numeric' })}
+                        {t('Last updated :date', {
+                            date: formatDate(page.updated_on, { day: 'numeric', month: 'long', year: 'numeric' }),
+                        })}
                     </p>
                 )}
                 {/* Rendered from Markdown on the server, with raw HTML stripped. */}
@@ -28,7 +31,7 @@ export default function Page({ page, privacyContact }: PageProps) {
                         className="mt-8 rounded-card border border-border bg-surface p-4 md:p-6"
                     >
                         <h2 id="contact-heading" className="font-semibold">
-                            Questions or complaints about your data
+                            {t('Questions or complaints about your data')}
                         </h2>
                         <p className="mt-1 text-sm">
                             {privacyContact.name && <>{privacyContact.name} · </>}

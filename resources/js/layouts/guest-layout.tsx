@@ -1,3 +1,4 @@
+import { LanguageSwitcher } from '@/components/language-switcher';
 import type { SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
@@ -33,6 +34,7 @@ export default function GuestLayout({ title, description, children }: GuestLayou
 
                 <div className="mt-6">{children}</div>
             </div>
+            <LanguageSwitcher className="mt-6" />
         </div>
     );
 }
