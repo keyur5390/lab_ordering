@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\PaymentMethod;
+use App\Enums\RefundStatus;
 use App\Models\CreditNote;
 use App\Models\Invoice;
 use App\Models\Order;
@@ -76,7 +77,8 @@ class InvoiceService
      */
     public function creditNoteFor(Refund $refund): ?CreditNote
     {
-        if (! $refund->status->counts()) {
+        // Only money actually returned: a pending refund gets its note when it succeeds (B-25).
+        if ($refund->status !== RefundStatus::Succeeded) {
             return null;
         }
 

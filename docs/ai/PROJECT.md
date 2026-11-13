@@ -200,8 +200,13 @@ All amounts come from the database or settings. Never from code.
   Admins can also refund any amount up to what is left, with an optional reason. A cancelled order with
   nothing left to refund becomes `refunded`. [Admin cancellations also refund in full.] `TODO(client)`
   A refund the gateway rejects is recorded as failed, and an admin can retry it.
-- **OPEN:** Tracking refund outcomes after the gateway accepts them (refund webhooks). Refunds still
-  processing are shown as such.
+- **Refund outcomes:** *Built in B-25.* Refunds the gateway accepted but hasn't finished show as
+  "Processing" and count as refunded. The refund webhooks then settle them, on the same signed URLs as
+  payments: Stripe `refund.updated` / `charge.refund.updated`, Razorpay `refund.processed` / `refund.failed`.
+  - Succeeded: the credit note is issued then. Credit notes only exist for money actually returned.
+  - Failed: the amount is refundable again, a fully refunded order goes back to `cancelled`, and admins get
+    the "Refund failed" email and a dashboard alert.
+  - Enable these events on each gateway's webhook.
 
 ### Invoices and credit notes
 
@@ -364,6 +369,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-11-13 | Refund tracking (B-25): refund webhooks settle processing refunds; credit notes only on success | Dev |
 | 2026-11-13 | Notification history (B-24): log of every order email/SMS, filters, per-order list, resend, dashboard alert | Dev |
 | 2026-11-13 | Account settings (B-23): name, email (re-verified) and password self-service | Dev (defaults) |
 | 2026-10-31 | Completion & reports (B-22): completed when all reports are in and paid; My reports page; reports kept forever | Client |

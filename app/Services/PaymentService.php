@@ -10,11 +10,13 @@ use App\Enums\PaymentStatus;
 use App\Enums\RefundStatus;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\Refund;
 use App\Models\User;
 use App\Services\Payments\InvalidWebhookSignature;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Payments\PaymentGatewayException;
 use App\Services\Payments\RazorpayGateway;
+use App\Services\Payments\RefundUpdate;
 use App\Services\Payments\StripeGateway;
 use App\Settings\Settings;
 use Carbon\CarbonImmutable;
@@ -124,8 +126,13 @@ class PaymentService
      */
     public function handleWebhook(PaymentGatewayName $name, Request $request): void
     {
-        $paid = $this->gateway($name)->paidFromWebhook($request);
+        $gateway = $this->gateway($name);
+        $paid = $gateway->paidFromWebhook($request);
         if (! $paid) {
+            if ($update = $gateway->refundUpdateFromWebhook($request)) {
+                $this->applyRefundUpdate($name, $update);
+            }
+
             return;
         }
 
@@ -137,6 +144,38 @@ class PaymentService
         }
 
         $this->confirm($payment, $paid->gatewayPaymentId);
+    }
+
+    /**
+     * A pending refund's final outcome (B-25). Succeeded: its credit note is issued. Failed: the money
+     * is refundable again, a fully refunded order goes back to cancelled, and admins are alerted.
+     */
+    public function applyRefundUpdate(PaymentGatewayName $name, RefundUpdate $update): void
+    {
+        $refund = Refund::where('gateway_refund_id', $update->gatewayRefundId)
+            ->whereHas('payment', fn ($query) => $query->where('gateway', $name))
+            ->with('payment.order')
+            ->first();
+
+        if (! $refund || $refund->status === $update->status || $refund->status !== RefundStatus::Pending) {
+            return;
+        }
+
+        DB::transaction(function () use ($refund, $update) {
+            $refund->update(['status' => $update->status]);
+            $order = $refund->payment->order;
+
+            if ($update->status === RefundStatus::Succeeded) {
+                $this->invoices->creditNoteFor($refund);
+
+                return;
+            }
+
+            if ($order->status === OrderStatus::Refunded && $this->amounts($order->unsetRelation('payments'))['refundable'] > 0) {
+                $order->update(['status' => OrderStatus::Cancelled]);
+            }
+            $this->notifier->refunded($order, $refund);
+        });
     }
 
     /**
