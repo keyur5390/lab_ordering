@@ -62,7 +62,7 @@ the catalogue, orders, collection schedule and reports from an admin area.
   - [One "Self" profile per account; it can be edited but not deleted, and its relationship is fixed.] `TODO(client)`
   - [Phone accepts 7–20 digits with spaces, dashes and an optional leading +; tighten once the launch country is known.] `TODO(client)`
   - [No limit on the number of profiles per account.] `TODO(client)`
-- **OPEN:** Login method: email + password, phone + OTP, or both? [Email + password, with email verification] `TODO(client)`. *Built with this default in B-03; no 2FA.*
+- **Login method (client, 2026-11-13):** both: email + password with email verification (B-03), and phone + SMS code for confirmed numbers (B-30, see §3a). No 2FA.
 - **OPEN:** Can a guest check out without an account? [No] `TODO(client)`
 - **Account settings:** *Built in B-23.* Customers change their name, email and password under
   Account → Settings.
@@ -90,7 +90,7 @@ the catalogue, orders, collection schedule and reports from an admin area.
   - `/tests` searches names and codes, and packages by the names of the tests inside. Filters: category, tests
     or packages, and no fasting or preparation (a package qualifies only if none of its tests needs any).
   - Sort by name or price (low/high). Filters live in the URL, so links can be shared.
-- **OPEN:** Is a package price independent, or derived from its tests minus a discount?
+- **Package price (client, 2026-10-29, B-06):** per package, either a fixed price or its tests' total minus a discount.
 - **OPEN:** Is a catalogue item ever unavailable by city/area?
 
 ## 4. Pricing, fees and discounts ⚙️
