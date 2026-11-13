@@ -64,6 +64,13 @@ the catalogue, orders, collection schedule and reports from an admin area.
   - [No limit on the number of profiles per account.] `TODO(client)`
 - **OPEN:** Login method: email + password, phone + OTP, or both? [Email + password, with email verification] `TODO(client)`. *Built with this default in B-03; no 2FA.*
 - **OPEN:** Can a guest check out without an account? [No] `TODO(client)`
+- **Account settings:** *Built in B-23.* Customers change their name, email and password under
+  Account → Settings.
+  - A new email address is unverified until confirmed through the emailed link; ordering pages wait for that.
+    [default] `TODO(client)`
+  - Changing the password needs the current one.
+  - The settings page stays open while unverified, so a mistyped address can be corrected.
+  - The "Self" patient profile keeps its own name. [default] `TODO(client)`
 
 ## 3. Catalogue
 
@@ -351,6 +358,7 @@ Every value below is read from settings or the DB. Keep this list in sync as fea
 | Date | Decision | By |
 |------|----------|----|
 | 2026-10-29 | Stack: Laravel 12, React 19 + TS via Inertia 2, Tailwind 4, MySQL 8 (PostgreSQL-compatible) | Client |
+| 2026-11-13 | Account settings (B-23): name, email (re-verified) and password self-service | Dev (defaults) |
 | 2026-10-31 | Completion & reports (B-22): completed when all reports are in and paid; My reports page; reports kept forever | Client |
 | 2026-10-31 | Invoices (B-21): issued when paid; seller details from Settings; yearly numbers; credit note per refund | Client |
 | 2026-10-31 | Users (B-20): change roles, disable accounts, invite staff, view customer details; not on yourself | Client |

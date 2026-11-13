@@ -97,6 +97,9 @@ export default function Account({ sms }: AccountProps) {
                     <p className="text-sm text-muted">Signed in as</p>
                     <p className="mt-1 font-medium">{auth.user?.name}</p>
                     <p className="text-sm text-muted">{auth.user?.email}</p>
+                    <TextLink href={route('account.settings')} className="mt-2 inline-block text-sm">
+                        Change your details or password
+                    </TextLink>
                 </div>
 
                 {status && (

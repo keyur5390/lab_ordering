@@ -48,6 +48,10 @@ Route::controller(CartController::class)->prefix('cart')->name('cart.')->group(f
     Route::get('/login', 'login')->middleware('guest')->name('login');
 });
 
+// Name, email and password (B-23). Signed in but not necessarily verified, so someone who mistyped a
+// new email can still correct it. The forms post to Fortify's routes.
+Route::inertia('/account/settings', 'account-settings')->middleware('auth')->name('account.settings');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/account', [AccountController::class, 'show'])->name('account');
     Route::put('/account/notifications', [AccountController::class, 'updateNotifications'])->name('account.notifications.update');
