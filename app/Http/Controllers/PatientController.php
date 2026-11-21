@@ -34,7 +34,7 @@ class PatientController extends Controller
     {
         $request->user()->patients()->create($request->validated());
 
-        return to_route('patients.index')->with('status', 'Patient added.');
+        return to_route('patients.index')->with('status', __('Patient added.'));
     }
 
     public function edit(Patient $patient): Response
@@ -49,7 +49,7 @@ class PatientController extends Controller
         // The "Self" profile keeps its relationship whatever is submitted.
         $patient->update($request->safe()->except($patient->isSelf() ? ['relationship'] : []));
 
-        return to_route('patients.index')->with('status', 'Patient saved.');
+        return to_route('patients.index')->with('status', __('Patient saved.'));
     }
 
     public function destroy(Patient $patient): RedirectResponse
@@ -58,7 +58,7 @@ class PatientController extends Controller
 
         $patient->delete();
 
-        return to_route('patients.index')->with('status', 'Patient removed.');
+        return to_route('patients.index')->with('status', __('Patient removed.'));
     }
 
     /**

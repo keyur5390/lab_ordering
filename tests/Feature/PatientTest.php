@@ -41,6 +41,7 @@ it('creates the "Self" profile when a customer registers', function () {
         'email' => 'meera@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'terms' => '1',
     ]);
 
     expect(selfPatient(User::where('email', 'meera@example.com')->sole())->name)->toBe('Meera Shah');

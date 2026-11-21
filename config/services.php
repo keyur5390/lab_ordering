@@ -60,6 +60,8 @@ return [
         'sid' => env('TWILIO_SID'),
         'token' => env('TWILIO_TOKEN'),
         'from' => env('TWILIO_FROM'),
+        // WhatsApp sender (B-31), e.g. +14155238886.
+        'whatsapp_from' => env('TWILIO_WHATSAPP_FROM'),
         'base_url' => env('TWILIO_BASE_URL', 'https://api.twilio.com'),
     ],
 

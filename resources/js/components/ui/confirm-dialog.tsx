@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { t } from '@/lib/i18n';
 
 interface ConfirmDialogProps {
     open: boolean;
@@ -49,7 +50,7 @@ export function ConfirmDialog({
 
             <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <Button variant="secondary" onClick={onClose} autoFocus>
-                    Cancel
+                    {t('Cancel')}
                 </Button>
                 <Button variant="danger" onClick={onConfirm} processing={processing}>
                     {confirmLabel}

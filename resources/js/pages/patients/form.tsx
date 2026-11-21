@@ -8,6 +8,7 @@ import AppLayout from '@/layouts/app-layout';
 import type { Option, Patient, PatientRelationship, Sex } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
+import { t } from '@/lib/i18n';
 
 interface PatientFormProps {
     patient: Patient | null;
@@ -46,7 +47,7 @@ export default function PatientForm({ patient, relationships, sexes }: PatientFo
         }
     };
 
-    const title = patient ? (isSelf ? 'Your details' : `Edit ${patient.name}`) : 'Add patient';
+    const title = patient ? (isSelf ? t('Your details') : t('Edit :name', { name: patient.name })) : t('Add patient');
 
     return (
         <AppLayout>
@@ -54,16 +55,16 @@ export default function PatientForm({ patient, relationships, sexes }: PatientFo
 
             <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <TextLink href={route('patients.index')} className="text-sm">
-                    ← Patients
+                    {t('← Patients')}
                 </TextLink>
                 <h1 className="mt-4 text-2xl font-semibold md:text-3xl">{title}</h1>
-                {isSelf && <p className="mt-1 text-sm text-muted">This profile is you, the account holder.</p>}
+                {isSelf && <p className="mt-1 text-sm text-muted">{t('This profile is you, the account holder.')}</p>}
 
                 <form onSubmit={submit} className="mt-6 space-y-6" noValidate>
                     <div className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6">
                         <FormField
                             id="name"
-                            label="Full name"
+                            label={t('Full name')}
                             autoComplete={isSelf ? 'name' : 'off'}
                             required
                             value={data.name}
@@ -72,7 +73,7 @@ export default function PatientForm({ patient, relationships, sexes }: PatientFo
                         />
 
                         {!isSelf && (
-                            <Field id="relationship" label="Relationship to you" error={errors.relationship}>
+                            <Field id="relationship" label={t('Relationship to you')} error={errors.relationship}>
                                 {(control) => (
                                     <Select
                                         {...control}
@@ -81,7 +82,7 @@ export default function PatientForm({ patient, relationships, sexes }: PatientFo
                                         onChange={(e) => setData('relationship', e.target.value as PatientRelationship)}
                                     >
                                         <option value="" disabled>
-                                            Choose…
+                                            {t('Choose…')}
                                         </option>
                                         {relationships.map((option) => (
                                             <option key={option.value} value={option.value}>
@@ -96,7 +97,7 @@ export default function PatientForm({ patient, relationships, sexes }: PatientFo
                         <div className="grid gap-4 sm:grid-cols-2">
                             <FormField
                                 id="date_of_birth"
-                                label="Date of birth"
+                                label={t('Date of birth')}
                                 type="date"
                                 min="1900-01-01"
                                 max={today()}
@@ -107,7 +108,7 @@ export default function PatientForm({ patient, relationships, sexes }: PatientFo
                             />
 
                             <fieldset aria-describedby={errors.sex ? 'sex-error' : undefined}>
-                                <legend className="text-sm font-medium">Sex</legend>
+                                <legend className="text-sm font-medium">{t('Sex')}</legend>
                                 <div className="mt-1.5 flex flex-wrap gap-2">
                                     {sexes.map((option) => (
                                         <label
@@ -133,13 +134,13 @@ export default function PatientForm({ patient, relationships, sexes }: PatientFo
                         <div className="grid gap-4 sm:grid-cols-2">
                             <FormField
                                 id="phone"
-                                label="Phone (optional)"
+                                label={t('Phone (optional)')}
                                 type="tel"
                                 inputMode="tel"
                                 autoComplete={isSelf ? 'tel' : 'off'}
                                 hint={
                                     isSelf
-                                        ? 'Include the country code (e.g. +91…) to get order updates by text.'
+                                        ? t('Include the country code (e.g. +91…) to get order updates by text.')
                                         : undefined
                                 }
                                 value={data.phone}
@@ -148,7 +149,7 @@ export default function PatientForm({ patient, relationships, sexes }: PatientFo
                             />
                             <FormField
                                 id="email"
-                                label="Email (optional)"
+                                label={t('Email (optional)')}
                                 type="email"
                                 autoComplete={isSelf ? 'email' : 'off'}
                                 value={data.email}
@@ -160,9 +161,9 @@ export default function PatientForm({ patient, relationships, sexes }: PatientFo
 
                     <div className="flex items-center gap-4">
                         <Button type="submit" processing={processing}>
-                            {patient ? 'Save' : 'Add patient'}
+                            {patient ? t('Save') : t('Add patient')}
                         </Button>
-                        <TextLink href={route('patients.index')}>Cancel</TextLink>
+                        <TextLink href={route('patients.index')}>{t('Cancel')}</TextLink>
                     </div>
                 </form>
             </div>

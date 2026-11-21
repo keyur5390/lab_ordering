@@ -7,27 +7,28 @@ import { formatSlot } from '@/lib/format';
 import type { Order, Paginated } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { ClipboardList } from 'lucide-react';
+import { plural, t } from '@/lib/i18n';
 
 export default function OrdersIndex({ orders }: { orders: Paginated<Order> }) {
     return (
         <AppLayout>
-            <Head title="Orders" />
+            <Head title={t('Orders')} />
 
             <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <TextLink href={route('account')} className="text-sm">
-                    ← Your account
+                    {t('← Your account')}
                 </TextLink>
-                <h1 className="mt-4 text-2xl font-semibold md:text-3xl">Orders</h1>
+                <h1 className="mt-4 text-2xl font-semibold md:text-3xl">{t('Orders')}</h1>
 
                 {orders.data.length === 0 ? (
                     <div className="mt-6 flex flex-col items-center rounded-card border border-border bg-surface p-8 text-center">
                         <ClipboardList className="size-6 text-muted" strokeWidth={1.75} aria-hidden="true" />
-                        <p className="mt-3 text-sm text-muted">You haven't placed any orders yet.</p>
+                        <p className="mt-3 text-sm text-muted">{t("You haven't placed any orders yet.")}</p>
                         <Link
                             href={route('catalogue.index')}
                             className="mt-4 inline-flex h-11 items-center rounded-control bg-primary-600 px-4 text-sm font-medium text-white hover:bg-primary-700"
                         >
-                            Browse tests
+                            {t('Browse tests')}
                         </Link>
                     </div>
                 ) : (
@@ -46,7 +47,7 @@ export default function OrdersIndex({ orders }: { orders: Paginated<Order> }) {
                                             </div>
                                             <p className="text-sm text-muted">
                                                 {formatSlot(order.slot_starts_at, order.slot_ends_at, order.timezone)} ·{' '}
-                                                {order.items_count} {order.items_count === 1 ? 'test' : 'tests'}
+                                                {plural(order.items_count ?? 0, ':count test', ':count tests')}
                                             </p>
                                         </div>
                                         <Price

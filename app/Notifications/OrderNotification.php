@@ -8,7 +8,10 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
 use App\Notifications\Channels\SmsChannel;
+use App\Notifications\Channels\WhatsAppChannel;
+use App\Services\InvoiceService;
 use App\Services\LabService;
+use App\Services\NotificationLogger;
 use App\Services\NotificationTemplateService;
 use App\Settings\Settings;
 use Illuminate\Bus\Queueable;
@@ -38,6 +41,8 @@ class OrderNotification extends Notification implements ShouldQueue
         public Order $order,
         /** Payment or refund amount, in minor units. */
         public ?int $amount = null,
+        /** Send on this channel only, e.g. when an admin resends a failed message (B-24). */
+        public ?NotificationChannel $only = null,
     ) {
         $this->afterCommit();
     }
@@ -63,7 +68,16 @@ class OrderNotification extends Notification implements ShouldQueue
             $channels[] = SmsChannel::class;
         }
 
-        return $channels;
+        if ($notifiable instanceof User
+            && $settings->whatsAppEnabled()
+            && $notifiable->routeNotificationForWhatsApp()
+            && $this->toWhatsApp($notifiable)) {
+            $channels[] = WhatsAppChannel::class;
+        }
+
+        return $this->only
+            ? array_values(array_filter($channels, fn (string $channel) => NotificationLogger::channel($channel) === $this->only))
+            : $channels;
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -79,10 +93,23 @@ class OrderNotification extends Notification implements ShouldQueue
         if ($this->event === NotificationEvent::ReportReady) {
             $this->attachReports($mail);
         }
+        // The invoice goes with the payment email (client, 2026-11-13).
+        if (in_array($this->event, [NotificationEvent::PaymentReceived, NotificationEvent::PaymentCollected], true)
+            && ($invoice = $this->order->invoice()->first())) {
+            $mail->attachData(app(InvoiceService::class)->invoicePdfContent($invoice), "{$invoice->number}.pdf", ['mime' => 'application/pdf']);
+        }
 
         return $mail->action('View order', $notifiable instanceof AnonymousNotifiable
             ? route('admin.orders.show', $this->order)
             : route('orders.show', $this->order));
+    }
+
+    /**
+     * @return array{content_sid: string, variables: array<string, string>}|null
+     */
+    public function toWhatsApp(object $notifiable): ?array
+    {
+        return app(NotificationTemplateService::class)->whatsApp($this->event, $this->order, $this->amount);
     }
 
     public function toSms(object $notifiable): ?string

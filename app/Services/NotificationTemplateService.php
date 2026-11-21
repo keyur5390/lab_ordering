@@ -6,6 +6,7 @@ use App\Enums\NotificationChannel;
 use App\Enums\NotificationEvent;
 use App\Models\NotificationTemplate;
 use App\Models\Order;
+use App\Models\WhatsAppTemplate;
 use App\Settings\Settings;
 use App\Support\Money;
 
@@ -36,6 +37,28 @@ class NotificationTemplateService
         );
 
         return ['subject' => $fill((string) $template->subject), 'body' => $fill($template->body)];
+    }
+
+    /**
+     * The WhatsApp template and its variables for this event (B-31), or null when there's no active one.
+     *
+     * @return array{content_sid: string, variables: array<string, string>}|null
+     */
+    public function whatsApp(NotificationEvent $event, Order $order, ?int $amount = null): ?array
+    {
+        $template = WhatsAppTemplate::where('event', $event)->where('is_active', true)->first();
+        if (! $template) {
+            return null;
+        }
+
+        $values = $this->values($event, $order, $amount);
+        $variables = [];
+        foreach ($template->variables as $index => $name) {
+            // Twilio numbers variables from 1; empty values are rejected, so send a dash.
+            $variables[(string) ($index + 1)] = ($values[$name] ?? '') !== '' ? $values[$name] : '-';
+        }
+
+        return ['content_sid' => $template->content_sid, 'variables' => $variables];
     }
 
     /**

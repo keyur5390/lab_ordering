@@ -14,8 +14,8 @@ enum CollectionType: string
     public function label(): string
     {
         return match ($this) {
-            self::Home => 'Home collection',
-            self::LabVisit => 'Lab visit',
+            self::Home => __('Home collection'),
+            self::LabVisit => __('Lab visit'),
         };
     }
 }

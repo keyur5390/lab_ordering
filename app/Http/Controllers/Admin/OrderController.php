@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RescheduleOrderRequest;
 use App\Http\Resources\OrderResource;
+use App\Models\NotificationLog;
 use App\Models\Order;
 use App\Services\CollectorService;
 use App\Services\OrderService;
@@ -47,6 +48,10 @@ class OrderController extends Controller
     {
         return Inertia::render('admin/orders/show', [
             'order' => OrderResource::make($order->load(['items', 'user', 'payments.refunds.user', 'invoice.creditNotes', 'collector'])),
+            // Every email/SMS about this order (B-24).
+            'messages' => $request->user()->isAdmin()
+                ? $order->notificationLogs()->latest('id')->get()->map(fn (NotificationLog $log) => NotificationLogController::row($log->setRelation('order', $order), $settings->timezone()))
+                : [],
             // Collectors (client, 2026-10-30): who is assigned, who could be, and how the visit went.
             'collector' => [
                 'assigned' => $order->collector?->only(['id', 'name']),

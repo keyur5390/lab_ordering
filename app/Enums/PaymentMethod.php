@@ -22,8 +22,8 @@ enum PaymentMethod: string
     public function label(): string
     {
         return match ($this) {
-            self::PayAtCollection => 'Pay at collection',
-            self::Online => 'Online',
+            self::PayAtCollection => __('Pay at collection'),
+            self::Online => __('Online'),
         };
     }
 }

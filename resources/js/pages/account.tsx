@@ -5,11 +5,56 @@ import AppLayout from '@/layouts/app-layout';
 import type { SharedData } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { ChevronRight, ClipboardList, FileText, MapPin, Users, type LucideIcon } from 'lucide-react';
+import { ChevronRight, ClipboardList, FileText, MapPin, ShieldCheck, Users, type LucideIcon } from 'lucide-react';
+import { t, tx } from '@/lib/i18n';
 
 interface AccountProps {
     /** Present when SMS is switched on for the site. */
     sms: { opted_out: boolean; email: boolean; phone: string | null } | null;
+    /** Present when WhatsApp is switched on for the site. */
+    whatsapp: { opted_in: boolean; phone: string | null } | null;
+}
+
+function WhatsAppPreference({ whatsapp }: { whatsapp: NonNullable<AccountProps['whatsapp']> }) {
+    const [saving, setSaving] = useState(false);
+
+    return (
+        <section
+            aria-labelledby="whatsapp-heading"
+            className="mt-4 rounded-card border border-border bg-surface p-4 md:p-6"
+        >
+            <h2 id="whatsapp-heading" className="font-medium">
+                {t('WhatsApp')}
+            </h2>
+            <label className="mt-3 flex min-h-11 items-center gap-3 text-sm">
+                <Checkbox
+                    checked={whatsapp.opted_in}
+                    disabled={saving}
+                    onChange={(e) =>
+                        router.put(
+                            route('account.notifications.update'),
+                            { whatsapp: e.target.checked },
+                            {
+                                preserveScroll: true,
+                                onStart: () => setSaving(true),
+                                onFinish: () => setSaving(false),
+                            },
+                        )
+                    }
+                />
+                {t('Send me order updates on WhatsApp')}
+            </label>
+            <p className="text-sm text-muted">
+                {whatsapp.phone ? (
+                    <>{t('Messages go to :phone.', { phone: whatsapp.phone })}</>
+                ) : (
+                    tx('Add a mobile number in :settings to get WhatsApp messages.', {
+                        settings: <TextLink href={route('account.settings')}>{t('account settings')}</TextLink>,
+                    })
+                )}
+            </p>
+        </section>
+    );
 }
 
 function SmsPreference({ sms }: { sms: NonNullable<AccountProps['sms']> }) {
@@ -21,9 +66,9 @@ function SmsPreference({ sms }: { sms: NonNullable<AccountProps['sms']> }) {
             className="mt-4 rounded-card border border-border bg-surface p-4 md:p-6"
         >
             <h2 id="notifications-heading" className="font-medium">
-                Notifications
+                {t('Notifications')}
             </h2>
-            {sms.email && <p className="mt-1 text-sm text-muted">We email you about every order.</p>}
+            {sms.email && <p className="mt-1 text-sm text-muted">{t('We email you about every order.')}</p>}
             <label className="mt-3 flex min-h-11 items-center gap-3 text-sm">
                 <Checkbox
                     checked={!sms.opted_out}
@@ -40,63 +85,71 @@ function SmsPreference({ sms }: { sms: NonNullable<AccountProps['sms']> }) {
                         )
                     }
                 />
-                {sms.email ? 'Also text me order updates' : 'Text me order updates'}
+                {sms.email ? t('Also text me order updates') : t('Text me order updates')}
             </label>
             <p className="text-sm text-muted">
                 {sms.phone ? (
-                    <>Texts go to {sms.phone}, the phone on your own profile.</>
+                    <>{t('Texts go to :phone.', { phone: sms.phone })}</>
                 ) : (
-                    <>
-                        To get texts, add a mobile number with the country code (e.g. +91…) to{' '}
-                        <TextLink href={route('patients.index')}>your own profile</TextLink>.
-                    </>
+                    tx('To get texts, add a mobile number with the country code (e.g. +91…) to :profile.', {
+                        profile: <TextLink href={route('patients.index')}>{t('your own profile')}</TextLink>,
+                    })
                 )}
             </p>
         </section>
     );
 }
 
-export default function Account({ sms }: AccountProps) {
+export default function Account({ sms, whatsapp }: AccountProps) {
     const { auth, status } = usePage<SharedData>().props;
 
     const links: { href: string; label: string; description: string; icon: LucideIcon }[] = [
         {
             href: route('orders.index'),
-            label: 'Orders',
-            description: 'Your bookings, collection times and changes',
+            label: t('Orders'),
+            description: t('Your bookings, collection times and changes'),
             icon: ClipboardList,
         },
         {
             href: route('reports.index'),
-            label: 'Reports',
-            description: 'Your test reports from every order',
+            label: t('Reports'),
+            description: t('Your test reports from every order'),
             icon: FileText,
         },
         {
             href: route('patients.index'),
-            label: 'Patients',
-            description: 'You and the family members you book tests for',
+            label: t('Patients'),
+            description: t('You and the family members you book tests for'),
             icon: Users,
         },
         {
             href: route('addresses.index'),
-            label: 'Addresses',
-            description: 'Where we collect samples from you',
+            label: t('Addresses'),
+            description: t('Where we collect samples from you'),
             icon: MapPin,
+        },
+        {
+            href: route('account.privacy'),
+            label: t('Privacy and data'),
+            description: t('Download your data or delete your account'),
+            icon: ShieldCheck,
         },
     ];
 
     return (
         <AppLayout>
-            <Head title="Your account" />
+            <Head title={t('Your account')} />
 
             <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
-                <h1 className="text-2xl font-semibold md:text-3xl">Your account</h1>
+                <h1 className="text-2xl font-semibold md:text-3xl">{t('Your account')}</h1>
 
                 <div className="mt-6 rounded-card border border-border bg-surface p-4 md:p-6">
-                    <p className="text-sm text-muted">Signed in as</p>
+                    <p className="text-sm text-muted">{t('Signed in as')}</p>
                     <p className="mt-1 font-medium">{auth.user?.name}</p>
                     <p className="text-sm text-muted">{auth.user?.email}</p>
+                    <TextLink href={route('account.settings')} className="mt-2 inline-block text-sm">
+                        {t('Change your details or password')}
+                    </TextLink>
                 </div>
 
                 {status && (
@@ -106,6 +159,7 @@ export default function Account({ sms }: AccountProps) {
                 )}
 
                 {sms && <SmsPreference sms={sms} />}
+                {whatsapp && <WhatsAppPreference whatsapp={whatsapp} />}
 
                 <ul className="mt-4 space-y-3">
                     {links.map(({ href, label, description, icon: Icon }) => (

@@ -6,6 +6,7 @@ import type { MapConfig } from '@/types';
 import { LocateFixed } from 'lucide-react';
 import { useState } from 'react';
 import { CircleMarker } from 'react-leaflet';
+import { t } from '@/lib/i18n';
 
 interface LocationPickerProps {
     config: MapConfig;
@@ -24,7 +25,7 @@ export function LocationPicker({ config, latitude, longitude, onChange, errors }
 
     const useMyLocation = () => {
         if (!navigator.geolocation) {
-            setLocateError('Your browser cannot share its location.');
+            setLocateError(t('Your browser cannot share its location.'));
             return;
         }
 
@@ -37,7 +38,7 @@ export function LocationPicker({ config, latitude, longitude, onChange, errors }
             },
             () => {
                 setLocating(false);
-                setLocateError('We could not get your location. Tap the map instead.');
+                setLocateError(t('We could not get your location. Tap the map instead.'));
             },
             { enableHighAccuracy: true, timeout: 10_000 },
         );
@@ -48,7 +49,7 @@ export function LocationPicker({ config, latitude, longitude, onChange, errors }
             <BaseMap
                 config={config}
                 center={initialCenter}
-                label="Map: tap to place the pin for this address"
+                label={t('Map: tap to place the pin for this address')}
                 onClick={([lat, lng]) => onChange(String(lat), String(lng))}
             >
                 {point && (
@@ -59,11 +60,11 @@ export function LocationPicker({ config, latitude, longitude, onChange, errors }
             <div className="flex flex-wrap items-center gap-2">
                 <Button variant="secondary" size="sm" onClick={useMyLocation} processing={locating}>
                     <LocateFixed className="size-4" aria-hidden="true" />
-                    Use my location
+                    {t('Use my location')}
                 </Button>
                 {point && (
                     <Button variant="ghost" size="sm" onClick={() => onChange('', '')}>
-                        Remove pin
+                        {t('Remove pin')}
                     </Button>
                 )}
             </div>

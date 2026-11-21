@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\NotificationEvent;
 use App\Enums\OrderStatus;
+use App\Models\NotificationLog;
 use App\Models\Order;
 use App\Models\Refund;
 use App\Notifications\OrderNotification;
@@ -32,6 +33,12 @@ class OrderNotifier
     {
         $this->send(NotificationEvent::PaymentReceived, $order, $amount);
         $this->send(NotificationEvent::AdminNewOrder, $order);
+    }
+
+    /** Pay-at-collection orders: the payment is recorded, and the invoice goes by email. */
+    public function paymentCollected(Order $order, int $amount): void
+    {
+        $this->send(NotificationEvent::PaymentCollected, $order, $amount);
     }
 
     public function refunded(Order $order, Refund $refund): void
@@ -97,6 +104,19 @@ class OrderNotifier
         }
 
         return $orders->count();
+    }
+
+    /**
+     * Sends a logged message again on the same channel (B-24). Admin alerts go to the address they
+     * went to; customer messages go to the customer as they are now.
+     */
+    public function resend(NotificationLog $log): void
+    {
+        $notification = new OrderNotification($log->event, $log->order, $log->amount, $log->channel);
+
+        $log->event->forAdmins()
+            ? Notification::route('mail', $log->recipient)->notify($notification)
+            : $log->order->user->notify($notification);
     }
 
     private function send(NotificationEvent $event, Order $order, ?int $amount = null): void

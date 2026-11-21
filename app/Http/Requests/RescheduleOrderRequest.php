@@ -31,7 +31,7 @@ class RescheduleOrderRequest extends FormRequest
      */
     public function messages(): array
     {
-        return ['slot_starts_at.required' => 'Choose a new slot.'];
+        return ['slot_starts_at.required' => __('Choose a new slot.')];
     }
 
     public function slotStartsAt(): CarbonImmutable

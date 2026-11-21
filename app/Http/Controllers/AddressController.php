@@ -34,7 +34,7 @@ class AddressController extends Controller
     {
         $request->user()->addresses()->create($request->validated());
 
-        return to_route('addresses.index')->with('status', 'Address added.');
+        return to_route('addresses.index')->with('status', __('Address added.'));
     }
 
     public function edit(Address $address): Response
@@ -48,7 +48,7 @@ class AddressController extends Controller
     {
         $address->update($request->validated());
 
-        return to_route('addresses.index')->with('status', 'Address saved.');
+        return to_route('addresses.index')->with('status', __('Address saved.'));
     }
 
     public function destroy(Address $address): RedirectResponse
@@ -57,7 +57,7 @@ class AddressController extends Controller
 
         $address->delete();
 
-        return to_route('addresses.index')->with('status', 'Address removed.');
+        return to_route('addresses.index')->with('status', __('Address removed.'));
     }
 
     /**

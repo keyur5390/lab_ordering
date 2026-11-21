@@ -41,6 +41,8 @@ class HandleInertiaRequests extends Middleware
                     : null,
             ],
             'status' => fn () => $request->session()->get('status'),
+            // Languages (B-32): English needs no messages; others get the whole dictionary.
+            'i18n' => fn () => SetLocale::shared($request),
             // Site currency for formatting prices; null until an admin chooses one.
             'currency' => function () {
                 $currency = app(Settings::class)->currency();

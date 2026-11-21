@@ -2,6 +2,10 @@
 
 namespace App\Enums;
 
+use App\Services\Sms\LogSmsSender;
+use App\Services\Sms\SmsSender;
+use App\Services\Sms\TwilioSmsSender;
+
 /**
  * How SMS are sent (client, 2026-10-29: a driver per provider, the admin picks one in Settings).
  * Provider keys live in .env; a driver can be chosen only once its keys are set.
@@ -26,6 +30,15 @@ enum SmsDriver: string
             self::Log => true,
             self::Twilio => filled(config('services.twilio.sid')) && filled(config('services.twilio.token'))
                 && filled(config('services.twilio.from')),
+        };
+    }
+
+    /** What sends this driver's messages. */
+    public function sender(): SmsSender
+    {
+        return match ($this) {
+            self::Log => app(LogSmsSender::class),
+            self::Twilio => app(TwilioSmsSender::class),
         };
     }
 

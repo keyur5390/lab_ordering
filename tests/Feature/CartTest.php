@@ -159,6 +159,7 @@ it("moves a guest's cart into their new account when they register", function ()
         'email' => 'asha@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'terms' => '1',
     ]);
 
     $cart = Cart::sole();

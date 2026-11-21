@@ -5,6 +5,7 @@ import AppLayout from '@/layouts/app-layout';
 import { formatDate } from '@/lib/format';
 import { Head, router } from '@inertiajs/react';
 import { FileText } from 'lucide-react';
+import { t } from '@/lib/i18n';
 
 interface ReportRow {
     id: number;
@@ -37,18 +38,18 @@ export default function Reports({ patients, patient, reports }: ReportsProps) {
 
     return (
         <AppLayout>
-            <Head title="Reports" />
+            <Head title={t('Reports')} />
 
             <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <TextLink href={route('account')} className="text-sm">
-                    ← Account
+                    {t('← Account')}
                 </TextLink>
-                <h1 className="mt-4 text-2xl font-semibold md:text-3xl">Reports</h1>
-                <p className="mt-1 text-sm text-muted">Every report from your orders. We keep them for you.</p>
+                <h1 className="mt-4 text-2xl font-semibold md:text-3xl">{t('Reports')}</h1>
+                <p className="mt-1 text-sm text-muted">{t('Every report from your orders. We keep them for you.')}</p>
 
                 {patients.length > 1 && (
                     <div className="mt-6 space-y-1.5">
-                        <Label htmlFor="patient-filter">Patient</Label>
+                        <Label htmlFor="patient-filter">{t('Patient')}</Label>
                         <Select
                             id="patient-filter"
                             className="w-full sm:w-64"
@@ -60,7 +61,7 @@ export default function Reports({ patients, patient, reports }: ReportsProps) {
                                 })
                             }
                         >
-                            <option value="">Everyone</option>
+                            <option value="">{t('Everyone')}</option>
                             {patients.map((name) => (
                                 <option key={name} value={name}>
                                     {name}
@@ -74,7 +75,7 @@ export default function Reports({ patients, patient, reports }: ReportsProps) {
                     <div className="mt-6 flex flex-col items-center rounded-card border border-border bg-surface p-8 text-center md:p-12">
                         <FileText className="size-6 text-muted" strokeWidth={1.75} aria-hidden="true" />
                         <p className="mt-3 text-sm text-muted">
-                            No reports yet. They appear here once the lab uploads them.
+                            {t('No reports yet. They appear here once the lab uploads them.')}
                         </p>
                     </div>
                 ) : (
@@ -110,7 +111,7 @@ export default function Reports({ patients, patient, reports }: ReportsProps) {
                                                 className="inline-flex h-11 items-center gap-2 rounded-control border border-border bg-surface px-3 text-sm font-medium hover:bg-canvas"
                                             >
                                                 <FileText className="size-4" aria-hidden="true" />
-                                                Download
+                                                {t('Download')}
                                             </a>
                                         </li>
                                     ))}

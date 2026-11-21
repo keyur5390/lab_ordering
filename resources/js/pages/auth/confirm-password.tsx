@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import GuestLayout from '@/layouts/guest-layout';
 import { useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
+import { t } from '@/lib/i18n';
 
 export default function ConfirmPassword() {
     const { data, setData, post, processing, errors, reset } = useForm({ password: '' });
@@ -13,11 +14,11 @@ export default function ConfirmPassword() {
     };
 
     return (
-        <GuestLayout title="Confirm your password" description="Please confirm your password to continue.">
+        <GuestLayout title={t('Confirm your password')} description={t('Please confirm your password to continue.')}>
             <form onSubmit={submit} className="space-y-4" noValidate>
                 <FormField
                     id="password"
-                    label="Password"
+                    label={t('Password')}
                     type="password"
                     autoComplete="current-password"
                     autoFocus
@@ -28,7 +29,7 @@ export default function ConfirmPassword() {
                 />
 
                 <Button type="submit" className="w-full" processing={processing}>
-                    Confirm
+                    {t('Confirm')}
                 </Button>
             </form>
         </GuestLayout>

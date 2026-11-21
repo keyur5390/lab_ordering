@@ -1,12 +1,14 @@
+import { locale, plural } from '@/lib/i18n';
+
 /** Human-readable turnaround, e.g. 6 → "6 hours", 48 → "2 days". */
 export function formatTurnaround(hours: number): string {
     if (hours >= 24 && hours % 24 === 0) {
         const days = hours / 24;
 
-        return `${days} ${days === 1 ? 'day' : 'days'}`;
+        return plural(days, ':count day', ':count days');
     }
 
-    return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+    return plural(hours, ':count hour', ':count hours');
 }
 
 /**
@@ -17,7 +19,7 @@ export function formatDate(
     date: string,
     options: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short' },
 ): string {
-    return new Intl.DateTimeFormat(undefined, { ...options, timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
+    return new Intl.DateTimeFormat(locale(), { ...options, timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`));
 }
 
 /**
@@ -25,7 +27,7 @@ export function formatDate(
  * The ISO strings carry the site's offset; `timeZone` keeps the display in that zone.
  */
 export function formatSlot(startsAt: string, endsAt: string, timeZone: string): string {
-    const date = new Intl.DateTimeFormat(undefined, {
+    const date = new Intl.DateTimeFormat(locale(), {
         weekday: 'short',
         day: 'numeric',
         month: 'short',
@@ -37,14 +39,14 @@ export function formatSlot(startsAt: string, endsAt: string, timeZone: string): 
 
 /** A time of day in the given timezone, e.g. "07:30". */
 export function formatTime(iso: string, timeZone: string): string {
-    return new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: false, timeZone }).format(
+    return new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit', hour12: false, timeZone }).format(
         new Date(iso),
     );
 }
 
 /** A moment in the given timezone, e.g. "Fri 30 Oct, 07:30". */
 export function formatDateTime(iso: string, timeZone: string): string {
-    const date = new Intl.DateTimeFormat(undefined, {
+    const date = new Intl.DateTimeFormat(locale(), {
         weekday: 'short',
         day: 'numeric',
         month: 'short',
