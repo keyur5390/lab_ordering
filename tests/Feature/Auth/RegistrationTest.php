@@ -20,11 +20,13 @@ it('registers a user, logs them in and sends a verification email', function () 
         'email' => 'Asha@Example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'terms' => '1',
     ])->assertRedirect(route('account'));
 
     $user = User::sole();
 
     expect($user->email)->toBe('asha@example.com')
+        ->and($user->privacy_accepted_at)->not->toBeNull()
         ->and($user->hasVerifiedEmail())->toBeFalse();
     $this->assertAuthenticatedAs($user);
     Notification::assertSentTo($user, VerifyEmail::class);
@@ -36,6 +38,7 @@ it('always registers a customer, even if a role is submitted', function () {
         'email' => 'asha@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'terms' => '1',
         'role' => 'admin',
     ])->assertRedirect(route('account'));
 
@@ -48,6 +51,7 @@ it('rejects invalid registration data', function (array $data, string $field) {
         'email' => 'asha@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'terms' => '1',
         ...$data,
     ])->assertSessionHasErrors($field);
 
@@ -57,6 +61,7 @@ it('rejects invalid registration data', function (array $data, string $field) {
     'invalid email' => [['email' => 'not-an-email'], 'email'],
     'short password' => [['password' => 'short', 'password_confirmation' => 'short'], 'password'],
     'unconfirmed password' => [['password_confirmation' => 'different'], 'password'],
+    'no consent to the terms and privacy policy' => [['terms' => ''], 'terms'],
 ]);
 
 it('rejects an email that is already registered, regardless of case', function () {
@@ -67,6 +72,7 @@ it('rejects an email that is already registered, regardless of case', function (
         'email' => 'ASHA@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
+        'terms' => '1',
     ])->assertSessionHasErrors('email');
 
     expect(User::count())->toBe(1);

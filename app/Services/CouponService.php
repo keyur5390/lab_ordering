@@ -36,11 +36,11 @@ class CouponService
         $today = ($now ?? CarbonImmutable::now())->setTimezone($this->settings->timezone())->toDateString();
 
         return match (true) {
-            ! $coupon->is_active, $coupon->ends_on && $coupon->ends_on->toDateString() < $today => 'This code has expired.',
-            $coupon->starts_on && $coupon->starts_on->toDateString() > $today => 'This code isn\'t valid yet.',
-            $coupon->min_order_amount !== null && $subtotal < $coupon->min_order_amount => 'Spend at least '.Money::format($coupon->min_order_amount, $this->currency()).' to use this code.',
-            $coupon->usage_limit !== null && $this->uses($coupon) >= $coupon->usage_limit => 'This code has been fully used.',
-            $coupon->per_customer_limit !== null && $this->uses($coupon, $user) >= $coupon->per_customer_limit => 'You\'ve already used this code.',
+            ! $coupon->is_active, $coupon->ends_on && $coupon->ends_on->toDateString() < $today => __('This code has expired.'),
+            $coupon->starts_on && $coupon->starts_on->toDateString() > $today => __('This code isn\'t valid yet.'),
+            $coupon->min_order_amount !== null && $subtotal < $coupon->min_order_amount => __('Spend at least :amount to use this code.', ['amount' => Money::format($coupon->min_order_amount, $this->currency())]),
+            $coupon->usage_limit !== null && $this->uses($coupon) >= $coupon->usage_limit => __('This code has been fully used.'),
+            $coupon->per_customer_limit !== null && $this->uses($coupon, $user) >= $coupon->per_customer_limit => __('You\'ve already used this code.'),
             default => null,
         };
     }

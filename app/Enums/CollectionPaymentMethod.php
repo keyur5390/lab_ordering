@@ -16,10 +16,10 @@ enum CollectionPaymentMethod: string
     public function label(): string
     {
         return match ($this) {
-            self::Cash => 'Cash',
-            self::Card => 'Card',
-            self::Upi => 'UPI',
-            self::Other => 'Other',
+            self::Cash => __('Cash'),
+            self::Card => __('Card'),
+            self::Upi => __('UPI'),
+            self::Other => __('Other'),
         };
     }
 }

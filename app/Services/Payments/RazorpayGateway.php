@@ -60,10 +60,7 @@ class RazorpayGateway implements PaymentGateway
 
     public function paidFromWebhook(Request $request): ?PaidCheckout
     {
-        $expected = hash_hmac('sha256', $request->getContent(), (string) config('services.razorpay.webhook_secret'));
-        if (! hash_equals($expected, (string) $request->header('X-Razorpay-Signature'))) {
-            throw new InvalidWebhookSignature;
-        }
+        $this->verifySignature($request);
 
         $event = $request->json()->all();
         $linkId = $event['payload']['payment_link']['entity']['id'] ?? null;
@@ -87,6 +84,34 @@ class RazorpayGateway implements PaymentGateway
             'failed' => RefundStatus::Failed,
             default => RefundStatus::Pending,
         });
+    }
+
+    public function refundUpdateFromWebhook(Request $request): ?RefundUpdate
+    {
+        $this->verifySignature($request);
+
+        $event = $request->json()->all();
+        $refundId = $event['payload']['refund']['entity']['id'] ?? null;
+        $status = match ($event['event'] ?? null) {
+            'refund.processed' => RefundStatus::Succeeded,
+            'refund.failed' => RefundStatus::Failed,
+            default => null,
+        };
+
+        return $status && $refundId ? new RefundUpdate($refundId, $status) : null;
+    }
+
+    /**
+     * Webhooks are signed with HMAC-SHA256 of the body using the webhook secret.
+     *
+     * @throws InvalidWebhookSignature
+     */
+    private function verifySignature(Request $request): void
+    {
+        $expected = hash_hmac('sha256', $request->getContent(), (string) config('services.razorpay.webhook_secret'));
+        if (! hash_equals($expected, (string) $request->header('X-Razorpay-Signature'))) {
+            throw new InvalidWebhookSignature;
+        }
     }
 
     private function client(): PendingRequest

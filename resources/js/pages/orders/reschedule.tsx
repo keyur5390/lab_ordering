@@ -8,6 +8,7 @@ import { formatSlot } from '@/lib/format';
 import type { Order, SlotDay } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import type { FormEvent, ReactNode } from 'react';
+import { t } from '@/lib/i18n';
 
 interface RescheduleProps {
     order: Order;
@@ -30,10 +31,12 @@ export default function Reschedule({ order, slots, submitUrl, backUrl, admin }: 
     const content: ReactNode = (
         <form onSubmit={submit} noValidate className="space-y-6">
             <TextLink href={backUrl} className="text-sm">
-                ← Order {order.number}
+                ← {t('Order :number', { number: order.number })}
             </TextLink>
             <p className="text-sm text-muted">
-                Currently booked: {formatSlot(order.slot_starts_at, order.slot_ends_at, order.timezone)}
+                {t('Currently booked: :slot', {
+                    slot: formatSlot(order.slot_starts_at, order.slot_ends_at, order.timezone),
+                })}
             </p>
             <div className="rounded-card border border-border bg-surface p-4 md:p-6">
                 <SlotPicker
@@ -44,7 +47,7 @@ export default function Reschedule({ order, slots, submitUrl, backUrl, admin }: 
                 <InputError message={errors.slot_starts_at} className="mt-3" />
             </div>
             <Button type="submit" processing={processing} disabled={!data.slot_starts_at}>
-                Move to this slot
+                {t('Move to this slot')}
             </Button>
         </form>
     );
@@ -55,9 +58,9 @@ export default function Reschedule({ order, slots, submitUrl, backUrl, admin }: 
 
     return (
         <AppLayout>
-            <Head title={`Reschedule ${order.number}`} />
+            <Head title={t('Reschedule :number', { number: order.number })} />
             <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
-                <h1 className="mb-4 text-2xl font-semibold md:text-3xl">Reschedule collection</h1>
+                <h1 className="mb-4 text-2xl font-semibold md:text-3xl">{t('Reschedule collection')}</h1>
                 {content}
             </div>
         </AppLayout>

@@ -1,3 +1,4 @@
+import type { I18n } from '@/lib/i18n';
 /** Mirrors App\Enums\UserRole. */
 export type UserRole = 'customer' | 'admin';
 
@@ -29,6 +30,8 @@ export interface SharedData {
     currency: Currency | null;
     /** The visitor's cart (guest or customer). */
     cart: CartSummary;
+    /** Language, choices and dictionary (B-32). */
+    i18n: I18n;
     [key: string]: unknown;
 }
 

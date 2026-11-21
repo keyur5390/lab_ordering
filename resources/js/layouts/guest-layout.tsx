@@ -1,3 +1,4 @@
+import { LanguageSwitcher } from '@/components/language-switcher';
 import type { SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { FlaskConical, ShieldCheck } from 'lucide-react';
@@ -48,6 +49,7 @@ export default function GuestLayout({ title, description, children }: GuestLayou
                 <ShieldCheck className="size-4 text-primary-600" aria-hidden="true" />
                 Your information is private and secure
             </p>
+            <LanguageSwitcher className="mt-4" />
         </div>
     );
 }

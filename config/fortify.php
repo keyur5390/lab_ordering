@@ -148,6 +148,9 @@ return [
         Features::registration(),
         Features::resetPasswords(),
         Features::emailVerification(),
+        // Account → Settings (B-23).
+        Features::updateProfileInformation(),
+        Features::updatePasswords(),
     ],
 
 ];

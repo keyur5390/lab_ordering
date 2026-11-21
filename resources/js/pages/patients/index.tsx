@@ -6,6 +6,7 @@ import AppLayout from '@/layouts/app-layout';
 import type { Patient, SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Users } from 'lucide-react';
+import { plural, t } from '@/lib/i18n';
 
 const primaryLinkClass =
     'inline-flex h-11 items-center justify-center rounded-control bg-primary-600 px-4 text-sm font-medium whitespace-nowrap text-white hover:bg-primary-700';
@@ -13,7 +14,7 @@ const primaryLinkClass =
 function details(patient: Patient): string {
     return [
         patient.relationship_label,
-        patient.age !== null && `${patient.age} ${patient.age === 1 ? 'year' : 'years'}`,
+        patient.age !== null && plural(patient.age, ':count year', ':count years'),
         patient.sex_label,
     ]
         .filter(Boolean)
@@ -25,20 +26,22 @@ export default function PatientsIndex({ patients }: { patients: Patient[] }) {
 
     return (
         <AppLayout>
-            <Head title="Patients" />
+            <Head title={t('Patients')} />
 
             <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <TextLink href={route('account')} className="text-sm">
-                    ← Your account
+                    {t('← Your account')}
                 </TextLink>
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-semibold md:text-3xl">Patients</h1>
-                        <p className="mt-1 text-sm text-muted">The people you book tests for, including yourself.</p>
+                        <h1 className="text-2xl font-semibold md:text-3xl">{t('Patients')}</h1>
+                        <p className="mt-1 text-sm text-muted">
+                            {t('The people you book tests for, including yourself.')}
+                        </p>
                     </div>
                     <Link href={route('patients.create')} className={primaryLinkClass}>
-                        Add patient
+                        {t('Add patient')}
                     </Link>
                 </div>
 
@@ -51,7 +54,7 @@ export default function PatientsIndex({ patients }: { patients: Patient[] }) {
                 {patients.length === 0 ? (
                     <div className="mt-6 flex flex-col items-center rounded-card border border-border bg-surface p-8 text-center">
                         <Users className="size-6 text-muted" strokeWidth={1.75} aria-hidden="true" />
-                        <p className="mt-3 text-sm text-muted">No patients yet.</p>
+                        <p className="mt-3 text-sm text-muted">{t('No patients yet.')}</p>
                     </div>
                 ) : (
                     <ul className="mt-6 divide-y divide-border rounded-card border border-border bg-surface">
@@ -60,7 +63,7 @@ export default function PatientsIndex({ patients }: { patients: Patient[] }) {
                                 <div className="min-w-0">
                                     <div className="flex flex-wrap items-center gap-2">
                                         <span className="font-medium">{patient.name}</span>
-                                        {!patient.is_complete && <Badge tone="warning">Details needed</Badge>}
+                                        {!patient.is_complete && <Badge tone="warning">{t('Details needed')}</Badge>}
                                     </div>
                                     <p className="text-sm text-muted">{details(patient)}</p>
                                 </div>
@@ -68,16 +71,18 @@ export default function PatientsIndex({ patients }: { patients: Patient[] }) {
                                     <Link
                                         href={route('patients.edit', patient.id)}
                                         className="inline-flex h-11 items-center rounded-control px-3 text-sm font-medium text-primary-700 hover:bg-canvas sm:h-9"
-                                        aria-label={`Edit ${patient.name}`}
+                                        aria-label={t('Edit :name', { name: patient.name })}
                                     >
-                                        Edit
+                                        {t('Edit')}
                                     </Link>
                                     {!patient.is_self && (
                                         <DeleteButton
                                             href={route('patients.destroy', patient.id)}
                                             itemName={patient.name}
                                             itemType="patient"
-                                            verb="Remove"
+                                            verb={t('Remove')}
+                                            title={t('Remove this patient?')}
+                                            confirmLabel={t('Remove patient')}
                                         />
                                     )}
                                 </div>

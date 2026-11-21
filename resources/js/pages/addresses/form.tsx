@@ -8,6 +8,7 @@ import AppLayout from '@/layouts/app-layout';
 import type { Address, MapConfig, Option } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
+import { t } from '@/lib/i18n';
 
 interface AddressFormProps {
     address: Address | null;
@@ -38,7 +39,7 @@ export default function AddressForm({ address, countries, map }: AddressFormProp
         }
     };
 
-    const title = address ? 'Edit address' : 'Add address';
+    const title = address ? t('Edit address') : t('Add address');
 
     return (
         <AppLayout>
@@ -46,7 +47,7 @@ export default function AddressForm({ address, countries, map }: AddressFormProp
 
             <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <TextLink href={route('addresses.index')} className="text-sm">
-                    ← Addresses
+                    {t('← Addresses')}
                 </TextLink>
                 <h1 className="mt-4 text-2xl font-semibold md:text-3xl">{title}</h1>
 
@@ -54,15 +55,15 @@ export default function AddressForm({ address, countries, map }: AddressFormProp
                     <div className="space-y-4 rounded-card border border-border bg-surface p-4 md:p-6">
                         <FormField
                             id="label"
-                            label="Label (optional)"
-                            hint="For example: Home, Work, Mum's place."
+                            label={t('Label (optional)')}
+                            hint={t("For example: Home, Work, Mum's place.")}
                             value={data.label}
                             onChange={(e) => setData('label', e.target.value)}
                             error={errors.label}
                         />
                         <FormField
                             id="line1"
-                            label="Address line 1"
+                            label={t('Address line 1')}
                             autoComplete="address-line1"
                             required
                             value={data.line1}
@@ -71,7 +72,7 @@ export default function AddressForm({ address, countries, map }: AddressFormProp
                         />
                         <FormField
                             id="line2"
-                            label="Address line 2 (optional)"
+                            label={t('Address line 2 (optional)')}
                             autoComplete="address-line2"
                             value={data.line2}
                             onChange={(e) => setData('line2', e.target.value)}
@@ -80,7 +81,7 @@ export default function AddressForm({ address, countries, map }: AddressFormProp
                         <div className="grid gap-4 sm:grid-cols-2">
                             <FormField
                                 id="city"
-                                label="City"
+                                label={t('City')}
                                 autoComplete="address-level2"
                                 required
                                 value={data.city}
@@ -89,7 +90,7 @@ export default function AddressForm({ address, countries, map }: AddressFormProp
                             />
                             <FormField
                                 id="region"
-                                label="State / region (optional)"
+                                label={t('State / region (optional)')}
                                 autoComplete="address-level1"
                                 value={data.region}
                                 onChange={(e) => setData('region', e.target.value)}
@@ -97,14 +98,14 @@ export default function AddressForm({ address, countries, map }: AddressFormProp
                             />
                             <FormField
                                 id="postcode"
-                                label="Postcode"
+                                label={t('Postcode')}
                                 autoComplete="postal-code"
                                 required
                                 value={data.postcode}
                                 onChange={(e) => setData('postcode', e.target.value)}
                                 error={errors.postcode}
                             />
-                            <Field id="country" label="Country" error={errors.country}>
+                            <Field id="country" label={t('Country')} error={errors.country}>
                                 {(control) => (
                                     <Select
                                         {...control}
@@ -114,7 +115,7 @@ export default function AddressForm({ address, countries, map }: AddressFormProp
                                         onChange={(e) => setData('country', e.target.value)}
                                     >
                                         <option value="" disabled>
-                                            Choose…
+                                            {t('Choose…')}
                                         </option>
                                         {countries.map((option) => (
                                             <option key={option.value} value={option.value}>
@@ -129,9 +130,9 @@ export default function AddressForm({ address, countries, map }: AddressFormProp
 
                     <section className="space-y-3 rounded-card border border-border bg-surface p-4 md:p-6">
                         <div>
-                            <h2 className="text-base font-semibold">Location on the map (optional)</h2>
+                            <h2 className="text-base font-semibold">{t('Location on the map (optional)')}</h2>
                             <p className="mt-1 text-sm text-muted">
-                                A pin helps our collector find you and lets us check coverage more accurately.
+                                {t('A pin helps our collector find you and lets us check coverage more accurately.')}
                             </p>
                         </div>
                         <LocationPicker
@@ -147,9 +148,9 @@ export default function AddressForm({ address, countries, map }: AddressFormProp
 
                     <div className="flex items-center gap-4">
                         <Button type="submit" processing={processing}>
-                            {address ? 'Save' : 'Add address'}
+                            {address ? t('Save') : t('Add address')}
                         </Button>
-                        <TextLink href={route('addresses.index')}>Cancel</TextLink>
+                        <TextLink href={route('addresses.index')}>{t('Cancel')}</TextLink>
                     </div>
                 </form>
             </div>

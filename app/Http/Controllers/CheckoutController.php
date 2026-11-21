@@ -47,7 +47,7 @@ class CheckoutController extends Controller
         $lines = collect($cart ? $this->cart->lines($cart) : [])->where('available', true)->values();
 
         if ($lines->isEmpty()) {
-            return to_route('cart.show')->with('status', 'Add a test or package to check out.');
+            return to_route('cart.show')->with('status', __('Add a test or package to check out.'));
         }
 
         $user = $request->user();
@@ -142,14 +142,14 @@ class CheckoutController extends Controller
         );
 
         if (! $request->paymentMethod()->isOnline()) {
-            return to_route('orders.show', $order)->with('status', 'Thank you! Your order is confirmed.');
+            return to_route('orders.show', $order)->with('status', __('Thank you! Your order is confirmed.'));
         }
 
         try {
             return Inertia::location($this->payments->start($order));
         } catch (PaymentGatewayException) {
             return to_route('orders.show', $order)
-                ->withErrors(['payment' => 'We couldn\'t open the payment page. Please try again.']);
+                ->withErrors(['payment' => __('We couldn\'t open the payment page. Please try again.')]);
         }
     }
 }

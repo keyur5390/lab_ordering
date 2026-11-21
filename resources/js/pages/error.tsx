@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Head, Link } from '@inertiajs/react';
 import { Ban, Clock, FileQuestion, ServerCrash, Wrench, type LucideIcon } from 'lucide-react';
@@ -12,51 +13,51 @@ interface ErrorCopy {
     actions: ('retry' | 'home')[];
 }
 
-const copy: Record<ErrorStatus, ErrorCopy> = {
+const copy = (): Record<ErrorStatus, ErrorCopy> => ({
     403: {
-        title: "You don't have access",
-        message: "Your account isn't allowed to open this page.",
+        title: t("You don't have access"),
+        message: t("Your account isn't allowed to open this page."),
         icon: Ban,
         actions: ['home'],
     },
     404: {
-        title: 'Page not found',
-        message: "We couldn't find the page you were looking for. It may have moved or no longer exists.",
+        title: t('Page not found'),
+        message: t("We couldn't find the page you were looking for. It may have moved or no longer exists."),
         icon: FileQuestion,
         actions: ['home'],
     },
     419: {
-        title: 'Page expired',
-        message: 'This page was open for too long. Reload it and try again.',
+        title: t('Page expired'),
+        message: t('This page was open for too long. Reload it and try again.'),
         icon: Clock,
         actions: ['retry'],
     },
     429: {
-        title: 'Too many attempts',
-        message: 'Please wait a moment, then try again.',
+        title: t('Too many attempts'),
+        message: t('Please wait a moment, then try again.'),
         icon: Clock,
         actions: ['retry'],
     },
     500: {
-        title: 'Something went wrong',
-        message: 'Sorry, something went wrong on our side. Please try again in a moment.',
+        title: t('Something went wrong'),
+        message: t('Sorry, something went wrong on our side. Please try again in a moment.'),
         icon: ServerCrash,
         actions: ['retry', 'home'],
     },
     503: {
-        title: 'Down for maintenance',
-        message: "We're making some improvements. Please check back shortly.",
+        title: t('Down for maintenance'),
+        message: t("We're making some improvements. Please check back shortly."),
         icon: Wrench,
         actions: ['retry'],
     },
-};
+});
 
 /**
  * Rendered by the exception handler in bootstrap/app.php. It receives its props directly
  * because shared props and the session may not exist when an error happens.
  */
 export default function ErrorPage({ status, name }: { status: ErrorStatus; name: string }) {
-    const { title, message, icon: Icon, actions } = copy[status] ?? copy[500];
+    const { title, message, icon: Icon, actions } = copy()[status] ?? copy()[500];
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
@@ -73,7 +74,9 @@ export default function ErrorPage({ status, name }: { status: ErrorStatus; name:
                 <p className="mt-2 text-base text-muted">{message}</p>
 
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                    {actions.includes('retry') && <Button onClick={() => window.location.reload()}>Try again</Button>}
+                    {actions.includes('retry') && (
+                        <Button onClick={() => window.location.reload()}>{t('Try again')}</Button>
+                    )}
                     {actions.includes('home') && (
                         <Link
                             href={route('home')}
@@ -83,7 +86,7 @@ export default function ErrorPage({ status, name }: { status: ErrorStatus; name:
                                     : 'inline-flex h-11 items-center justify-center rounded-control bg-primary-600 px-4 text-sm font-medium text-white hover:bg-primary-700'
                             }
                         >
-                            Go to home
+                            {t('Go to home')}
                         </Link>
                     )}
                 </div>

@@ -38,7 +38,7 @@ class AddCartItemRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'id.exists' => 'This item is no longer available.',
+            'id.exists' => __('This item is no longer available.'),
         ];
     }
 

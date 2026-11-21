@@ -169,4 +169,12 @@ class Order extends Model
     {
         return $this->hasOne(Invoice::class);
     }
+
+    /**
+     * @return HasMany<NotificationLog, $this>
+     */
+    public function notificationLogs(): HasMany
+    {
+        return $this->hasMany(NotificationLog::class);
+    }
 }

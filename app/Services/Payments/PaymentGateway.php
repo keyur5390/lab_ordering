@@ -37,4 +37,11 @@ interface PaymentGateway
      * @throws PaymentGatewayException
      */
     public function refund(Payment $payment, int $amount): GatewayRefund;
+
+    /**
+     * A refund's final outcome reported by a webhook (B-25), or null for events we don't act on.
+     *
+     * @throws InvalidWebhookSignature
+     */
+    public function refundUpdateFromWebhook(Request $request): ?RefundUpdate;
 }

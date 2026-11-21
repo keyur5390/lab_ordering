@@ -1,10 +1,12 @@
+import { FaqList, type FaqItem } from '@/components/faq-list';
 import { PackageCard } from '@/components/catalogue/package-card';
+import { Seo } from '@/components/seo';
 import { TestCard } from '@/components/catalogue/test-card';
 import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/layouts/app-layout';
 import { formatMoney } from '@/lib/money';
 import type { Currency, LabPackage, LabTest, ServiceArea } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import {
     ArrowRight,
     Check,
@@ -21,6 +23,9 @@ import {
 } from 'lucide-react';
 
 interface HomeProps {
+    hero: { title: string; text: string | null; button: string };
+    featured: LabPackage[];
+    faqs: FaqItem[];
     featured_tests: LabTest[];
     featured_packages: LabPackage[];
     stats: {
@@ -64,7 +69,17 @@ function SectionHeading({
     );
 }
 
-export default function Home({ featured_tests, featured_packages, stats, service_areas, currency }: HomeProps) {
+export default function Home({
+    hero,
+    featured,
+    faqs,
+    featured_tests,
+    featured_packages,
+    stats,
+    service_areas,
+    currency,
+}: HomeProps) {
+    const featuredPackages = featured.length > 0 ? featured : featured_packages;
     const statCards: { label: string; value: number; icon: LucideIcon }[] = [
         { label: 'Lab tests', value: stats.tests, icon: Droplet },
         { label: 'Health packages', value: stats.packages, icon: FlaskConical },
@@ -97,7 +112,7 @@ export default function Home({ featured_tests, featured_packages, stats, service
 
     return (
         <AppLayout>
-            <Head title="Home" />
+            <Seo title="Home" description={hero.text ?? hero.title} />
 
             <section className="relative isolate overflow-hidden bg-canvas">
                 <div
@@ -114,20 +129,20 @@ export default function Home({ featured_tests, featured_packages, stats, service
                         </Badge>
 
                         <h1 className="text-4xl leading-[1.08] font-bold tracking-[-0.04em] text-text sm:text-5xl lg:text-6xl">
-                            Good health starts with
-                            <span className="mt-1 block text-primary-700">knowing more.</span>
+                            {hero.title}
                         </h1>
-                        <p className="mt-6 max-w-xl text-base leading-7 text-muted sm:text-lg sm:leading-8">
-                            Book trusted lab tests with expert sample collection, convenient appointments, and secure
-                            reports — all in one place.
-                        </p>
+                        {hero.text && (
+                            <p className="mt-6 max-w-xl text-base leading-7 text-muted sm:text-lg sm:leading-8">
+                                {hero.text}
+                            </p>
+                        )}
 
                         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                             <Link
                                 href={route('catalogue.index')}
                                 className="inline-flex h-12 items-center justify-center gap-2 rounded-control bg-primary-600 px-6 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(8,120,109,0.22)] transition-all hover:-translate-y-0.5 hover:bg-primary-700"
                             >
-                                Explore tests
+                                {hero.button}
                                 <ArrowRight className="size-4" aria-hidden="true" />
                             </Link>
                             <Link
@@ -264,7 +279,7 @@ export default function Home({ featured_tests, featured_packages, stats, service
                 </ol>
             </section>
 
-            {featured_packages.length > 0 && (
+            {featuredPackages.length > 0 && (
                 <section className="border-y border-border/70 bg-primary-50/70 py-16 sm:py-20">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <SectionHeading
@@ -275,7 +290,7 @@ export default function Home({ featured_tests, featured_packages, stats, service
                             linkText="Explore all packages"
                         />
                         <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                            {featured_packages.map((pkg) => (
+                            {featuredPackages.map((pkg) => (
                                 <li key={pkg.id}>
                                     <PackageCard pkg={pkg} />
                                 </li>
@@ -336,6 +351,20 @@ export default function Home({ featured_tests, featured_packages, stats, service
                                 </li>
                             ))}
                         </ul>
+                    </div>
+                </section>
+            )}
+
+            {faqs.length > 0 && (
+                <section aria-labelledby="faq-heading" className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+                    <p className="mb-2 text-xs font-bold tracking-[0.16em] text-primary-700 uppercase">
+                        Helpful answers
+                    </p>
+                    <h2 id="faq-heading" className="text-2xl font-bold tracking-tight text-text sm:text-3xl">
+                        Frequently asked questions
+                    </h2>
+                    <div className="mt-6">
+                        <FaqList faqs={faqs} />
                     </div>
                 </section>
             )}

@@ -18,11 +18,11 @@ enum PatientRelationship: string
     public function label(): string
     {
         return match ($this) {
-            self::Self => 'Self',
-            self::Spouse => 'Spouse',
-            self::Child => 'Child',
-            self::Parent => 'Parent',
-            self::Other => 'Other',
+            self::Self => __('Self'),
+            self::Spouse => __('Spouse'),
+            self::Child => __('Child'),
+            self::Parent => __('Parent'),
+            self::Other => __('Other'),
         };
     }
 }

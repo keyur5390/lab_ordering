@@ -4,6 +4,7 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import type { Order } from '@/types';
 import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { t } from '@/lib/i18n';
 
 interface OrderActionsProps {
     order: Order;
@@ -27,18 +28,18 @@ export function OrderActions({ order, cancelUrl, rescheduleUrl }: OrderActionsPr
                     href={rescheduleUrl}
                     className="inline-flex h-11 items-center rounded-control border border-border bg-surface px-4 text-sm font-medium hover:bg-canvas"
                 >
-                    Reschedule
+                    {t('Reschedule')}
                 </Link>
             )}
             {order.can_cancel && (
                 <>
                     <Button variant="ghost" className="text-danger-600" onClick={() => setConfirming(true)}>
-                        Cancel order
+                        {t('Cancel order')}
                     </Button>
                     <ConfirmDialog
                         open={confirming}
-                        title="Cancel this order?"
-                        confirmLabel="Cancel order"
+                        title={t('Cancel this order?')}
+                        confirmLabel={t('Cancel order')}
                         processing={processing}
                         onClose={() => setConfirming(false)}
                         onConfirm={() =>
@@ -56,12 +57,12 @@ export function OrderActions({ order, cancelUrl, rescheduleUrl }: OrderActionsPr
                             )
                         }
                     >
-                        The collection slot will be released. This can't be undone.
+                        {t("The collection slot will be released. This can't be undone.")}
                         {order.payment && order.payment.refundable > 0 && (
                             <>
                                 {' '}
-                                <Price amount={order.payment.refundable} currencyCode={order.currency} /> will be
-                                refunded in full to the original payment method.
+                                <Price amount={order.payment.refundable} currencyCode={order.currency} />{' '}
+                                {t('will be refunded in full to the original payment method.')}
                             </>
                         )}
                     </ConfirmDialog>

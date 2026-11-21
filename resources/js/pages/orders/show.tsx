@@ -9,6 +9,7 @@ import { formatDate, formatTime } from '@/lib/format';
 import type { Order, SharedData } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { t } from '@/lib/i18n';
 
 export default function OrderShow({ order, cutoffHours }: { order: Order; cutoffHours: number | null }) {
     const { status, errors } = usePage<SharedData & { errors: Record<string, string> }>().props;
@@ -18,20 +19,27 @@ export default function OrderShow({ order, cutoffHours }: { order: Order; cutoff
 
     return (
         <AppLayout>
-            <Head title={`Order ${order.number}`} />
+            <Head title={t('Order :number', { number: order.number })} />
 
             <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
                 <TextLink href={route('orders.index')} className="text-sm">
-                    ← Orders
+                    {t('← Orders')}
                 </TextLink>
 
                 <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <h1 className="text-2xl font-semibold md:text-3xl">Order {order.number}</h1>
+                    <h1 className="text-2xl font-semibold md:text-3xl">
+                        {t('Order :number', { number: order.number })}
+                    </h1>
                     <OrderStatusBadge status={order.status} label={order.status_label} />
                 </div>
                 <p className="mt-1 text-sm text-muted">
-                    Placed{' '}
-                    {formatDate(order.placed_at.slice(0, 10), { day: 'numeric', month: 'long', year: 'numeric' })}
+                    {t('Placed :date', {
+                        date: formatDate(order.placed_at.slice(0, 10), {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                        }),
+                    })}
                 </p>
 
                 {status && (
@@ -50,11 +58,12 @@ export default function OrderShow({ order, cutoffHours }: { order: Order; cutoff
                         {order.can_pay && order.payment_expires_at ? (
                             <>
                                 <p className="text-sm">
-                                    This order isn't paid yet. We're holding your collection slot until{' '}
-                                    <span className="font-semibold">
-                                        {formatTime(order.payment_expires_at, order.timezone)}
-                                    </span>
-                                    ; pay before then to confirm it.
+                                    {t(
+                                        "This order isn't paid yet. We're holding your collection slot until :time; pay before then to confirm it.",
+                                        {
+                                            time: formatTime(order.payment_expires_at, order.timezone),
+                                        },
+                                    )}
                                 </p>
                                 <Button
                                     processing={paying}
@@ -66,13 +75,14 @@ export default function OrderShow({ order, cutoffHours }: { order: Order; cutoff
                                         )
                                     }
                                 >
-                                    Pay now
+                                    {t('Pay now')}
                                 </Button>
                             </>
                         ) : (
                             <p className="text-sm">
-                                The time to pay for this order has run out, so it will be cancelled. If you have already
-                                paid, it will be confirmed or refunded in full.
+                                {t(
+                                    'The time to pay for this order has run out, so it will be cancelled. If you have already paid, it will be confirmed or refunded in full.',
+                                )}
                             </p>
                         )}
                     </div>
@@ -92,8 +102,11 @@ export default function OrderShow({ order, cutoffHours }: { order: Order; cutoff
                         {!order.can_cancel && (
                             <p className="text-sm text-muted">
                                 {cutoffHours === null
-                                    ? 'To change or cancel this order, please contact us.'
-                                    : `Orders can be changed or cancelled up to ${cutoffHours} hours before the collection. To change it now, please contact us.`}
+                                    ? t('To change or cancel this order, please contact us.')
+                                    : t(
+                                          'Orders can be changed or cancelled up to :hours hours before the collection. To change it now, please contact us.',
+                                          { hours: cutoffHours },
+                                      )}
                             </p>
                         )}
                     </div>
