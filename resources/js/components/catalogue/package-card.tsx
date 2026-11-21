@@ -9,9 +9,12 @@ import { Clock, FlaskConical } from 'lucide-react';
 /** Package card (DESIGN.md §6). */
 export function PackageCard({ pkg }: { pkg: LabPackage }) {
     return (
-        <article className="flex h-full flex-col rounded-card border border-border bg-surface p-4 md:p-6">
+        <article className="group flex h-full flex-col rounded-card border border-border/80 bg-surface p-5 shadow-[0_8px_24px_rgba(23,45,40,0.04)] transition-all duration-200 hover:-translate-y-1 hover:border-primary-100 hover:shadow-[0_18px_36px_rgba(23,45,40,0.09)] md:p-6">
             <h3 className="text-base font-semibold">
-                <Link href={route('catalogue.packages.show', pkg.slug)} className="hover:text-primary-700">
+                <Link
+                    href={route('catalogue.packages.show', pkg.slug)}
+                    className="transition-colors group-hover:text-primary-700"
+                >
                     {pkg.name}
                 </Link>
             </h3>

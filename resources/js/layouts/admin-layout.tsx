@@ -96,8 +96,10 @@ export default function AdminLayout({ title, actions, children }: AdminLayoutPro
                             href={route(routeName)}
                             aria-current={active ? 'page' : undefined}
                             className={cn(
-                                'flex h-11 items-center gap-3 rounded-control px-3 text-sm font-medium',
-                                active ? 'bg-primary-50 text-primary-700' : 'text-text hover:bg-canvas',
+                                'flex h-11 items-center gap-3 rounded-control px-3 text-sm font-medium transition-colors',
+                                active
+                                    ? 'bg-white/10 text-white shadow-sm ring-1 ring-white/10'
+                                    : 'text-white/70 hover:bg-white/5 hover:text-white',
                             )}
                         >
                             <Icon className="size-5" strokeWidth={1.75} aria-hidden="true" />
@@ -112,10 +114,10 @@ export default function AdminLayout({ title, actions, children }: AdminLayoutPro
         <div className="min-h-screen bg-canvas lg:flex">
             <Head title={`${title} · Admin`} />
 
-            <aside className="hidden w-64 shrink-0 border-r border-border bg-surface lg:block">
-                <div className="flex h-16 items-center border-b border-border px-6">
-                    <Link href={home} className="font-semibold text-primary-700">
-                        {name} admin
+            <aside className="hidden w-64 shrink-0 border-r border-primary-900/10 bg-primary-900 text-white lg:block">
+                <div className="flex h-16 items-center border-b border-white/10 px-6">
+                    <Link href={home} className="font-semibold tracking-tight text-white">
+                        {name} <span className="font-normal text-white/60">studio</span>
                     </Link>
                 </div>
                 {nav}
@@ -134,7 +136,7 @@ export default function AdminLayout({ title, actions, children }: AdminLayoutPro
                         >
                             {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
                         </Button>
-                        <span className="font-semibold text-primary-700 lg:hidden">Admin</span>
+                        <span className="font-semibold tracking-tight text-primary-900 lg:hidden">Admin workspace</span>
                     </div>
 
                     <div className="flex items-center gap-1">
@@ -152,7 +154,10 @@ export default function AdminLayout({ title, actions, children }: AdminLayoutPro
                 </header>
 
                 {menuOpen && (
-                    <div id="admin-mobile-nav" className="border-b border-border bg-surface lg:hidden">
+                    <div
+                        id="admin-mobile-nav"
+                        className="border-b border-primary-900/10 bg-primary-900 text-white lg:hidden"
+                    >
                         {nav}
                     </div>
                 )}

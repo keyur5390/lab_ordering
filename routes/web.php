@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ClosureController;
@@ -33,7 +34,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportHistoryController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'home')->name('home');
+Route::get('/', HomeController::class)->name('home');
 
 Route::controller(CatalogueController::class)->name('catalogue.')->group(function () {
     Route::get('/tests', 'index')->name('index');

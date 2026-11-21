@@ -2,13 +2,13 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { Menu, ShoppingCart, X } from 'lucide-react';
+import { FlaskConical, Menu, ShoppingCart, X } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 
 const headerLinkClass =
-    'inline-flex h-11 items-center rounded-control px-3 text-sm font-medium whitespace-nowrap text-text hover:bg-canvas';
+    'inline-flex h-11 items-center rounded-control px-3 text-sm font-medium whitespace-nowrap text-muted transition-colors hover:bg-primary-50 hover:text-primary-700';
 const registerLinkClass =
-    'inline-flex h-11 items-center justify-center rounded-control bg-primary-600 px-4 text-sm font-medium whitespace-nowrap text-white hover:bg-primary-700';
+    'inline-flex h-11 items-center justify-center rounded-control bg-primary-600 px-4 text-sm font-semibold whitespace-nowrap text-white shadow-sm transition-colors hover:bg-primary-700';
 
 /** Header links, laid out in a row on desktop and stacked in the mobile menu. */
 function NavLinks({ stacked }: { stacked?: boolean }) {
@@ -95,11 +95,20 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
     return (
         <div className="flex min-h-screen flex-col">
-            <header className="border-b border-border bg-surface">
-                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-                    {/* TODO(client): replace text with logo */}
-                    <Link href={route('home')} className="text-lg font-semibold whitespace-nowrap text-primary-700">
-                        {name}
+            <header className="sticky top-0 z-30 border-b border-border/80 bg-surface/95 shadow-[0_8px_24px_rgba(23,45,40,0.04)] backdrop-blur-md">
+                <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+                    <Link href={route('home')} className="group flex min-w-0 items-center gap-3">
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-600 text-white shadow-sm transition-transform group-hover:scale-105">
+                            <FlaskConical className="size-5" strokeWidth={1.8} aria-hidden="true" />
+                        </span>
+                        <span className="min-w-0">
+                            <span className="block truncate text-base font-bold tracking-tight text-text sm:text-lg">
+                                {name}
+                            </span>
+                            <span className="hidden text-[11px] font-medium tracking-wide text-muted sm:block">
+                                CARE, WITH CLARITY
+                            </span>
+                        </span>
                     </Link>
 
                     <nav className="hidden items-center gap-1 md:flex" aria-label="Main">

@@ -1,7 +1,7 @@
 # DESIGN: the look
 
-> Brand values below are **placeholders** until the client supplies a brand kit.
-> `TODO(client):` logo, brand colours, typeface.
+> The palette is a considered default and should be aligned with the approved brand kit
+> before launch.
 
 ## 1. Principles
 
@@ -16,19 +16,22 @@ Use only these tokens. No arbitrary hex values or one-off spacing in components.
 
 ```css
 @theme {
-  /* Brand (placeholder — TODO(client)) */
-  --color-primary-50:  #eff8ff;
-  --color-primary-100: #dbeefe;
-  --color-primary-500: #2e90fa;
-  --color-primary-600: #1570ef;
-  --color-primary-700: #175cd3;
+  /* Brand */
+  --color-primary-50:  #eaf6f3;
+  --color-primary-100: #d3ebe4;
+  --color-primary-500: #14877c;
+  --color-primary-600: #08786d;
+  --color-primary-700: #075f57;
+  --color-primary-900: #123c36;
+  --color-accent-100: #f8eedc;
+  --color-accent-500: #b67a32;
 
   /* Neutrals */
   --color-surface:   #ffffff;
-  --color-canvas:    #f8fafc;
-  --color-border:    #e2e8f0;
-  --color-muted:     #64748b;
-  --color-text:      #0f172a;
+  --color-canvas:    #f6f8f6;
+  --color-border:    #e1e9e5;
+  --color-muted:     #5d706b;
+  --color-text:      #172d28;
 
   /* Status */
   --color-success-600: #079455;
@@ -36,13 +39,13 @@ Use only these tokens. No arbitrary hex values or one-off spacing in components.
   --color-danger-600:  #d92d20;
   --color-info-600:    #1570ef;
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif; /* TODO(client) */
-  --radius-card: 0.75rem;
-  --radius-control: 0.5rem;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --radius-card: 1rem;
+  --radius-control: 0.625rem;
 }
 ```
 
-- **Dark mode:** not in v1 [default] `TODO(client)`.
+- **Dark mode:** not in v1.
 
 ## 3. Typography
 
@@ -94,7 +97,7 @@ Build these once and reuse them everywhere.
 ## 8. Icons & imagery
 
 - Icons: `lucide-react`, 20px inline, 24px standalone, `stroke-[1.75]`.
-- Imagery: minimal. Prefer icons and illustrations over stock photos [default] `TODO(client)`.
+- Imagery: minimal. Prefer icons and illustrations over stock photos.
 
 ## 9. Copy & tone
 
