@@ -168,12 +168,15 @@ export default function Dashboard({ today, statuses, period, money, alerts }: Da
                     <h2 id="statuses-heading" className="text-lg font-semibold">
                         Orders by status
                     </h2>
-                    <ul className="mt-3 max-w-xl divide-y divide-border rounded-card border border-border bg-surface">
+                    <ul className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                         {statuses.map((row) => (
-                            <li key={row.status}>
+                            <li
+                                key={row.status}
+                                className="overflow-hidden rounded-card border border-border bg-surface"
+                            >
                                 <Link
                                     href={route('admin.orders.index', { status: row.status })}
-                                    className="flex items-center justify-between gap-3 px-4 py-3 text-sm hover:bg-canvas"
+                                    className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 text-sm transition-colors hover:bg-canvas"
                                 >
                                     <span>{row.label}</span>
                                     <span className="flex items-center gap-2 font-semibold tabular-nums">
